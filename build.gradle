@@ -1,7 +1,5 @@
 buildscript {
-	ext {
-		springBootVersion = '1.4.0.RELEASE'
-	}
+	
 	repositories {
 		mavenLocal()
 		mavenCentral()
@@ -11,18 +9,32 @@ buildscript {
 		maven { url "http://repo.spring.io/snapshot" }
 	}
 	dependencies {
-		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.0.RELEASE")
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.0.RELEASE")
 	}
 }
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: "maven"
 apply plugin: 'spring-boot'
+
+springBoot {
+    executable = true
+    mainClass = "com.ymatou.doorgod.decisionengine.Application"
+}
 
 jar {
 	baseName = 'doorgod-apigateway'
 	version = '1.0.0-SNAPSHOT'
 }
+
+ext {
+    springBootVersion = "1.4.0.RELEASE"
+    kafkaVersion = "0.10.0.1"
+    vertxVersion = "3.3.2"
+}
+
 compileJava {
 	sourceCompatibility = 1.8
 	targetCompatibility = 1.8
@@ -39,10 +51,17 @@ repositories {
 
 
 dependencies {
-	compile('org.springframework.boot:spring-boot-starter')
-	compile 'io.vertx:vertx-web:3.3.2'
-	compile 'com.ymatou.disconf:disconf-client:2.6.35'
+	compile "org.springframework.boot:spring-boot-starter"
+	compile "org.springframework.boot:spring-boot-starter-aop:${springBootVersion}"
+	compile "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+	
 	compile 'org.slf4j:slf4j-api:1.7.21'
 	compile 'ch.qos.logback:logback-classic:1.1.7'
+	compile 'com.ymatou.disconf:disconf-client:2.6.35'
+	
+	compile "io.vertx:vertx-web:${vertxVersion}"
+	compile "io.vertx:vertx-redis-client:${vertxVersion}"
+	compile "org.apache.kafka:kafka_2.11:0.10.0.1"
+	
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
