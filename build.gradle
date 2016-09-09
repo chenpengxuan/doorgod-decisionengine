@@ -35,6 +35,13 @@ ext {
 	springDataMongoVersion = "1.9.2.RELEASE"
 	springDataRedisVersion = "1.7.2.RELEASE"
 	jedisVersion = "2.9.0"
+	quartzVersion = "2.2.3"
+	mybatisVersion = "3.2.8"
+    mybatisSpringVersion = "1.2.2"
+    apacheCommonVersion = "3.4"
+    fastJsonVersion = "1.2.6"
+    druidVersion = "1.0.14"
+    mysqlVersion = "5.1.31"
 }
 
 compileJava {
@@ -57,6 +64,8 @@ dependencies {
 	compile "org.springframework.boot:spring-boot-starter-aop:${springBootVersion}"
 	compile "org.springframework.data:spring-data-mongodb:${springDataMongoVersion}"
 	compile "org.springframework.data:spring-data-redis:${springDataRedisVersion}"
+	compile "org.springframework.boot:spring-boot-starter-jdbc:${springBootVersion}"
+    compile "org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}"
 
 	compile 'org.slf4j:slf4j-api:1.7.21'
 	compile 'ch.qos.logback:logback-classic:1.1.7'
@@ -64,7 +73,13 @@ dependencies {
 
 	compile "org.apache.kafka:kafka_2.11:0.10.0.1"
 	compile "redis.clients:jedis:${jedisVersion}"
-	compile 'org.mongodb:mongo-java-driver:3.3.0'
-	
+	compile "org.mongodb:mongo-java-driver:3.3.0"
+	compile "mysql:mysql-connector-java:${mysqlVersion}"
+	compile "org.quartz-scheduler:quartz:${quartzVersion}"
+	compile "org.mybatis:mybatis:${mybatisVersion}"
+    compile "org.mybatis:mybatis-spring:${mybatisSpringVersion}"
+	compile "org.apache.commons:commons-lang3:${apacheCommonVersion}"
+	compile "com.alibaba:fastjson:${fastJsonVersion}"
+	compile "com.alibaba:druid:${druidVersion}"
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
