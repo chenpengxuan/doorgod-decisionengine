@@ -9,20 +9,12 @@
         http://www.springframework.org/schema/context 
         http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <!-- 使用disconf必须添加以下配置 -->
-    <bean id="disconfMgrBean" class="com.baidu.disconf.client.DisconfMgrBean"
-          destroy-method="destroy">
-        <property name="scanPackage" value="com.ymatou.doorgod.decisionengine"/>
-    </bean>
-    <bean id="disconfMgrBean2" class="com.baidu.disconf.client.DisconfMgrBeanSecond"
-          init-method="init" destroy-method="destroy">
-    </bean>
 
     <bean id="propertiesDisconf"
           class="com.baidu.disconf.client.addons.properties.ReloadablePropertiesFactoryBean">
         <property name="locations">
             <list>
-                <value>app.properties</value>
+                <value>mongo.properties</value>
             </list>
         </property>
     </bean>

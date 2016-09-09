@@ -10,7 +10,6 @@ buildscript {
 	}
 	dependencies {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.0.RELEASE")
-		classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.0.RELEASE")
 	}
 }
 
@@ -33,6 +32,9 @@ ext {
     springBootVersion = "1.4.0.RELEASE"
     kafkaVersion = "0.10.0.1"
     vertxVersion = "3.3.2"
+	springDataMongoVersion = "1.9.2.RELEASE"
+	springDataRedisVersion = "1.7.2.RELEASE"
+	jedisVersion = "2.9.0"
 }
 
 compileJava {
@@ -53,15 +55,16 @@ repositories {
 dependencies {
 	compile "org.springframework.boot:spring-boot-starter"
 	compile "org.springframework.boot:spring-boot-starter-aop:${springBootVersion}"
-	compile "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
-	
+	compile "org.springframework.data:spring-data-mongodb:${springDataMongoVersion}"
+	compile "org.springframework.data:spring-data-redis:${springDataRedisVersion}"
+
 	compile 'org.slf4j:slf4j-api:1.7.21'
 	compile 'ch.qos.logback:logback-classic:1.1.7'
 	compile 'com.ymatou.disconf:disconf-client:2.6.35'
-	
-	compile "io.vertx:vertx-web:${vertxVersion}"
-	compile "io.vertx:vertx-redis-client:${vertxVersion}"
+
 	compile "org.apache.kafka:kafka_2.11:0.10.0.1"
+	compile "redis.clients:jedis:${jedisVersion}"
+	compile 'org.mongodb:mongo-java-driver:3.3.0'
 	
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
