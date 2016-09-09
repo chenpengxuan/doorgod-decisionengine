@@ -3,6 +3,10 @@
  */
 package com.ymatou.doorgod.decisionengine;
 
+import com.ymatou.doorgod.decisionengine.holder.ShutdownLatch;
+import com.ymatou.doorgod.decisionengine.holder.ShutdownLatchMBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.dao.PersistenceExceptionTranslationAutoConfiguration;
@@ -26,8 +30,16 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @ComponentScan(basePackages = "com.ymatou")
 public class Application {
 
+    public static final Logger logger = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
+
+        ShutdownLatch shutdownLatch = new ShutdownLatch("decisionengine");
+        try {
+            shutdownLatch.await();
+        } catch (Exception e) {
+            logger.warn("shut down ", e);
+        }
     }
 }

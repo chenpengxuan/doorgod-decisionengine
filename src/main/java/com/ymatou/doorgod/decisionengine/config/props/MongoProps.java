@@ -19,5 +19,25 @@ import org.springframework.stereotype.Component;
 @DisconfFile(fileName = "mongo.properties")
 public class MongoProps {
 
+    private String mongoAddress;
+    private String mongoDatabaseName;
 
+
+    @DisconfFileItem(name = "mongo.address")
+    public String getMongoAddress() {
+        return mongoAddress;
+    }
+
+    public void setMongoAddress(String mongoAddress) {
+        this.mongoAddress = mongoAddress;
+    }
+
+    @DisconfFileItem(name = "mongo.databaseName")
+    public String getMongoDatabaseName() {
+        return mongoDatabaseName;
+    }
+
+    public void setMongoDatabaseName(String mongoDatabaseName) {
+        this.mongoDatabaseName = mongoDatabaseName;
+    }
 }
