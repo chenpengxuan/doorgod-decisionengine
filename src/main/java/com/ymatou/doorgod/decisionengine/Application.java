@@ -3,21 +3,19 @@
  */
 package com.ymatou.doorgod.decisionengine;
 
-import com.ymatou.doorgod.decisionengine.holder.ShutdownLatch;
-import com.ymatou.doorgod.decisionengine.holder.ShutdownLatchMBean;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.dao.PersistenceExceptionTranslationAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.JpaBaseConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.core.task.TaskExecutor;
+
+import com.ymatou.doorgod.decisionengine.holder.KafkaConsumerInstance;
+import com.ymatou.doorgod.decisionengine.holder.ShutdownLatch;
 
 /**
  * 
@@ -32,8 +30,12 @@ public class Application {
 
     public static final Logger logger = LoggerFactory.getLogger(Application.class);
 
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
-        ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
+        ConfigurableApplicationContext ctx = SpringApplication.run(Application.class, args);
+        KafkaConsumer<String, String> kafkaConsumer = (KafkaConsumer<String, String>) ctx.getBean("kafkaConsumer");
+        TaskExecutor taskExecutor = (TaskExecutor) ctx.getBean("taskExecutor");
+        new Thread(new KafkaConsumerInstance(kafkaConsumer, taskExecutor)).start();
 
         ShutdownLatch shutdownLatch = new ShutdownLatch("decisionengine");
         try {
