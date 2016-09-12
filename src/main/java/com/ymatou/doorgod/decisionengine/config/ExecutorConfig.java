@@ -28,4 +28,6 @@ public class ExecutorConfig {
         taskExecutor.setRejectedExecutionHandler(new LogRejectedPolicy());
         return taskExecutor;
     }
+
+//    public TaskExecutor taskExecutorForRedis
 }

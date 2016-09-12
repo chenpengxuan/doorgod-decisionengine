@@ -35,11 +35,11 @@ ext {
 	springDataMongoVersion = "1.9.2.RELEASE"
 	springDataRedisVersion = "1.7.2.RELEASE"
 	jedisVersion = "2.9.0"
+	fastJsonVersion = "1.2.12"
 	quartzVersion = "2.2.3"
 	mybatisVersion = "3.2.8"
     mybatisSpringVersion = "1.2.2"
     apacheCommonVersion = "3.4"
-    fastJsonVersion = "1.2.6"
     druidVersion = "1.0.14"
     mysqlVersion = "5.1.31"
 }

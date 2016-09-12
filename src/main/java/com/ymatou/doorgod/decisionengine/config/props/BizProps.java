@@ -20,6 +20,10 @@ import com.baidu.disconf.client.common.annotations.DisconfFileItem;
 public class BizProps {
 
     private String ruleDiscoverCronExpression;
+    //上报redis topN >0 才topN
+    private int uploadRedisTopN;
+    //每秒 每个rule map中最多元素个数
+    private int maxSizePerSecAndRule;
 
     @DisconfFileItem(name = "biz.ruleDiscoverCronExpression")
     public String getRuleDiscoverCronExpression() {
@@ -28,5 +32,26 @@ public class BizProps {
 
     public void setRuleDiscoverCronExpression(String ruleDiscoverCronExpression) {
         this.ruleDiscoverCronExpression = ruleDiscoverCronExpression;
+    }
+
+
+
+
+    @DisconfFileItem(name = "biz.uploadRedisTopN")
+    public int getUploadRedisTopN() {
+        return uploadRedisTopN;
+    }
+
+    public void setUploadRedisTopN(int uploadRedisTopN) {
+        this.uploadRedisTopN = uploadRedisTopN;
+    }
+
+    @DisconfFileItem(name = "biz.maxSizePerSecAndRule")
+    public int getMaxSizePerSecAndRule() {
+        return maxSizePerSecAndRule;
+    }
+
+    public void setMaxSizePerSecAndRule(int maxSizePerSecAndRule) {
+        this.maxSizePerSecAndRule = maxSizePerSecAndRule;
     }
 }

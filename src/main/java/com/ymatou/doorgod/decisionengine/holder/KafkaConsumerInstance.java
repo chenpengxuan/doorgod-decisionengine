@@ -40,7 +40,6 @@ public class KafkaConsumerInstance implements Runnable {
                                 Thread.currentThread().getName(), record.offset(), record.partition(), record.key(),
                                 record.value());
                 });
-
             }
         } catch (WakeupException e) {
             // Ignore exception if closing
@@ -49,7 +48,7 @@ public class KafkaConsumerInstance implements Runnable {
         } finally {
             kafkaConsumer.close();
         }
-    };
+    }
 
     public void shutdown() {
         closed.set(true);

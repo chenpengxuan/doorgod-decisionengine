@@ -24,6 +24,8 @@ public class LimitTimesRule extends AbstractRule {
 
     private boolean isUpdate;
 
+    private Set<RuleUri> ruleUriSet;
+
     /**
      * 用来从http请求提取样本的样本维度KEY
      */

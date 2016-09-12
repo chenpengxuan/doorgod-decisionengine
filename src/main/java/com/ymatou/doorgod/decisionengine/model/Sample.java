@@ -6,6 +6,8 @@
 
 package com.ymatou.doorgod.decisionengine.model;
 
+import com.alibaba.fastjson.JSON;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -66,5 +68,10 @@ public class Sample {
         });
 
         return sample;
+    }
+
+    @Override
+    public String toString() {
+        return JSON.toJSONString(this);
     }
 }
