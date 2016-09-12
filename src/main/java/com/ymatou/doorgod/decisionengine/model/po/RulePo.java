@@ -1,47 +1,148 @@
 /*
  *
- *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
- *  All rights reserved.
+ * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
  *
  */
 
 package com.ymatou.doorgod.decisionengine.model.po;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * @author luoshiqian 2016/9/12 16:50
  */
-public class RulePo {
+@Entity
+@Table(name = "rule")
+public class RulePo extends Audit {
 
+    @Id
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "name")
     private String name;
+
+    @Column(name = "desc")
     private String desc;
 
-
-    // 统计时间段(秒计)，譬如60s
+    @Column(name = "statistic_span")
     private int statisticSpan;
 
-    // 统计策略(cron表达式)
-    private String statisticStrategy;
-
-    // 统计时间段内，访问次数达到该上限（inclusive），即触发限制
+    @Column(name = "times_cap")
     private long timesCap;
 
-    // 达到上限后，拒绝访问的时长，以秒计，譬如300s
+    @Column(name = "rejection_span")
     private int rejectionSpan;
 
+    @Column(name = "update_type")
     private String updateType;
-
-    private boolean isUpdate;
 
     /**
      * @see com.ymatou.doorgod.decisionengine.model.ScopeEnum
      */
+    @Column(name = "scope")
     private String scope;
 
+    @Column(name = "key")
     private String keys;
+
+    @Column(name = "group_key")
     private String groupByKeys;
 
-    private String ruleType;// 限次 黑名单
+    @Column(name = "rule_type")
+    private String ruleType;
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
+
+    public int getStatisticSpan() {
+        return statisticSpan;
+    }
+
+    public void setStatisticSpan(int statisticSpan) {
+        this.statisticSpan = statisticSpan;
+    }
+
+    public long getTimesCap() {
+        return timesCap;
+    }
+
+    public void setTimesCap(long timesCap) {
+        this.timesCap = timesCap;
+    }
+
+    public int getRejectionSpan() {
+        return rejectionSpan;
+    }
+
+    public void setRejectionSpan(int rejectionSpan) {
+        this.rejectionSpan = rejectionSpan;
+    }
+
+    public String getUpdateType() {
+        return updateType;
+    }
+
+    public void setUpdateType(String updateType) {
+        this.updateType = updateType;
+    }
+
+    public String getScope() {
+        return scope;
+    }
+
+    public void setScope(String scope) {
+        this.scope = scope;
+    }
+
+    public String getKeys() {
+        return keys;
+    }
+
+    public void setKeys(String keys) {
+        this.keys = keys;
+    }
+
+    public String getGroupByKeys() {
+        return groupByKeys;
+    }
+
+    public void setGroupByKeys(String groupByKeys) {
+        this.groupByKeys = groupByKeys;
+    }
+
+    public String getRuleType() {
+        return ruleType;
+    }
+
+    public void setRuleType(String ruleType) {
+        this.ruleType = ruleType;
+    }
 }
