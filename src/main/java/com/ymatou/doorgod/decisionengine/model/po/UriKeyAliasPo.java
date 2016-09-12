@@ -18,7 +18,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "uri_key_alias")
-public class UriKeyAlias extends Audit {
+public class UriKeyAliasPo extends Audit {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
