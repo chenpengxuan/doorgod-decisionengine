@@ -10,10 +10,10 @@ package com.ymatou.doorgod.decisionengine.model.po;
 /**
  * @author luoshiqian 2016/9/12 17:04
  */
-public class UriRuleKey {
+public class UriKeyAlias {
     private String uri;
-    private Long ruleKeyId;
     private String alias;
-    private String ruleKeyName;
+    private String originKeyName;
 
+    
 }

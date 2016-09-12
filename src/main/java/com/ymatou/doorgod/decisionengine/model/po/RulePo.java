@@ -39,4 +39,9 @@ public class RulePo {
      */
     private String scope;
 
+    private String keys;
+    private String groupByKeys;
+
+    private String ruleType;// 限次 黑名单
+
 }
