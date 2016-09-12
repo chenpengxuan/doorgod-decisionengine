@@ -29,6 +29,9 @@ public abstract class AbstractRule implements Ordered, Comparable<AbstractRule> 
      */
     private Set<String> applicableUris = new HashSet<String>( );
 
+    private Set<RuleUri> ruleUriSet;
+
+
     public String getName() {
         return name;
     }
@@ -85,5 +88,13 @@ public abstract class AbstractRule implements Ordered, Comparable<AbstractRule> 
 
     public boolean applicable( String uri ) {
         return applicableUris.isEmpty() || applicableUris.contains(uri.toLowerCase());
+    }
+
+    public Set<RuleUri> getRuleUriSet() {
+        return ruleUriSet;
+    }
+
+    public void setRuleUriSet(Set<RuleUri> ruleUriSet) {
+        this.ruleUriSet = ruleUriSet;
     }
 }

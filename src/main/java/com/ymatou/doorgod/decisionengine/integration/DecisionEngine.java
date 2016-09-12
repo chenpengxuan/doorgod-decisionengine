@@ -6,10 +6,7 @@ package com.ymatou.doorgod.decisionengine.integration;
 import com.google.common.collect.Sets;
 import com.ymatou.doorgod.decisionengine.config.props.BizProps;
 import com.ymatou.doorgod.decisionengine.constants.Constants;
-import com.ymatou.doorgod.decisionengine.model.Rule;
-import com.ymatou.doorgod.decisionengine.model.RuleUri;
-import com.ymatou.doorgod.decisionengine.model.Sample;
-import com.ymatou.doorgod.decisionengine.model.StatisticItem;
+import com.ymatou.doorgod.decisionengine.model.*;
 import com.ymatou.doorgod.decisionengine.util.RedisHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -37,7 +34,7 @@ public class DecisionEngine {
      *                               value: AtomicInteger 计数
      */
     public static Map<String,Map<String,Map<Sample,AtomicInteger>>> ruleTimeSampleMaps = new HashMap<>();
-    public static Set<Rule> ruleSet = Sets.newHashSet();
+    public static Set<AbstractRule> ruleSet = Sets.newHashSet();
 
 
     @Autowired
@@ -126,7 +123,7 @@ public class DecisionEngine {
         Sample sample = statisticItem.getSample();
         String reqTime = statisticItem.getReqTime();
         String uri = sample.getUri();
-        Set<Rule> set = getRulesByUri(sample.getUri());
+        Set<AbstractRule> set = getRulesByUri(sample.getUri());
 
         set.forEach(rule -> {
 
@@ -164,7 +161,7 @@ public class DecisionEngine {
 
 
     //获取规则
-    public static Set<Rule> getRulesByUri(String uri){
+    public static Set<AbstractRule> getRulesByUri(String uri){
         return ruleSet.stream().filter(
                 rule -> rule.getRuleUriSet().stream().anyMatch(ruleUri -> ruleUri.getUri().equalsIgnoreCase(uri)))
                 .collect(Collectors.toSet());
