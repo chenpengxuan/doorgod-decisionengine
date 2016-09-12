@@ -14,11 +14,11 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**
- * @author luoshiqian 2016/9/12 17:04
+ * @author luoshiqian 2016/9/12 16:58
  */
 @Entity
-@Table(name = "uri_key_alias")
-public class UriKeyAlias extends Audit {
+@Table(name = "uri_rule")
+public class UriRulePo extends Audit {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,11 +27,8 @@ public class UriKeyAlias extends Audit {
     @Column(name = "uri")
     private String uri;
 
-    @Column(name = "alias")
-    private String alias;
-
-    @Column(name = "origin_key_name")
-    private String originKeyName;
+    @Column(name = "rule_id")
+    private Long ruleId;
 
     public Long getId() {
         return id;
@@ -49,19 +46,11 @@ public class UriKeyAlias extends Audit {
         this.uri = uri;
     }
 
-    public String getAlias() {
-        return alias;
+    public Long getRuleId() {
+        return ruleId;
     }
 
-    public void setAlias(String alias) {
-        this.alias = alias;
-    }
-
-    public String getOriginKeyName() {
-        return originKeyName;
-    }
-
-    public void setOriginKeyName(String originKeyName) {
-        this.originKeyName = originKeyName;
+    public void setRuleId(Long ruleId) {
+        this.ruleId = ruleId;
     }
 }
