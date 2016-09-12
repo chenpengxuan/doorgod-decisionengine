@@ -16,6 +16,7 @@ import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.ymatou.doorgod.decisionengine.service.SchedulerService;
@@ -30,12 +31,8 @@ import com.ymatou.doorgod.decisionengine.service.SchedulerService;
 public class SchedulerServiceImpl implements SchedulerService {
 
     @Autowired
+    @Qualifier("scheduler")
     private Scheduler scheduler;
-
-    @Override
-    public void initScheduler() {
-
-    }
 
     @Override
     public void addJob(Class<? extends Job> job, String jobName, String cronExpression) throws SchedulerException {

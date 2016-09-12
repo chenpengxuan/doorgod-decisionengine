@@ -1,16 +1,16 @@
 /*
  *
- *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
- *  All rights reserved.
+ * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
  *
  */
 
 package com.ymatou.doorgod.decisionengine.config;
 
-import com.baidu.disconf.client.DisconfMgrBean;
-import com.baidu.disconf.client.DisconfMgrBeanSecond;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.baidu.disconf.client.DisconfMgrBean;
+import com.baidu.disconf.client.DisconfMgrBeanSecond;
 
 /**
  * @author luoshiqian 2016/8/30 15:49
