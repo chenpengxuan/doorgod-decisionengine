@@ -33,6 +33,11 @@ public class SchedulerServiceImpl implements SchedulerService {
     private Scheduler scheduler;
 
     @Override
+    public void initScheduler() {
+
+    }
+
+    @Override
     public void addJob(Class<? extends Job> job, String jobName, String cronExpression) throws SchedulerException {
         JobDetail jobDetail = JobBuilder.newJob(job)
                 .withIdentity(jobName)

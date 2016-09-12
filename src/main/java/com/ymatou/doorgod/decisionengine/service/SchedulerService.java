@@ -15,6 +15,8 @@ import org.quartz.SchedulerException;
  */
 public interface SchedulerService {
 
+    void initScheduler();
+
     void addJob(Class<? extends Job> job, String jobName, String cronExpression) throws SchedulerException;
 
     void modifyScheduler(String jobName, String cronExpression) throws SchedulerException;
