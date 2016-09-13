@@ -99,29 +99,29 @@ public class RedisTest implements Runnable {
         }, 5L * 1000, 1000, TimeUnit.MILLISECONDS);
 
 
-        for(int i=0;i<5;i++){
-
-            writeExecutor.execute(() -> {
-                while (true){
-                    StatisticItem a = new StatisticItem();
-                    LocalDateTime dateTime  = LocalDateTime.now();
-                    String str =  dateTime.format(DateTimeFormatter.ofPattern("yyyyMMddhhmmss"));
-                    a.setReqTime(str);
-                    Sample sample2 = new Sample();
-                    sample2.addDimensionValue("uri","/api/xxx.do");
-                    sample2.addDimensionValue("ip",ips[new Random().nextInt(5)]);
-                    sample2.addDimensionValue("deviceId",deviceIds[new Random().nextInt(5)]);
-                    a.setSample(sample2);
-                    decisionEngine.putStaticItem(a);
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(new Random().nextInt(10));
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-
-        }
+//        for(int i=0;i<5;i++){
+//
+//            writeExecutor.execute(() -> {
+//                while (true){
+//                    StatisticItem a = new StatisticItem();
+//                    LocalDateTime dateTime  = LocalDateTime.now();
+//                    String str =  dateTime.format(DateTimeFormatter.ofPattern("yyyyMMddhhmmss"));
+//                    a.setReqTime(str);
+//                    Sample sample2 = new Sample();
+//                    sample2.addDimensionValue("uri","/api/xxx.do");
+//                    sample2.addDimensionValue("ip",ips[new Random().nextInt(5)]);
+//                    sample2.addDimensionValue("deviceId",deviceIds[new Random().nextInt(5)]);
+//                    a.setSample(sample2);
+//                    decisionEngine.putStaticItem(a);
+//                    try {
+//                        TimeUnit.MILLISECONDS.sleep(new Random().nextInt(10));
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            });
+//
+//        }
 
 
 

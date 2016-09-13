@@ -6,7 +6,9 @@ package com.ymatou.doorgod.decisionengine.holder;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.alibaba.fastjson.JSON;
 import com.ymatou.doorgod.decisionengine.integration.DecisionEngine;
+import com.ymatou.doorgod.decisionengine.model.StatisticItem;
 import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -44,7 +46,7 @@ public class KafkaConsumerInstance implements Runnable {
 //                                Thread.currentThread().getName(), record.offset(), record.partition(), record.key(),
 //                                record.value());
                         String sampleStr = record.value();
-
+                        decisionEngine.putStaticItem(JSON.parseObject(sampleStr,StatisticItem.class));
                     }
 
                 });
