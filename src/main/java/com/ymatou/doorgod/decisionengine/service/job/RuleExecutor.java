@@ -3,18 +3,26 @@
  */
 package com.ymatou.doorgod.decisionengine.service.job;
 
+import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHMS;
+import static com.ymatou.doorgod.decisionengine.constants.Constants.UNION;
+
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
+import com.ymatou.doorgod.decisionengine.util.RedisHelper;
 
 /**
  * 
@@ -24,38 +32,63 @@ import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 @Component
 public class RuleExecutor implements Job {
 
+    @Autowired
+    StringRedisTemplate redisTemplate;
+
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         String jobName = context.getJobDetail().getKey().getName();
-
         LimitTimesRule rule = RuleHolder.rules.get(jobName);
-        int span = rule.getStatisticSpan();
+        LocalDateTime now = LocalDateTime.now();
+        List<String> timeBuckets = getAllTimeBucket(rule, now);
+        String ruleName = rule.getName();
 
-        rule.getName();
+        String previousBucket = RedisHelper.getUnionSetName(ruleName,
+                now.minusSeconds(1).format(FORMATTER_YMDHMS), UNION);
+        String currentBucket = RedisHelper.getUnionSetName(ruleName,
+                now.format(FORMATTER_YMDHMS), UNION);
+        String secondWillDelete = RedisHelper.getNormalSetName(rule.getName(),
+                now.minusSeconds(1).format(FORMATTER_YMDHMS));
+        String secondWillAdd = RedisHelper.getNormalSetName(rule.getName(),
+                now.minusSeconds(rule.getStatisticSpan() + 1).format(FORMATTER_YMDHMS));
+
+        if (redisTemplate.opsForZSet().size(previousBucket) > 0) {
+            redisTemplate.opsForZSet().scan(secondWillDelete, ScanOptions.scanOptions().build())
+                    .forEachRemaining(c -> {
+                        redisTemplate.opsForZSet().add(secondWillDelete, c.getValue(), c.getScore() * -1);
+                    });
+            redisTemplate.opsForZSet().unionAndStore(previousBucket,
+                    Arrays.asList(secondWillAdd, secondWillDelete), currentBucket);
+        } else {
+            redisTemplate.opsForZSet().unionAndStore(timeBuckets.get(0), timeBuckets.remove(0), currentBucket);
+        }
+        Set<String> blacklist = redisTemplate.opsForZSet()
+                .rangeByScore(currentBucket, rule.getTimesCap(), Integer.MAX_VALUE);
+
+        redisTemplate.convertAndSend("blacklist", blacklist);
     }
 
-    public List<String> getAllTime(LimitTimesRule rule) {
-        List<String> times = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-        String formatNow = now.format(formatter);
+    public List<String> getAllTimeBucket(LimitTimesRule rule, LocalDateTime now) {
+        List<String> timeBuckets = new ArrayList<>();
+
+        // RuleName:Set:yyyyMMddHHmmss
         for (int second = 1; second <= rule.getStatisticSpan(); second++) {
-            times.add(now.minusSeconds(second).format(formatter));
+            timeBuckets.add(RedisHelper.getNormalSetName(rule.getName(),
+                    now.minusSeconds(second).format(FORMATTER_YMDHMS)));
         }
-        return times;
+
+        return timeBuckets;
     }
 
 
     public static void main(String[] args) {
         LimitTimesRule rule = new LimitTimesRule();
         rule.setStatisticSpan(60);
+        rule.setName("rule");
         RuleExecutor ruleExecutor = new RuleExecutor();
 
 
-        List<String> times = ruleExecutor.getAllTime(rule);
+        List<String> times = ruleExecutor.getAllTimeBucket(rule, LocalDateTime.now());
         times.stream().forEach(c -> System.out.println(c));
-
-
-
     }
 }

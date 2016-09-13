@@ -3,11 +3,12 @@
  */
 package com.ymatou.doorgod.decisionengine.service.job;
 
+import static com.ymatou.doorgod.decisionengine.constants.Constants.SEPARATOR;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -15,15 +16,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.ymatou.doorgod.decisionengine.constants.Constants;
+import com.ymatou.doorgod.decisionengine.config.props.BizProps;
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import com.ymatou.doorgod.decisionengine.model.ScopeEnum;
 import com.ymatou.doorgod.decisionengine.model.po.RulePo;
-import com.ymatou.doorgod.decisionengine.model.po.UriRulePo;
 import com.ymatou.doorgod.decisionengine.repository.RuleRepository;
-import com.ymatou.doorgod.decisionengine.repository.UriKeyAliasRepository;
-import com.ymatou.doorgod.decisionengine.repository.UriRuleRepository;
 import com.ymatou.doorgod.decisionengine.service.SchedulerService;
 
 /**
@@ -43,21 +41,25 @@ public class RuleDiscoverer {
     private RuleRepository ruleRepository;
 
     @Autowired
-    private UriRuleRepository uriRuleRepository;
-
-    @Autowired
-    private UriKeyAliasRepository uriKeyAliasRepository;
+    private BizProps bizProps;
 
     public void execute() {
+        // 加载Redis定时同步数据到MongoDB任务(添加/修改)
+        try {
+            schedulerService.addJob(RulePersistence.class, "RedisToMongo", bizProps.getRulePersistenceCronExpression());
+        } catch (SchedulerException e) {
+            logger.error("add redis to mongo job failed.", e);
+        }
 
-        HashMap<String, LimitTimesRule> updatedRules = fecthRuleData(); // TODO 从数据库中获取数据
+        // 加载规则数据，更新规则统计的定时任务
+        HashMap<String, LimitTimesRule> updatedRules = fecthRuleData();
         for (LimitTimesRule rule : updatedRules.values()) {
             try {
                 String ruleName = rule.getName();
                 switch (rule.getUpdateType()) {
                     case "add":
                         RuleHolder.rules.put(ruleName, rule);
-                        schedulerService.addJob(RuleExecutor.class, ruleName, ""); // TODO
+                        schedulerService.addJob(RuleExecutor.class, ruleName, bizProps.getRuleExecutorCronExpression());
                         break;
                     case "delete":
                         RuleHolder.rules.remove(ruleName);
@@ -93,14 +95,9 @@ public class RuleDiscoverer {
             rule.setTimesCap(rulePo.getTimesCap());
             rule.setRejectionSpan(rulePo.getRejectionSpan());
             rule.setUpdateType(rule.getUpdateType());
-            rule.setDimensionKeys(new HashSet<>(Arrays.asList(rulePo.getKeys().split(Constants.SEPARATOR))));
-            rule.setGroupByKeys(new HashSet<>(Arrays.asList(rulePo.getGroupByKeys().split(Constants.SEPARATOR))));
-
-            if (rule.getScope().equals(ScopeEnum.SPECIFIC_URIS)) {
-                List<UriRulePo> uriRule = uriRuleRepository.findByRuleId(rulePo.getId());
-                rule.setApplicableUris(uriRule.stream().map(ur -> ur.getUri()).collect(Collectors.toSet()));
-            }
-
+            rule.setDimensionKeys(new HashSet<>(Arrays.asList(rulePo.getKeys().split(SEPARATOR))));
+            rule.setGroupByKeys(new HashSet<>(Arrays.asList(rulePo.getGroupByKeys().split(SEPARATOR))));
+            rule.setApplicableUris(new HashSet<>(Arrays.asList(rulePo.getUris().split(SEPARATOR))));
             rules.put(rulePo.getName(), rule);
         }
 

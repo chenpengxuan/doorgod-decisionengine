@@ -18,11 +18,15 @@ import com.baidu.disconf.client.common.annotations.DisconfFileItem;
 @Component
 @DisconfFile(fileName = "biz.properties")
 public class BizProps {
-
+    // 定时发现Rule变化
     private String ruleDiscoverCronExpression;
-    //上报redis topN >0 才topN
+    // 定时同步Redis数据到Mongo
+    private String rulePersistenceCronExpression;
+    // 定时统计Redis数据生成黑名单
+    private String ruleExecutorCronExpression;
+    // 上报redis topN >0 才topN
     private int uploadRedisTopN;
-    //每秒 每个rule map中最多元素个数
+    // 每秒 每个rule map中最多元素个数
     private int maxSizePerSecAndRule;
 
     @DisconfFileItem(name = "biz.ruleDiscoverCronExpression")
@@ -34,8 +38,23 @@ public class BizProps {
         this.ruleDiscoverCronExpression = ruleDiscoverCronExpression;
     }
 
+    @DisconfFileItem(name = "biz.rulePersistenceCronExpression")
+    public String getRulePersistenceCronExpression() {
+        return rulePersistenceCronExpression;
+    }
 
+    public void setRulePersistenceCronExpression(String rulePersistenceCronExpression) {
+        this.rulePersistenceCronExpression = rulePersistenceCronExpression;
+    }
 
+    @DisconfFileItem(name = "biz.ruleExecutorCronExpression")
+    public String getRuleExecutorCronExpression() {
+        return ruleExecutorCronExpression;
+    }
+
+    public void setRuleExecutorCronExpression(String ruleExecutorCronExpression) {
+        this.ruleExecutorCronExpression = ruleExecutorCronExpression;
+    }
 
     @DisconfFileItem(name = "biz.uploadRedisTopN")
     public int getUploadRedisTopN() {

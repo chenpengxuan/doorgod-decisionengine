@@ -36,16 +36,22 @@ public class SchedulerServiceImpl implements SchedulerService {
 
     @Override
     public void addJob(Class<? extends Job> job, String jobName, String cronExpression) throws SchedulerException {
-        JobDetail jobDetail = JobBuilder.newJob(job)
-                .withIdentity(jobName)
-                // .storeDurably(false) //Job是非持久性的，若没有活动的Trigger与之相关联，该Job会从Scheduler中删除掉
-                // .requestRecovery(true) //Scheduler非正常停止(进程停止或机器关闭等)时，Scheduler再次启动时，该Job会重新执行一次
-                .build();
-        Trigger trigger = TriggerBuilder.newTrigger()
-                .withSchedule(CronScheduleBuilder.cronSchedule(cronExpression)
-                        .withMisfireHandlingInstructionFireAndProceed())
-                .build();
-        scheduler.scheduleJob(jobDetail, trigger);
+        List<? extends Trigger> triggerList = scheduler.getTriggersOfJob(new JobKey(jobName));
+        if (triggerList == null || triggerList.isEmpty()) {
+            JobDetail jobDetail = JobBuilder.newJob(job)
+                    .withIdentity(jobName)
+                    // .storeDurably(false) //Job是非持久性的，若没有活动的Trigger与之相关联，该Job会从Scheduler中删除掉
+                    // .requestRecovery(true)
+                    // //Scheduler非正常停止(进程停止或机器关闭等)时，Scheduler再次启动时，该Job会重新执行一次
+                    .build();
+            Trigger trigger = TriggerBuilder.newTrigger()
+                    .withSchedule(CronScheduleBuilder.cronSchedule(cronExpression)
+                            .withMisfireHandlingInstructionFireAndProceed())
+                    .build();
+            scheduler.scheduleJob(jobDetail, trigger);
+        } else {
+            modifyScheduler(jobName, cronExpression);
+        }
     }
 
     @Override

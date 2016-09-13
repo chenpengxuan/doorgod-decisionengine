@@ -28,7 +28,7 @@ public class RulePo extends Audit {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "desc")
+    @Column(name = "description")
     private String desc;
 
     @Column(name = "statistic_span")
@@ -49,10 +49,10 @@ public class RulePo extends Audit {
     @Column(name = "scope")
     private String scope;
 
-    @Column(name = "key")
+    @Column(name = "keys")
     private String keys;
 
-    @Column(name = "group_key")
+    @Column(name = "groupby_keys")
     private String groupByKeys;
 
     @Column(name = "rule_type")
@@ -60,6 +60,9 @@ public class RulePo extends Audit {
 
     @Column(name = "order")
     private int order;
+
+    @Column(name = "uris")
+    private String uris;
 
     public Long getId() {
         return id;
@@ -155,5 +158,13 @@ public class RulePo extends Audit {
 
     public void setOrder(int order) {
         this.order = order;
+    }
+
+    public String getUris() {
+        return uris;
+    }
+
+    public void setUris(String uris) {
+        this.uris = uris;
     }
 }

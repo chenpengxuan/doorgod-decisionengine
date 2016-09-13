@@ -12,7 +12,12 @@ import java.time.format.DateTimeFormatter;
  * @author luoshiqian 2016/9/12 15:27
  */
 public class Constants {
-    public static final DateTimeFormatter FORMATTER_YMDHMS = DateTimeFormatter.ofPattern("yyyyMMddhhmmss");
+    public static final DateTimeFormatter FORMATTER_YMDHMS = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     public static final String SEPARATOR = ";";
+
+    public static final String UNION = "Union";
+
+    public static final String MONGO_UNION = "Mongo";
+
 }

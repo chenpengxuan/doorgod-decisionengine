@@ -16,6 +16,7 @@ import org.springframework.core.task.TaskExecutor;
 
 import com.ymatou.doorgod.decisionengine.holder.KafkaConsumerInstance;
 import com.ymatou.doorgod.decisionengine.holder.ShutdownLatch;
+import com.ymatou.doorgod.decisionengine.service.job.RuleDiscoverer;
 
 /**
  * 
@@ -33,9 +34,14 @@ public class Application {
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         ConfigurableApplicationContext ctx = SpringApplication.run(Application.class, args);
+        // 启动Kafka Consumer
         KafkaConsumer<String, String> kafkaConsumer = (KafkaConsumer<String, String>) ctx.getBean("kafkaConsumer");
         TaskExecutor taskExecutor = (TaskExecutor) ctx.getBean("taskExecutor");
         new Thread(new KafkaConsumerInstance(kafkaConsumer, taskExecutor)).start();
+
+        // 加载Rule数据， 添加修改Rule的定时任务， RedisToMongo同步任务
+        RuleDiscoverer ruleDiscoverer = ctx.getBean(RuleDiscoverer.class);
+        ruleDiscoverer.execute();
 
         ShutdownLatch shutdownLatch = new ShutdownLatch("decisionengine");
         try {
