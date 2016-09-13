@@ -144,9 +144,9 @@ public class DecisionEngine {
      */
     private long getExpireByRule(LimitTimesRule rule){
         if (rule.getTimesCap() < 60) {
-            return ((Double)(rule.getTimesCap() * 1.5)).longValue();
+            return ((Double)(rule.getStatisticSpan() * 1.5)).longValue();
         }
-        return ((Double)(rule.getTimesCap() * 1.2)).longValue();
+        return ((Double)(rule.getStatisticSpan() * 1.2)).longValue();
     }
 
 
