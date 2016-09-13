@@ -40,7 +40,7 @@ public class Application {
         KafkaConsumer<String, String> kafkaConsumer = (KafkaConsumer<String, String>) ctx.getBean("kafkaConsumer");
         ConsumerConnector consumerConnector = ctx.getBean(ConsumerConnector.class);
         TaskExecutor taskExecutor = (TaskExecutor) ctx.getBean("taskExecutor");
-        new Thread(new KafkaConsumerInstance(kafkaConsumer,consumerConnector, taskExecutor)).start();
+        new Thread(new KafkaConsumerInstance(kafkaConsumer, taskExecutor)).start();
         new Thread(new RedisTest()).start();
 
 
