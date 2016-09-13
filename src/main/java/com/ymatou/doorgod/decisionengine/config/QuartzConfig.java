@@ -26,7 +26,7 @@ public class QuartzConfig {
         // schedulerFactoryBean.setApplicationContextSchedulerContextKey("applicationContextKey");
         schedulerFactoryBean.setConfigLocation(new ClassPathResource("quartz.properties"));
         schedulerFactoryBean.setAutoStartup(true);
-        // schedulerFactoryBean.setStartupDelay(100000000);
+        schedulerFactoryBean.setStartupDelay(100000000);
         return schedulerFactoryBean;
     }
 
