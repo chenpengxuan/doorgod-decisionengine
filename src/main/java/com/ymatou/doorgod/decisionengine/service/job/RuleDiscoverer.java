@@ -64,7 +64,6 @@ public class RuleDiscoverer {
                 String ruleName = rule.getName();
                 switch (rule.getUpdateType()) {
                     case "add":
-                        System.out.println(11111);
                         RuleHolder.rules.put(ruleName, rule);
                         schedulerService.addJob(RuleExecutor.class, ruleName, bizProps.getRuleExecutorCronExpression());
                         break;
