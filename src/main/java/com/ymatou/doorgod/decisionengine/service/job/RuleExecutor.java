@@ -3,6 +3,7 @@
  */
 package com.ymatou.doorgod.decisionengine.service.job;
 
+import static com.ymatou.doorgod.decisionengine.constants.Constants.BLACK_LIST_CHANNEL;
 import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHMS;
 import static com.ymatou.doorgod.decisionengine.constants.Constants.UNION;
 
@@ -64,8 +65,9 @@ public class RuleExecutor implements Job {
         }
         Set<String> blacklist = redisTemplate.opsForZSet()
                 .rangeByScore(currentBucket, rule.getTimesCap(), Integer.MAX_VALUE);
+        redisTemplate.opsForZSet().removeRangeByScore(currentBucket, rule.getTimesCap(), Double.MAX_VALUE);
 
-        redisTemplate.convertAndSend("blacklist", blacklist);
+        redisTemplate.convertAndSend(BLACK_LIST_CHANNEL, blacklist);
     }
 
     public List<String> getAllTimeBucket(LimitTimesRule rule, LocalDateTime now) {

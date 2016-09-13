@@ -45,7 +45,7 @@ public class RulePersistence implements Job {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         LocalDateTime now = LocalDateTime.now();
-        logger.info("begin to save {} sample union to mongo.", now.format(FORMATTER_YMDHMS));
+        logger.info("begin to save sample union to mongo. {}", now.format(FORMATTER_YMDHMS));
         for (LimitTimesRule rule : RuleHolder.rules.values()) {
             String currentBucket = new StringBuilder(rule.getName()).append(":").append("set").append(":")
                     .append(now.format(FORMATTER_YMDHMS)).append(":MongoDB").toString();
