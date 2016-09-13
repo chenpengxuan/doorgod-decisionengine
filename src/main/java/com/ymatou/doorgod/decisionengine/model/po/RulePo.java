@@ -58,6 +58,9 @@ public class RulePo extends Audit {
     @Column(name = "rule_type")
     private String ruleType;
 
+    @Column(name = "order")
+    private int order;
+
     public Long getId() {
         return id;
     }
@@ -144,5 +147,13 @@ public class RulePo extends Audit {
 
     public void setRuleType(String ruleType) {
         this.ruleType = ruleType;
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
     }
 }

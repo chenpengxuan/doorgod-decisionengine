@@ -6,15 +6,17 @@
 
 package com.ymatou.doorgod.decisionengine.config;
 
-import com.ymatou.doorgod.decisionengine.config.props.RedisProps;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisNode;
 import org.springframework.data.redis.connection.RedisSentinelConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
+
+import com.baidu.disconf.client.DisconfMgrBeanSecond;
+import com.ymatou.doorgod.decisionengine.config.props.RedisProps;
+
 import redis.clients.jedis.JedisPoolConfig;
 
 /**
@@ -25,6 +27,8 @@ public class RedisConfig {
 
     @Autowired
     private RedisProps redisProps;
+    @Autowired
+    private DisconfMgrBeanSecond disconfMgrBeanSecond;
 
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {

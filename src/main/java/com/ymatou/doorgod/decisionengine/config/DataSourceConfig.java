@@ -43,7 +43,7 @@ import com.ymatou.common.mybatis.typehandler.SerializableTypeHandler;
 
 @Configuration
 @MapperScan(basePackages = "com.ymatou.doorgod.decisionengine.dao.mapper", annotationClass = MyBatisDao.class)
-@EnableJpaRepositories(basePackages = "com.ymatou.doorgod.decisionengine.dao.jpa")
+@EnableJpaRepositories(basePackages = "com.ymatou.doorgod.decisionengine.repository")
 @EnableJpaAuditing
 @EnableTransactionManagement(proxyTargetClass = true)
 @EnableConfigurationProperties({ConnectionConfig.class})

@@ -3,19 +3,27 @@
  */
 package com.ymatou.doorgod.decisionengine.service.job;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import com.ymatou.doorgod.decisionengine.constants.Constants;
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
+import com.ymatou.doorgod.decisionengine.model.ScopeEnum;
+import com.ymatou.doorgod.decisionengine.model.po.RulePo;
+import com.ymatou.doorgod.decisionengine.model.po.UriRulePo;
+import com.ymatou.doorgod.decisionengine.repository.RuleRepository;
+import com.ymatou.doorgod.decisionengine.repository.UriKeyAliasRepository;
+import com.ymatou.doorgod.decisionengine.repository.UriRuleRepository;
 import com.ymatou.doorgod.decisionengine.service.SchedulerService;
 
 /**
@@ -26,29 +34,31 @@ import com.ymatou.doorgod.decisionengine.service.SchedulerService;
 @Component
 public class RuleDiscoverer {
 
-    @Autowired
-    @Qualifier("scheduler")
-    private Scheduler scheduler;
+    private static final Logger logger = LoggerFactory.getLogger(RuleDiscoverer.class);
 
     @Autowired
     private SchedulerService schedulerService;
 
-    private static final Logger logger = LoggerFactory.getLogger(RuleDiscoverer.class);
+    @Autowired
+    private RuleRepository ruleRepository;
+
+    @Autowired
+    private UriRuleRepository uriRuleRepository;
+
+    @Autowired
+    private UriKeyAliasRepository uriKeyAliasRepository;
 
     public void execute() {
 
-        List<LimitTimesRule> updatedRules = new ArrayList<>(); // TODO 从数据库中获取数据
-        for (LimitTimesRule rule : updatedRules) {
+        HashMap<String, LimitTimesRule> updatedRules = fecthRuleData(); // TODO 从数据库中获取数据
+        for (LimitTimesRule rule : updatedRules.values()) {
             try {
                 String ruleName = rule.getName();
                 switch (rule.getUpdateType()) {
                     case "add":
                         RuleHolder.rules.put(ruleName, rule);
-                        schedulerService.addJob(RuleExecutor.class, ruleName, rule.getStatisticStrategy());
+                        schedulerService.addJob(RuleExecutor.class, ruleName, ""); // TODO
                         break;
-                    // case "update":
-                    // schedulerService.modifyScheduler(ruleName, rule.getStatisticStrategy());
-                    // break;
                     case "delete":
                         RuleHolder.rules.remove(ruleName);
                         schedulerService.removeScheduler(ruleName);
@@ -69,5 +79,31 @@ public class RuleDiscoverer {
                 logger.error("update rule schduler failed.", e);
             }
         }
+    }
+
+    public HashMap<String, LimitTimesRule> fecthRuleData() {
+        HashMap<String, LimitTimesRule> rules = new HashMap<>();
+        List<RulePo> rulePos = ruleRepository.findAll();
+        for (RulePo rulePo : rulePos) {
+            LimitTimesRule rule = new LimitTimesRule();
+            rule.setName(rulePo.getName());
+            rule.setOrder(rulePo.getOrder());
+            rule.setScope(ScopeEnum.valueOf(rulePo.getScope()));
+            rule.setStatisticSpan(rulePo.getStatisticSpan());
+            rule.setTimesCap(rulePo.getTimesCap());
+            rule.setRejectionSpan(rulePo.getRejectionSpan());
+            rule.setUpdateType(rule.getUpdateType());
+            rule.setDimensionKeys(new HashSet<>(Arrays.asList(rulePo.getKeys().split(Constants.SEPARATOR))));
+            rule.setGroupByKeys(new HashSet<>(Arrays.asList(rulePo.getGroupByKeys().split(Constants.SEPARATOR))));
+
+            if (rule.getScope().equals(ScopeEnum.SPECIFIC_URIS)) {
+                List<UriRulePo> uriRule = uriRuleRepository.findByRuleId(rulePo.getId());
+                rule.setApplicableUris(uriRule.stream().map(ur -> ur.getUri()).collect(Collectors.toSet()));
+            }
+
+            rules.put(rulePo.getName(), rule);
+        }
+
+        return rules;
     }
 }

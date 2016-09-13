@@ -1,7 +1,6 @@
 /*
  *
- *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
- *  All rights reserved.
+ * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
  *
  */
 
@@ -15,4 +14,5 @@ import java.time.format.DateTimeFormatter;
 public class Constants {
     public static final DateTimeFormatter FORMATTER_YMDHMS = DateTimeFormatter.ofPattern("yyyyMMddhhmmss");
 
+    public static final String SEPARATOR = ";";
 }

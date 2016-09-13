@@ -3,6 +3,8 @@
  */
 package com.ymatou.doorgod.decisionengine.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,5 +17,7 @@ import com.ymatou.doorgod.decisionengine.model.po.UriRulePo;
  */
 @Repository
 public interface UriRuleRepository extends JpaRepository<UriRulePo, Long> {
+
+    List<UriRulePo> findByRuleId(Long ruleId);
 
 }

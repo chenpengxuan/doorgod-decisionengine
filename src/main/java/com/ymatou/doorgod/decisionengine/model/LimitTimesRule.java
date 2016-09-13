@@ -11,9 +11,6 @@ public class LimitTimesRule extends AbstractRule {
     // 统计时间段(秒计)，譬如60s
     private int statisticSpan;
 
-    // 统计策略(cron表达式)
-    private String statisticStrategy;
-
     // 统计时间段内，访问次数达到该上限（inclusive），即触发限制
     private long timesCap;
 
@@ -21,8 +18,6 @@ public class LimitTimesRule extends AbstractRule {
     private int rejectionSpan;
 
     private String updateType;
-
-    private boolean isUpdate;
 
     /**
      * 用来从http请求提取样本的样本维度KEY
@@ -75,27 +70,11 @@ public class LimitTimesRule extends AbstractRule {
         this.groupByKeys = groupByKeys;
     }
 
-    public String getStatisticStrategy() {
-        return statisticStrategy;
-    }
-
-    public void setStatisticStrategy(String statisticStrategy) {
-        this.statisticStrategy = statisticStrategy;
-    }
-
     public String getUpdateType() {
         return updateType;
     }
 
     public void setUpdateType(String updateType) {
         this.updateType = updateType;
-    }
-
-    public boolean isUpdate() {
-        return isUpdate;
-    }
-
-    public void setUpdate(boolean isUpdate) {
-        this.isUpdate = isUpdate;
     }
 }
