@@ -6,6 +6,8 @@ package com.ymatou.doorgod.decisionengine.holder;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.ymatou.doorgod.decisionengine.integration.DecisionEngine;
+import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -31,14 +33,20 @@ public class KafkaConsumerInstance implements Runnable {
     @Override
     public void run() {
         try {
+            DecisionEngine decisionEngine = SpringContextHolder.getBean(DecisionEngine.class);
             kafkaConsumer.subscribe(Arrays.asList("test111")); // TODO
             while (!closed.get()) {
                 ConsumerRecords<String, String> records = kafkaConsumer.poll(10000);
                 taskExecutor.execute(() -> {
-                    for (ConsumerRecord<String, String> record : records)
-                        System.out.printf("Thread = %s, offset = %d, partition = %s key = %s, value = %s\n",
-                                Thread.currentThread().getName(), record.offset(), record.partition(), record.key(),
-                                record.value());
+                    for (ConsumerRecord<String, String> record : records){
+
+//                        System.out.printf("Thread = %s, offset = %d, partition = %s key = %s, value = %s\n",
+//                                Thread.currentThread().getName(), record.offset(), record.partition(), record.key(),
+//                                record.value());
+                        String sampleStr = record.value();
+
+                    }
+
                 });
             }
         } catch (WakeupException e) {

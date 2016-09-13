@@ -8,6 +8,8 @@ import com.ymatou.doorgod.decisionengine.config.props.BizProps;
 import com.ymatou.doorgod.decisionengine.constants.Constants;
 import com.ymatou.doorgod.decisionengine.model.*;
 import com.ymatou.doorgod.decisionengine.util.RedisHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -15,8 +17,11 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import static com.ymatou.doorgod.decisionengine.model.ScopeEnum.ALL;
 
 /**
  *
@@ -25,6 +30,9 @@ import java.util.stream.Collectors;
  */
 @Component
 public class DecisionEngine {
+
+    private static final Logger logger = LoggerFactory.getLogger(DecisionEngine.class);
+
     /**
      * key: rulename
      * value: hashMap:
@@ -60,7 +68,7 @@ public class DecisionEngine {
 
             //1.组装规则需要 上报的数据
             Map<String, Map<Sample, AtomicInteger>> secondsTreeMap = ruleTimeSampleMaps.get(rule.getName());
-            if(secondsTreeMap != null){
+            if(secondsTreeMap == null){
                 return;
             }
 
@@ -77,10 +85,10 @@ public class DecisionEngine {
 
                 if(bizProps.getUploadRedisTopN() > 0){
                     List<Map.Entry<Sample, AtomicInteger>> sampleList = topNOfSamples(sampleMap, bizProps.getUploadRedisTopN());
-                    uploadSample(rule.getName(),uploadTime,sampleList);
+                    uploadSample(rule,uploadTime,sampleList);
                     sampleList.clear();
                 }else {
-                    uploadSample(rule.getName(),uploadTime,sampleMap.entrySet());
+                    uploadSample(rule,uploadTime,sampleMap.entrySet());
                     sampleMap.clear();
                 }
             });
@@ -97,22 +105,49 @@ public class DecisionEngine {
         //排序 大到小
         Collections.sort(list, (o1, o2) -> o2.getValue().intValue() - o1.getValue().intValue());
 
-        List<Map.Entry<Sample, AtomicInteger>> newList = new ArrayList<>(topNums);
-        newList.addAll(list.subList(0, topNums));
-        list.clear();
-//        list = null;
-
+        List<Map.Entry<Sample, AtomicInteger>> newList = null;
+        if (list.size() >= topNums) {
+            newList = new ArrayList<>(topNums);
+            newList.addAll(list.subList(0, topNums));
+            list.clear();
+            //list = null;
+        }else {
+            newList = list;
+        }
         return newList;
     }
 
     //上报数据到redis
-    private void uploadSample(String ruleName,String uploadTime, Collection<Map.Entry<Sample, AtomicInteger>> samples) {
+    private void uploadSample(LimitTimesRule rule,String uploadTime, Collection<Map.Entry<Sample, AtomicInteger>> samples) {
         //获取redis zset name
-        String zSetName = RedisHelper.getNormalSetName(ruleName,uploadTime);
+        String zSetName = RedisHelper.getNormalSetName(rule.getName(),uploadTime);
 
         samples.forEach(entry -> {
-            redisTemplate.opsForZSet().incrementScore(zSetName, entry.getKey().toString(), entry.getValue().doubleValue());
+            double score = 1;
+            if(redisTemplate.opsForZSet().getOperations().hasKey(zSetName)){
+                score = redisTemplate.opsForZSet().incrementScore(zSetName, entry.getKey().toString(), entry.getValue().doubleValue());
+            }else {
+                redisTemplate.opsForZSet().add(zSetName,entry.getKey().toString(),entry.getValue().doubleValue());
+                redisTemplate.opsForZSet().getOperations().expire(zSetName,getExpireByRule(rule), TimeUnit.SECONDS);//单位秒
+            }
+
+            logger.debug("ruleName:{},zsetName:{},zsetsample:{},score:{}", rule.getName(),
+                    zSetName, entry.getKey().toString(), score);
         });
+    }
+
+    /**
+     * 获取规则的过期时间
+     *   小于60秒 系数为 1.5
+     *   大于60秒 系数为 1.2
+     * @param rule
+     * @return
+     */
+    private long getExpireByRule(LimitTimesRule rule){
+        if (rule.getTimesCap() < 60) {
+            return ((Double)(rule.getTimesCap() * 1.5)).longValue();
+        }
+        return ((Double)(rule.getTimesCap() * 1.2)).longValue();
     }
 
 
@@ -123,7 +158,7 @@ public class DecisionEngine {
         Sample sample = statisticItem.getSample();
         String reqTime = statisticItem.getReqTime();
         String uri = sample.getUri();
-        Set<LimitTimesRule> set = getRulesByUri(sample.getUri());
+        Set<LimitTimesRule> set = getRulesByUri(uri);
 
         set.forEach(rule -> {
 
@@ -142,12 +177,16 @@ public class DecisionEngine {
             if(sampleMap.size() >= bizProps.getMaxSizePerSecAndRule()){
                 // 大于最大size 只能累计 不再增加
                 AtomicInteger sampleCount = sampleMap.get(roleSample);
-                if(null != sample){
+                if(null != sampleCount){
                     sampleCount.incrementAndGet();
                 }
-            }else {
-                sampleMap.putIfAbsent(roleSample,new AtomicInteger(0));
-                sampleMap.get(roleSample).incrementAndGet();//++
+                logger.debug("ruleName:{},key:{},mapSize:{},sample:{},sampleCount:{}", rule.getName(),reqTime, sampleMap.size(),
+                        roleSample, sampleCount);
+            } else {
+                sampleMap.putIfAbsent(roleSample, new AtomicInteger(0));
+                int sampleCount = sampleMap.get(roleSample).incrementAndGet();// ++
+                logger.debug("ruleName:{},key:{},mapSize:{},sample:{},sampleCount:{}", rule.getName(),reqTime, sampleMap.size(),
+                        roleSample, sampleCount);
             }
 
         });
@@ -158,7 +197,7 @@ public class DecisionEngine {
     //获取规则
     public static Set<LimitTimesRule> getRulesByUri(String uri){
         return ruleSet.stream().filter(
-                rule -> rule.getApplicableUris().contains(uri))
+                rule -> rule.getScope() == ALL || rule.getApplicableUris().stream().anyMatch(s -> uri.startsWith(s)))
                 .collect(Collectors.toSet());
     }
 

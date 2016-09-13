@@ -70,6 +70,14 @@ public class Sample {
         return sample;
     }
 
+    public Map<String, String> getDimensionValues() {
+        return dimensionValues;
+    }
+
+    public void setDimensionValues(Map<String, String> dimensionValues) {
+        this.dimensionValues = dimensionValues;
+    }
+
     @Override
     public String toString() {
         return JSON.toJSONString(this);
