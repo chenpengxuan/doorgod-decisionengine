@@ -6,10 +6,7 @@
 
 package com.ymatou.doorgod.decisionengine.holder;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,8 +16,6 @@ import java.util.concurrent.TimeUnit;
 import com.google.common.collect.Sets;
 import com.ymatou.doorgod.decisionengine.integration.DecisionEngine;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
-import com.ymatou.doorgod.decisionengine.model.Sample;
-import com.ymatou.doorgod.decisionengine.model.StatisticItem;
 import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
 
 /**
@@ -99,28 +94,31 @@ public class RedisTest implements Runnable {
         }, 5L * 1000, 1000, TimeUnit.MILLISECONDS);
 
 
-        for (int i = 0; i < 5; i++) {
+        // for(int i=0;i<5;i++){
+        //
+        // writeExecutor.execute(() -> {
+        // while (true){
+        // StatisticItem a = new StatisticItem();
+        // LocalDateTime dateTime = LocalDateTime.now();
+        // String str = dateTime.format(DateTimeFormatter.ofPattern("yyyyMMddhhmmss"));
+        // a.setReqTime(str);
+        // Sample sample2 = new Sample();
+        // sample2.addDimensionValue("uri","/api/xxx.do");
+        // sample2.addDimensionValue("ip",ips[new Random().nextInt(5)]);
+        // sample2.addDimensionValue("deviceId",deviceIds[new Random().nextInt(5)]);
+        // a.setSample(sample2);
+        // decisionEngine.putStaticItem(a);
+        // try {
+        // TimeUnit.MILLISECONDS.sleep(new Random().nextInt(10));
+        // } catch (InterruptedException e) {
+        // e.printStackTrace();
+        // }
+        // }
+        // });
+        //
+        // }
 
-            writeExecutor.execute(() -> {
-                while (true) {
-                    StatisticItem a = new StatisticItem();
-                    LocalDateTime dateTime = LocalDateTime.now();
-                    String str = dateTime.format(DateTimeFormatter.ofPattern("yyyyMMddhhmmss"));
-                    a.setReqTime(str);
-                    Sample sample2 = new Sample();
-                    sample2.addDimensionValue("uri", "/api/xxx.do");
-                    sample2.addDimensionValue("ip", ips[new Random().nextInt(5)]);
-                    sample2.addDimensionValue("deviceId", deviceIds[new Random().nextInt(5)]);
-                    a.setSample(sample2);
-                    decisionEngine.putStaticItem(a);
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(new Random().nextInt(10));
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
 
-        }
+
     }
 }
