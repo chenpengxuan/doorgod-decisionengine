@@ -104,6 +104,7 @@ public class ProducerTest {
         rule.setDimensionKeys(keySet);
         rule.setRejectionSpan(300);
         rule.setTimesCap(120);
+        rule.setStatisticSpan(120);
         rule.setApplicableUris(Sets.newHashSet("/api/xxx.do"));
 
         RuleHolder.rules.put("testrule",rule);
