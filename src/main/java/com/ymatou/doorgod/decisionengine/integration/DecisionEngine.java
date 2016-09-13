@@ -34,7 +34,7 @@ public class DecisionEngine {
      *                               value: AtomicInteger 计数
      */
     public static Map<String,Map<String,Map<Sample,AtomicInteger>>> ruleTimeSampleMaps = new HashMap<>();
-    public static Set<AbstractRule> ruleSet = Sets.newHashSet();
+    public static Set<LimitTimesRule> ruleSet = Sets.newHashSet();
 
 
     @Autowired
@@ -123,16 +123,11 @@ public class DecisionEngine {
         Sample sample = statisticItem.getSample();
         String reqTime = statisticItem.getReqTime();
         String uri = sample.getUri();
-        Set<AbstractRule> set = getRulesByUri(sample.getUri());
+        Set<LimitTimesRule> set = getRulesByUri(sample.getUri());
 
         set.forEach(rule -> {
 
-            //找到对应规则uri设置
-            RuleUri ruleUri = rule.getRuleUriSet().stream().filter(r -> r.getUri().equalsIgnoreCase(uri)).findFirst().orElse(null);
-            if(ruleUri == null){
-                return;
-            }
-            Set<String> keys = ruleUri.getDimensionKeys();
+            Set<String> keys = rule.getDimensionKeys();
 
             Sample roleSample = sample.narrow(keys);
             //rule map 不存在则新建
@@ -161,9 +156,9 @@ public class DecisionEngine {
 
 
     //获取规则
-    public static Set<AbstractRule> getRulesByUri(String uri){
+    public static Set<LimitTimesRule> getRulesByUri(String uri){
         return ruleSet.stream().filter(
-                rule -> rule.getRuleUriSet().stream().anyMatch(ruleUri -> ruleUri.getUri().equalsIgnoreCase(uri)))
+                rule -> rule.getApplicableUris().contains(uri))
                 .collect(Collectors.toSet());
     }
 
