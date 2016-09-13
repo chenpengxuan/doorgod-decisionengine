@@ -87,7 +87,7 @@ public class RedisTest implements Runnable {
         rule.setTimesCap(120);
         rule.setApplicableUris(Sets.newHashSet("/api/xxx.do"));
 
-        DecisionEngine.ruleSet.add(rule);
+        RuleHolder.rules.put("testrule",rule);
 
         // 初始化延迟5秒开始执行 固定每秒执行一次
         readExecutor.scheduleAtFixedRate(() -> {

@@ -6,6 +6,7 @@ package com.ymatou.doorgod.decisionengine.integration;
 import com.google.common.collect.Sets;
 import com.ymatou.doorgod.decisionengine.config.props.BizProps;
 import com.ymatou.doorgod.decisionengine.constants.Constants;
+import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.*;
 import com.ymatou.doorgod.decisionengine.util.RedisHelper;
 import org.slf4j.Logger;
@@ -42,8 +43,6 @@ public class DecisionEngine {
      *                               value: AtomicInteger 计数
      */
     public static Map<String,Map<String,Map<Sample,AtomicInteger>>> ruleTimeSampleMaps = new HashMap<>();
-    public static Set<LimitTimesRule> ruleSet = Sets.newHashSet();
-
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -64,7 +63,7 @@ public class DecisionEngine {
 
         LocalDateTime dateTime  = LocalDateTime.now();
         String currentTime =  dateTime.format(Constants.FORMATTER_YMDHMS);
-        ruleSet.forEach(rule -> {
+        RuleHolder.rules.values().forEach(rule -> {
 
             //1.组装规则需要 上报的数据
             Map<String, Map<Sample, AtomicInteger>> secondsTreeMap = ruleTimeSampleMaps.get(rule.getName());
@@ -196,7 +195,7 @@ public class DecisionEngine {
 
     //获取规则
     public static Set<LimitTimesRule> getRulesByUri(String uri){
-        return ruleSet.stream().filter(
+        return RuleHolder.rules.values().stream().filter(
                 rule -> rule.getScope() == ALL || rule.getApplicableUris().stream().anyMatch(s -> uri.startsWith(s)))
                 .collect(Collectors.toSet());
     }
