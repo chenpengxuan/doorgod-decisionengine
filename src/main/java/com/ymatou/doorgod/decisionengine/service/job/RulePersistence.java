@@ -14,7 +14,6 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Component;
@@ -22,6 +21,7 @@ import org.springframework.stereotype.Component;
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import com.ymatou.doorgod.decisionengine.repository.SampleUnionRepository;
+import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
 
 /**
  * 
@@ -33,17 +33,12 @@ public class RulePersistence implements Job {
 
     private static final Logger logger = LoggerFactory.getLogger(RulePersistence.class);
 
-    @Autowired
-    private RuleExecutor ruleExecutor;
-
-    @Autowired
-    private StringRedisTemplate redisTemplate;
-
-    @Autowired
-    private SampleUnionRepository sampleUnionRepository;
-
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
+        StringRedisTemplate redisTemplate = SpringContextHolder.getBean(StringRedisTemplate.class);
+        RuleExecutor ruleExecutor = SpringContextHolder.getBean(RuleExecutor.class);
+        SampleUnionRepository sampleUnionRepository = SpringContextHolder.getBean(SampleUnionRepository.class);
+
         LocalDateTime now = LocalDateTime.now();
         logger.info("begin to save sample union to mongo. {}", now.format(FORMATTER_YMDHMS));
         for (LimitTimesRule rule : RuleHolder.rules.values()) {

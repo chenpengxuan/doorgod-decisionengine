@@ -3,8 +3,6 @@
  */
 package com.ymatou.doorgod.decisionengine;
 
-import com.ymatou.doorgod.decisionengine.holder.RedisTest;
-import kafka.javaapi.consumer.ConsumerConnector;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,8 +15,11 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.core.task.TaskExecutor;
 
 import com.ymatou.doorgod.decisionengine.holder.KafkaConsumerInstance;
+import com.ymatou.doorgod.decisionengine.holder.RedisTest;
 import com.ymatou.doorgod.decisionengine.holder.ShutdownLatch;
 import com.ymatou.doorgod.decisionengine.service.job.RuleDiscoverer;
+
+import kafka.javaapi.consumer.ConsumerConnector;
 
 /**
  * 

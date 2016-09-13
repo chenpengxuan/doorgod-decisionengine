@@ -17,10 +17,10 @@ public class RedisHelper {
     private static final String UNION_SET_NAME_TEMPLATE = "%s:%s:%s:%s";
 
     public static String getNormalSetName(String ruleName, String time) {
-        return String.format(SET_NAME_TEMPLATE,ruleName, "set", time);
+        return String.format(SET_NAME_TEMPLATE, ruleName, "set", time);
     }
 
     public static String getUnionSetName(String ruleName, String time, String flag) {
-        return String.format(UNION_SET_NAME_TEMPLATE, ruleName, "set", time);
+        return String.format(UNION_SET_NAME_TEMPLATE, ruleName, "set", time, flag);
     }
 }

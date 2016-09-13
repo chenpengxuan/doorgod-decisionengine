@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +47,7 @@ public class RuleDiscoverer {
     @Autowired
     private BizProps bizProps;
 
+    @Transactional
     public void execute() {
         // 加载Redis定时同步数据到MongoDB任务(添加/修改)
         try {
@@ -60,6 +64,7 @@ public class RuleDiscoverer {
                 String ruleName = rule.getName();
                 switch (rule.getUpdateType()) {
                     case "add":
+                        System.out.println(11111);
                         RuleHolder.rules.put(ruleName, rule);
                         schedulerService.addJob(RuleExecutor.class, ruleName, bizProps.getRuleExecutorCronExpression());
                         break;
@@ -97,10 +102,16 @@ public class RuleDiscoverer {
             rule.setStatisticSpan(rulePo.getStatisticSpan());
             rule.setTimesCap(rulePo.getTimesCap());
             rule.setRejectionSpan(rulePo.getRejectionSpan());
-            rule.setUpdateType(rule.getUpdateType());
-            rule.setDimensionKeys(new HashSet<>(Arrays.asList(rulePo.getKeys().split(SEPARATOR))));
-            rule.setGroupByKeys(new HashSet<>(Arrays.asList(rulePo.getGroupByKeys().split(SEPARATOR))));
-            rule.setApplicableUris(new HashSet<>(Arrays.asList(rulePo.getUris().split(SEPARATOR))));
+            rule.setUpdateType(rulePo.getUpdateType());
+            if (!StringUtils.isBlank(rulePo.getKeys())) {
+                rule.setDimensionKeys(new HashSet<>(Arrays.asList(rulePo.getKeys().split(SEPARATOR))));
+            }
+            if (!StringUtils.isBlank(rulePo.getGroupByKeys())) {
+                rule.setGroupByKeys(new HashSet<>(Arrays.asList(rulePo.getGroupByKeys().split(SEPARATOR))));
+            }
+            if (!StringUtils.isBlank(rulePo.getUris())) {
+                rule.setApplicableUris(new HashSet<>(Arrays.asList(rulePo.getUris().split(SEPARATOR))));
+            }
             rules.put(rulePo.getName(), rule);
         }
 

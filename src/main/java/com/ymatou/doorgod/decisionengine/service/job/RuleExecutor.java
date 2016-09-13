@@ -16,14 +16,17 @@ import java.util.Set;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import com.alibaba.fastjson.JSON;
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import com.ymatou.doorgod.decisionengine.util.RedisHelper;
+import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
 
 /**
  * 
@@ -33,11 +36,12 @@ import com.ymatou.doorgod.decisionengine.util.RedisHelper;
 @Component
 public class RuleExecutor implements Job {
 
-    @Autowired
-    StringRedisTemplate redisTemplate;
+    private static final Logger logger = LoggerFactory.getLogger(RuleExecutor.class);
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
+        StringRedisTemplate redisTemplate = SpringContextHolder.getBean(StringRedisTemplate.class);
+
         String jobName = context.getJobDetail().getKey().getName();
         LimitTimesRule rule = RuleHolder.rules.get(jobName);
         LocalDateTime now = LocalDateTime.now();
@@ -53,6 +57,7 @@ public class RuleExecutor implements Job {
         String secondWillAdd = RedisHelper.getNormalSetName(rule.getName(),
                 now.minusSeconds(rule.getStatisticSpan() + 1).format(FORMATTER_YMDHMS));
 
+        logger.debug("begin to execute rule: {}, time: {}", ruleName, now.format(FORMATTER_YMDHMS));
         if (redisTemplate.opsForZSet().size(previousBucket) > 0) {
             redisTemplate.opsForZSet().scan(secondWillDelete, ScanOptions.scanOptions().build())
                     .forEachRemaining(c -> {
@@ -63,11 +68,15 @@ public class RuleExecutor implements Job {
         } else {
             redisTemplate.opsForZSet().unionAndStore(timeBuckets.get(0), timeBuckets.remove(0), currentBucket);
         }
+
         Set<String> blacklist = redisTemplate.opsForZSet()
                 .rangeByScore(currentBucket, rule.getTimesCap(), Integer.MAX_VALUE);
-        redisTemplate.opsForZSet().removeRangeByScore(currentBucket, rule.getTimesCap(), Double.MAX_VALUE);
-
-        redisTemplate.convertAndSend(BLACK_LIST_CHANNEL, blacklist);
+        if (!blacklist.isEmpty()) {
+            redisTemplate.opsForZSet().removeRangeByScore(currentBucket, rule.getTimesCap(), Double.MAX_VALUE);
+            redisTemplate.convertAndSend(BLACK_LIST_CHANNEL, blacklist);
+            logger.info("got blacklist: {}, time: {}", JSON.toJSONString(blacklist));
+        }
+        logger.debug("end to execute rule: {}, time: {}", ruleName, now.format(FORMATTER_YMDHMS));
     }
 
     public List<String> getAllTimeBucket(LimitTimesRule rule, LocalDateTime now) {
