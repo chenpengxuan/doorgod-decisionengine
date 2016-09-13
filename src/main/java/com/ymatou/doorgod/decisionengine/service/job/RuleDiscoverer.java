@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.alibaba.fastjson.JSON;
 import com.ymatou.doorgod.decisionengine.config.props.BizProps;
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
@@ -50,10 +51,11 @@ public class RuleDiscoverer {
         } catch (SchedulerException e) {
             logger.error("add redis to mongo job failed.", e);
         }
+        logger.info("load redis to mongo task success.");
 
         // 加载规则数据，更新规则统计的定时任务
-        HashMap<String, LimitTimesRule> updatedRules = fecthRuleData();
-        for (LimitTimesRule rule : updatedRules.values()) {
+        HashMap<String, LimitTimesRule> ruleData = fecthRuleData();
+        for (LimitTimesRule rule : ruleData.values()) {
             try {
                 String ruleName = rule.getName();
                 switch (rule.getUpdateType()) {
@@ -81,6 +83,7 @@ public class RuleDiscoverer {
                 logger.error("update rule schduler failed.", e);
             }
         }
+        logger.info("load rule data: {}", JSON.toJSONString(ruleData));
     }
 
     public HashMap<String, LimitTimesRule> fecthRuleData() {

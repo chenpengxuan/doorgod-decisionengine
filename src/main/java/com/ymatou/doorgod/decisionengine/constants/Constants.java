@@ -20,4 +20,6 @@ public class Constants {
 
     public static final String MONGO_UNION = "Mongo";
 
+    public static final String BLACK_LIST_CHANNEL = "BlackList";
+
 }
