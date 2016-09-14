@@ -30,7 +30,7 @@
         <appender-ref ref="FILE" />
     </root>
 
-    <logger name="com.ymatou" level="DEBUG"/>
+    <logger name="com.ymatou" level="INFO"/>
     <logger name="org.springframework" level="INFO"/>
 
 

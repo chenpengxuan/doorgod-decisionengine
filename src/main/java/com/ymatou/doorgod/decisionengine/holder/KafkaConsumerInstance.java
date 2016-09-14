@@ -37,7 +37,7 @@ public class KafkaConsumerInstance implements Runnable {
     public void run() {
         try {
             DecisionEngine decisionEngine = SpringContextHolder.getBean(DecisionEngine.class);
-            kafkaConsumer.subscribe(Arrays.asList("test1111")); // TODO
+            kafkaConsumer.subscribe(Arrays.asList("test111")); // TODO
             while (!closed.get()) {
                 ConsumerRecords<String, String> records = kafkaConsumer.poll(10000);
                 taskExecutor.execute(() -> {

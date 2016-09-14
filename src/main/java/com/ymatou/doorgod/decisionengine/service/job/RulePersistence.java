@@ -45,7 +45,9 @@ public class RulePersistence implements Job {
             String currentBucket = new StringBuilder(rule.getName()).append(":").append("set").append(":")
                     .append(now.format(FORMATTER_YMDHMS)).append(":MongoDB").toString();
             List<String> timeBuckets = ruleExecutor.getAllTimeBucket(rule, now);
-            redisTemplate.opsForZSet().unionAndStore(timeBuckets.get(0), timeBuckets.remove(0), currentBucket);
+            long count =
+                    redisTemplate.opsForZSet().unionAndStore(timeBuckets.get(0), timeBuckets.remove(0), currentBucket);
+            System.out.println(count);
             Set<TypedTuple<String>> sampleUnion =
                     redisTemplate.opsForZSet().rangeByScoreWithScores(currentBucket, 1, Double.MAX_VALUE);
 

@@ -58,17 +58,26 @@ public class RuleExecutor implements Job {
                 now.minusSeconds(rule.getStatisticSpan() + 1).format(FORMATTER_YMDHMS));
 
         logger.debug("begin to execute rule: {}, time: {}", ruleName, now.format(FORMATTER_YMDHMS));
+        logger.info(previousBucket + " " + redisTemplate.opsForZSet().size(previousBucket).toString() + " "
+                + currentBucket);
+        // redisTemplate.opsForZSet().add(timeBuckets.get(0), "init", 0);
         if (redisTemplate.opsForZSet().size(previousBucket) > 0) {
             redisTemplate.opsForZSet().scan(secondWillDelete, ScanOptions.scanOptions().build())
                     .forEachRemaining(c -> {
                         redisTemplate.opsForZSet().add(secondWillDelete, c.getValue(), c.getScore() * -1);
                     });
-            redisTemplate.opsForZSet().unionAndStore(previousBucket,
+            long count = redisTemplate.opsForZSet().unionAndStore(previousBucket,
                     Arrays.asList(secondWillAdd, secondWillDelete), currentBucket);
+            System.out.println(count);
         } else {
-            redisTemplate.opsForZSet().unionAndStore(timeBuckets.get(0), timeBuckets.remove(0), currentBucket);
+            // System.out.println(timeBuckets.get(0));
+            // timeBuckets.stream().forEach(tb -> System.out.println(tb));
+            timeBuckets.remove(0);
+            long count = redisTemplate.opsForZSet().unionAndStore(timeBuckets.get(0), timeBuckets, currentBucket);
+            System.out.println(count);
         }
-
+        logger.info(previousBucket + " " + redisTemplate.opsForZSet().size(currentBucket).toString() + " "
+                + currentBucket);
         Set<String> blacklist = redisTemplate.opsForZSet()
                 .rangeByScore(currentBucket, rule.getTimesCap(), Integer.MAX_VALUE);
         if (!blacklist.isEmpty()) {
@@ -88,7 +97,7 @@ public class RuleExecutor implements Job {
 
     public List<String> getAllTimeBucket(LimitTimesRule rule, LocalDateTime now) {
         List<String> timeBuckets = new ArrayList<>();
-        for (int second = 1; second <= rule.getStatisticSpan(); second++) {
+        for (int second = rule.getStatisticSpan(); second >= 1; second--) {
             timeBuckets.add(getNormalSetName(rule.getName(), now.minusSeconds(second).format(FORMATTER_YMDHMS))); // RuleName:Set:yyyyMMddHHmmss
         }
 
