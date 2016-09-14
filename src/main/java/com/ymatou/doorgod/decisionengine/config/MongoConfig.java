@@ -12,19 +12,18 @@ import java.util.List;
 
 import javax.annotation.PreDestroy;
 
-import com.ymatou.doorgod.decisionengine.config.props.MongoProps;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.data.mongodb.MongoDbFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.ServerAddress;
-import org.springframework.data.redis.connection.RedisNode;
+import com.ymatou.doorgod.decisionengine.config.props.MongoProps;
 
 /**
  * @author luoshiqian 2016/9/9 13:51
@@ -73,5 +72,11 @@ public class MongoConfig {
         return new SimpleMongoDbFactory(mongo, mongoProps.getMongoDatabaseName());
     }
 
+
+    @Bean
+    public MongoTemplate mongoTemplate(MongoDbFactory mongoDbFactory) {
+        MongoTemplate mongoTemplate = new MongoTemplate(mongoDbFactory);
+        return mongoTemplate;
+    }
 
 }
