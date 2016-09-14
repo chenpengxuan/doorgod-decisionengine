@@ -33,6 +33,7 @@ public class KafkaConfig {
         props.put("enable.auto.commit", "true");
         props.put("auto.commit.interval.ms", "1000");
         props.put("session.timeout.ms", "30000");
+        props.put("max.poll.records", "50000");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
@@ -41,18 +42,25 @@ public class KafkaConfig {
         return consumer;
     }
 
+    /**
+     * 配置详见 http://kafka.apache.org/documentation.html#newconsumerconfigs
+     * @return
+     */
     @Bean
     public ConsumerConnector consumerConnector(){
-//        Properties props = new Properties();
-//        props.put("bootstrap.servers", kafkaProps.getBootstrapServers());
-//        props.put("group.id", kafkaProps.getGroupId());
-//        props.put("enable.auto.commit", "true");
-//        props.put("auto.commit.interval.ms", "1000");
-//        props.put("session.timeout.ms", "30000");
-//        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-//        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-//        ConsumerConnector consumerConnector =
-//                kafka.consumer.Consumer.createJavaConsumerConnector(new ConsumerConfig(props));
-        return null;
+        Properties props = new Properties();
+        props.put("bootstrap.servers", kafkaProps.getBootstrapServers());
+        props.put("group.id", kafkaProps.getGroupId());
+        props.put("zookeeper.connect", "172.16.100.105:2181");
+        props.put("enable.auto.commit", "true");
+        props.put("auto.offset.reset", "smallest");
+        props.put("max.poll.records", "50000");
+        props.put("auto.commit.interval.ms", "1000");
+        props.put("session.timeout.ms", "30000");
+        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        ConsumerConnector consumerConnector =
+                kafka.consumer.Consumer.createJavaConsumerConnector(new ConsumerConfig(props));
+        return consumerConnector;
     }
 }

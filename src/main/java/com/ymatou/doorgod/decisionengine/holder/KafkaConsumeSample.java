@@ -6,16 +6,17 @@
  */
 package com.ymatou.doorgod.decisionengine.holder;
 
+import java.io.UnsupportedEncodingException;
+
+import com.alibaba.fastjson.JSON;
+import com.ymatou.doorgod.decisionengine.config.props.KafkaProps;
+import com.ymatou.doorgod.decisionengine.integration.DecisionEngine;
+import com.ymatou.doorgod.decisionengine.model.StatisticItem;
+import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
+
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
 
-import java.io.UnsupportedEncodingException;
-
-/**
- * 
- * @author qianmin 2016年9月9日 下午4:23:52
- * 
- */
 public class KafkaConsumeSample implements Runnable {
 
     private KafkaStream stream;
@@ -27,12 +28,15 @@ public class KafkaConsumeSample implements Runnable {
     @Override
     public void run() {
 
-        ConsumerIterator<byte[], byte[]> it = stream.iterator();
-        while (it.hasNext()){
-            try {
-                String str = new String(it.next().message(),"utf-8");
-                System.out.println("consume:"+str);
+        DecisionEngine decisionEngine = SpringContextHolder.getBean(DecisionEngine.class);
 
+        ConsumerIterator<byte[], byte[]> it = stream.iterator();
+        while (it.hasNext()) {
+            try {
+                String str = new String(it.next().message(), "utf-8");
+                System.out.println("consume:" + str);
+
+                decisionEngine.putStaticItem(JSON.parseObject(str, StatisticItem.class));
 
             } catch (UnsupportedEncodingException e) {
 

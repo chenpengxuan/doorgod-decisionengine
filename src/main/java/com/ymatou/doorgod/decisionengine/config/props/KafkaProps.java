@@ -19,6 +19,7 @@ public class KafkaProps {
 
     private String bootstrapServers;
     private String groupId;
+    private String statisticSampleTopic;
 
     @DisconfFileItem(name = "kafka.bootstrapServers")
     public String getBootstrapServers() {
@@ -36,5 +37,14 @@ public class KafkaProps {
 
     public void setGroupId(String groupId) {
         this.groupId = groupId;
+    }
+
+    @DisconfFileItem(name = "kafka.topic.statisticSampleEvent")
+    public String getStatisticSampleTopic() {
+        return statisticSampleTopic;
+    }
+
+    public void setStatisticSampleTopic(String statisticSampleTopic) {
+        this.statisticSampleTopic = statisticSampleTopic;
     }
 }
