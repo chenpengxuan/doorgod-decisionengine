@@ -25,7 +25,7 @@ public class Sample {
 
 
     // 样本值
-    private Map<String, String> dimensionValues = new TreeMap<String, String>();
+    private TreeMap<String, String> dimensionValues = new TreeMap<String, String>();
 
 
     public void addDimensionValue(String key, String value) {
@@ -70,11 +70,27 @@ public class Sample {
         return sample;
     }
 
-    public Map<String, String> getDimensionValues() {
+    /**
+     * 反向
+     * @param subKeys
+     * @return
+     */
+    public Sample unNarrow(Set<String> subKeys) {
+        Sample sample = new Sample();
+
+        dimensionValues.forEach((key, val) -> {
+            if(!subKeys.contains(key)){
+                sample.addDimensionValue(key, val);
+            }
+        });
+        return sample;
+    }
+
+    public TreeMap<String, String> getDimensionValues() {
         return dimensionValues;
     }
 
-    public void setDimensionValues(Map<String, String> dimensionValues) {
+    public void setDimensionValues(TreeMap<String, String> dimensionValues) {
         this.dimensionValues = dimensionValues;
     }
 

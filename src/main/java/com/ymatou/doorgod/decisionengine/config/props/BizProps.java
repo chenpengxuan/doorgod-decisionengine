@@ -26,6 +26,9 @@ public class BizProps {
     private String ruleExecutorCronExpression;
     // 上报redis topN >0 才topN
     private int uploadRedisTopN;
+    // 上报mongo topN >0 才topN
+    private int uploadMongoTopN;
+
     // 每秒 每个rule map中最多元素个数
     private int maxSizePerSecAndRule;
 
@@ -72,5 +75,14 @@ public class BizProps {
 
     public void setMaxSizePerSecAndRule(int maxSizePerSecAndRule) {
         this.maxSizePerSecAndRule = maxSizePerSecAndRule;
+    }
+
+    @DisconfFileItem(name = "biz.uploadMongoTopN")
+    public int getUploadMongoTopN() {
+        return uploadMongoTopN;
+    }
+
+    public void setUploadMongoTopN(int uploadMongoTopN) {
+        this.uploadMongoTopN = uploadMongoTopN;
     }
 }

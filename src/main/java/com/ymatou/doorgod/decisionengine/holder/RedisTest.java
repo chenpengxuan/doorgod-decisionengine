@@ -6,17 +6,32 @@
 
 package com.ymatou.doorgod.decisionengine.holder;
 
-import java.util.Arrays;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Sets;
 import com.ymatou.doorgod.decisionengine.integration.DecisionEngine;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
+import com.ymatou.doorgod.decisionengine.service.job.RuleExecutor;
 import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
+import org.quartz.impl.JobExecutionContextImpl;
+import org.quartz.spi.TriggerFiredBundle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.core.StringRedisTemplate;
+
+import static com.ymatou.doorgod.decisionengine.constants.Constants.BLACK_LIST_CHANNEL;
+import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHMS;
+import static com.ymatou.doorgod.decisionengine.constants.Constants.UNION;
+import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getBlackListMapName;
+import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getNormalSetName;
+import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getUnionSetName;
 
 /**
  * @author luoshiqian 2016/9/13 12:40
@@ -24,7 +39,8 @@ import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
 public class RedisTest implements Runnable {
     ExecutorService writeExecutor = Executors.newFixedThreadPool(5);
     ScheduledExecutorService readExecutor = Executors.newSingleThreadScheduledExecutor();
-
+    ScheduledExecutorService readExecutor1 = Executors.newSingleThreadScheduledExecutor();
+    public static final Logger logger = LoggerFactory.getLogger(RedisTest.class);
     @Override
     public void run() {
         DecisionEngine decisionEngine = SpringContextHolder.getBean(DecisionEngine.class);
@@ -73,27 +89,36 @@ public class RedisTest implements Runnable {
                 "aaaaa-bbbbb-cccccc-ddddd-19",
                 "aaaaa-bbbbb-cccccc-ddddd-20",
         };
-        LimitTimesRule rule = new LimitTimesRule();
-        rule.setName("testrule");
+        LimitTimesRule r = new LimitTimesRule();
+        r.setName("testrule");
         Set<String> keySet = Sets.newHashSet();
         keySet.addAll(Arrays.asList(keys));
-        rule.setDimensionKeys(keySet);
-        rule.setRejectionSpan(300);
-        rule.setTimesCap(120);
-        rule.setStatisticSpan(120);
-        rule.setApplicableUris(Sets.newHashSet("/api/xxx.do"));
+        r.setDimensionKeys(keySet);
+        r.setRejectionSpan(300);
+        r.setTimesCap(120);
+        r.setStatisticSpan(120);
+        r.setApplicableUris(Sets.newHashSet("/api/xxx.do"));
 
-        RuleHolder.rules.put("testrule",rule);
+        RuleHolder.rules.put("testrule",r);
+
+//        // 初始化延迟5秒开始执行 固定每秒执行一次
+//        readExecutor.scheduleAtFixedRate(() -> {
+//            try {
+//                decisionEngine.putSampleToRedis();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }, 5L * 1000, 1000, TimeUnit.MILLISECONDS);
+
 
         // 初始化延迟5秒开始执行 固定每秒执行一次
-        readExecutor.scheduleAtFixedRate(() -> {
+        readExecutor1.scheduleAtFixedRate(() -> {
             try {
-                decisionEngine.putSampleToRedis();
+                decisionEngine.putSampleToMongo();
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }, 5L * 1000, 1000, TimeUnit.MILLISECONDS);
-
+        }, 5L * 1000, 10000, TimeUnit.MILLISECONDS);
 
         // for(int i=0;i<5;i++){
         //
@@ -121,5 +146,13 @@ public class RedisTest implements Runnable {
 
 
 
+    }
+    public List<String> getAllTimeBucket(LimitTimesRule rule, LocalDateTime now) {
+        List<String> timeBuckets = new ArrayList<>();
+        for (int second = 1; second <= rule.getStatisticSpan(); second++) {
+            timeBuckets.add(getNormalSetName(rule.getName(), now.minusSeconds(second).format(FORMATTER_YMDHMS))); // RuleName:Set:yyyyMMddHHmmss
+        }
+
+        return timeBuckets;
     }
 }

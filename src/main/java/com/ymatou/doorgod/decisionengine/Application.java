@@ -44,7 +44,6 @@ public class Application {
         new Thread(new KafkaConsumerInstance(kafkaConsumer,consumerConnector, taskExecutor)).start();
         new Thread(new RedisTest()).start();
 
-
         // 加载Rule数据， 添加修改Rule的定时任务， RedisToMongo同步任务
         RuleDiscoverer ruleDiscoverer = ctx.getBean(RuleDiscoverer.class);
         ruleDiscoverer.execute();
