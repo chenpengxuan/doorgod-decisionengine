@@ -1,7 +1,6 @@
 /*
  *
- *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
- *  All rights reserved.
+ * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
  *
  */
 package com.ymatou.doorgod.decisionengine.holder;
@@ -9,7 +8,6 @@ package com.ymatou.doorgod.decisionengine.holder;
 import java.io.UnsupportedEncodingException;
 
 import com.alibaba.fastjson.JSON;
-import com.ymatou.doorgod.decisionengine.config.props.KafkaProps;
 import com.ymatou.doorgod.decisionengine.integration.DecisionEngine;
 import com.ymatou.doorgod.decisionengine.model.StatisticItem;
 import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
@@ -34,7 +32,7 @@ public class KafkaConsumeSample implements Runnable {
         while (it.hasNext()) {
             try {
                 String str = new String(it.next().message(), "utf-8");
-                System.out.println("consume:" + str);
+                // System.out.println("consume:" + str);
 
                 decisionEngine.putStaticItem(JSON.parseObject(str, StatisticItem.class));
 

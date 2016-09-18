@@ -115,7 +115,7 @@ public class ProducerTest {
                 while (true) {
                     StatisticItem a = new StatisticItem();
                     LocalDateTime dateTime = LocalDateTime.now();
-                    String str = dateTime.format(DateTimeFormatter.ofPattern("yyyyMMddhhmmss"));
+                    String str = dateTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
                     a.setReqTime(str);
                     Sample sample2 = new Sample();
                     sample2.addDimensionValue("uri", "/api/xxx.do");
@@ -124,7 +124,8 @@ public class ProducerTest {
                     a.setSample(sample2);
 
                     ProducerRecord<String, String> record =
-                            new ProducerRecord<String, String>("kafka.topic.statisticSampleEvent", JSON.toJSONString(a));
+                            new ProducerRecord<String, String>("kafka.topic.statisticSampleEvent",
+                                    JSON.toJSONString(a));
                     producer.send(record);
                     try {
                         TimeUnit.MILLISECONDS.sleep(new Random().nextInt(10));

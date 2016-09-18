@@ -22,4 +22,6 @@ public class Constants {
 
     public static final String BLACK_LIST_CHANNEL = "BlackList";
 
+    public static final String EMPTY_SET = "DoorGodEmptySet";
+
 }
