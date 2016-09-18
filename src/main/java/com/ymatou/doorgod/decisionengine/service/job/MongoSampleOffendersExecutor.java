@@ -55,10 +55,10 @@ public class MongoSampleOffendersExecutor implements Job {
         LocalDateTime now = LocalDateTime.now();
         String ruleName = rule.getName();
 
-//        String startTime = now.minusSeconds(rule.getStatisticSpan()).format(FORMATTER_YMDHM);
-//        String endTime = now.format(FORMATTER_YMDHM);
-        String startTime = "201609181750";
-        String endTime = "201609181803";
+        String startTime = now.minusSeconds(rule.getStatisticSpan()).format(FORMATTER_YMDHM);
+        String endTime = now.format(FORMATTER_YMDHM);
+//        String startTime = "201609181750";
+//        String endTime = "201609181803";
 
         Criteria criteria = Criteria.where("startTime").gte(startTime).and("endTime").lte(endTime);
 
