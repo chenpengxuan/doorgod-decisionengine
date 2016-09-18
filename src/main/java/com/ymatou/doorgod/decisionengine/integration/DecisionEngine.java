@@ -5,25 +5,35 @@ package com.ymatou.doorgod.decisionengine.integration;
 
 import com.google.common.collect.Sets;
 import com.ymatou.doorgod.decisionengine.config.props.BizProps;
-import com.ymatou.doorgod.decisionengine.constants.Constants;
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.*;
-import com.ymatou.doorgod.decisionengine.util.RedisHelper;
+import com.ymatou.doorgod.decisionengine.util.MongoHelper;
+import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static com.ymatou.doorgod.decisionengine.model.ScopeEnum.ALL;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.match;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.sort;
+
 
 /**
  *
@@ -61,7 +71,6 @@ public class DecisionEngine {
     @Autowired
     private MongoSampleStore mongoSampleStore;
 
-
     public void putSampleToRedis(){
         redisSampleStore.putSample();
     }
@@ -76,7 +85,7 @@ public class DecisionEngine {
 
         Sample sample = statisticItem.getSample();
         String reqTime = statisticItem.getReqTime();
-        String uri = sample.getUri();
+        String uri = sample.findUri();
         Set<LimitTimesRule> set = getRulesByUri(uri);
 
         set.forEach(rule -> {
@@ -158,12 +167,12 @@ public class DecisionEngine {
             if(null != leftKeySet){
                 leftKeySet.add(originSample.unNarrow(groupByKeys));
             }
-            logger.debug("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample,groupBySetCount:{}", rule.getName(),
+            logger.debug("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},groupBySetCount:{}", rule.getName(),
                     reqTime, sampleMap.size(),
                     originSample, groupBySample, leftKeySet.size());
         } else {
             sampleMap.putIfAbsent(groupBySample, Sets.newHashSet(originSample.unNarrow(groupByKeys)));
-            logger.debug("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample,new groupBySetCount:1",
+            logger.debug("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},new groupBySetCount:1",
                     rule.getName(), reqTime, sampleMap.size(), originSample, groupBySample);
         }
     }

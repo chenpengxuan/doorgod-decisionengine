@@ -12,6 +12,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ymatou.doorgod.decisionengine.config.props.BizProps;
@@ -24,6 +26,7 @@ import com.ymatou.doorgod.decisionengine.model.Sample;
  */
 public abstract class AbstractSampleStore {
 
+    private static final Logger logger = LoggerFactory.getLogger(AbstractSampleStore.class);
     @Autowired
     protected BizProps bizProps;
 
@@ -32,7 +35,13 @@ public abstract class AbstractSampleStore {
         LocalDateTime dateTime  = LocalDateTime.now();
         String currentTime =  dateTime.format(Constants.FORMATTER_YMDHMS);
 
-        findRule().forEach(rule -> putSample(rule,currentTime));
+        findRule().forEach(rule -> {
+            try {
+                putSample(rule,currentTime);
+            } catch (Exception e) {
+                logger.error("putSample rule:{},currentTime:{} error",rule,currentTime,e);
+            }
+        });
     }
 
     /**

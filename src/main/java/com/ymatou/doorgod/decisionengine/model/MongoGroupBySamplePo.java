@@ -6,26 +6,20 @@
 
 package com.ymatou.doorgod.decisionengine.model;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
-
 /**
  * @author luoshiqian 2016/9/14 16:24
  */
-@Document(collection = "sample")
+
 public class MongoGroupBySamplePo {
 
-    @Id
     private String id;
 
-    @Field("startTime")
     private String startTime;
-    @Field("endTime")
+
     private String endTime;
-    @Field("groupByKeys")
+
     private String groupByKeys;
-    @Field("leftKeys")
+
     private String leftKeys;
 
 

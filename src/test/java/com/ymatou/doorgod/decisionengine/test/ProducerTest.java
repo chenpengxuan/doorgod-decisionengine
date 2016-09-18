@@ -97,7 +97,7 @@ public class ProducerTest {
                 "aaaaa-bbbbb-cccccc-ddddd-20",
         };
         LimitTimesRule rule = new LimitTimesRule();
-        rule.setName("testrule");
+        rule.setName("testrule3");
         Set<String> keySet = Sets.newHashSet();
         keySet.addAll(Arrays.asList(keys));
         rule.setDimensionKeys(keySet);
@@ -106,7 +106,7 @@ public class ProducerTest {
         rule.setStatisticSpan(120);
         rule.setApplicableUris(Sets.newHashSet("/api/xxx.do"));
 
-        RuleHolder.rules.put("testrule", rule);
+        RuleHolder.rules.put("testrule3", rule);
 
 
         for (int i = 0; i < 5; i++) {
@@ -118,13 +118,13 @@ public class ProducerTest {
                     String str = dateTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
                     a.setReqTime(str);
                     Sample sample2 = new Sample();
-                    sample2.addDimensionValue("uri", "/api/xxx.do");
-                    sample2.addDimensionValue("ip", ips[new Random().nextInt(5)]);
-                    sample2.addDimensionValue("deviceId", deviceIds[new Random().nextInt(5)]);
+                    sample2.addDimensionValue("uri", "/api/1xxx.do");
+                    sample2.addDimensionValue("ip", ips[new Random().nextInt(20)]);
+                    sample2.addDimensionValue("deviceId", deviceIds[new Random().nextInt(20)]);
                     a.setSample(sample2);
 
                     ProducerRecord<String, String> record =
-                            new ProducerRecord<String, String>("kafka.topic.statisticSampleEvent",
+                            new ProducerRecord<String, String>("kafka.topic.statisticSampleEvent2",
                                     JSON.toJSONString(a));
                     producer.send(record);
                     try {
