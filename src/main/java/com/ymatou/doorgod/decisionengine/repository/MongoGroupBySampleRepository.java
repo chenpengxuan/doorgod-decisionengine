@@ -16,7 +16,7 @@ import com.ymatou.doorgod.decisionengine.model.MongoGroupBySamplePo;
  * @author luoshiqian 2016/9/9 15:39
  */
 @Repository
-public interface MongoSampleRepository extends MongoRepository<MongoGroupBySamplePo,String>{
+public interface MongoGroupBySampleRepository extends MongoRepository<MongoGroupBySamplePo,String>{
 
 
 

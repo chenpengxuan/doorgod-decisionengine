@@ -12,7 +12,7 @@ import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import com.ymatou.doorgod.decisionengine.model.MongoGroupBySamplePo;
 import com.ymatou.doorgod.decisionengine.model.Sample;
-import com.ymatou.doorgod.decisionengine.repository.MongoSampleRepository;
+import com.ymatou.doorgod.decisionengine.repository.MongoGroupBySampleRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ public class MongoSampleStore extends AbstractSampleStore {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoSampleStore.class);
     @Autowired
-    private MongoSampleRepository mongoSampleRepository;
+    private MongoGroupBySampleRepository mongoGroupBySampleRepository;
     @Autowired
     private MongoClient mongo;
     @Autowired
