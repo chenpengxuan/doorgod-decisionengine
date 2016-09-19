@@ -90,3 +90,7 @@ dependencies {
     
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
+
+configurations {
+	compile.exclude module: 'slf4j-log4j12'
+}

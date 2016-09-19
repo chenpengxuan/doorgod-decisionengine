@@ -12,6 +12,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,15 @@ import com.ymatou.doorgod.decisionengine.model.Sample;
 public abstract class AbstractSampleStore {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractSampleStore.class);
+
+    /**
+     * 下次清空
+     *   key: object 需要清空的对像
+     *   value: 下次清空时间
+     */
+    private static Map<Object,String> nextTimeClearMap = Maps.newConcurrentMap();
+
+
     @Autowired
     protected BizProps bizProps;
 
@@ -43,6 +53,8 @@ public abstract class AbstractSampleStore {
             }
         });
     }
+
+
 
     /**
      * 返回需要遍历的规则
@@ -72,6 +84,10 @@ public abstract class AbstractSampleStore {
 
         //1.组装规则需要 上报的数据
         Map<String,Map<String,Map<Sample,Object>>> memoryMap = getMemoryMap();
+
+        //删除无用的内存 预防 规则变更等情况引起的无用数据
+        clearUselessMemory(memoryMap,currentTime);
+
         Map<String, Map<Sample, Object>> secondsTreeMap = memoryMap.get(rule.getName());
         if(secondsTreeMap == null){
             return;
@@ -130,5 +146,27 @@ public abstract class AbstractSampleStore {
             newList = list;
         }
         return newList;
+    }
+
+    /**
+     * 删除2小时之前 无用的内存 预防 规则变更等情况引起的无用数据
+     */
+    private void clearUselessMemory(Map<String,Map<String,Map<Sample,Object>>> memoryMap,String currentTime){
+
+        String twoHoursLater = LocalDateTime.parse(currentTime, Constants.FORMATTER_YMDHMS)
+                                            .plusHours(2).format(Constants.FORMATTER_YMDHMS);
+        nextTimeClearMap.putIfAbsent(memoryMap,twoHoursLater );
+
+        //当前时间超过下次清空时间 则执行清空
+        if(Long.valueOf(currentTime) >= Long.valueOf(nextTimeClearMap.get(memoryMap))){
+            logger.info("begin to clear useless data,size:{}",memoryMap.size());
+            //清空
+            memoryMap.entrySet()
+                    .removeIf(stringMapEntry -> Long.valueOf(stringMapEntry.getKey()) <= Long.valueOf(twoHoursLater));
+            nextTimeClearMap.put(memoryMap,twoHoursLater);
+
+            logger.info("end to clear useless data,size:{}",memoryMap.size());
+
+        }
     }
 }
