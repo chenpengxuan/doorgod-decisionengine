@@ -4,13 +4,14 @@
 package com.ymatou.doorgod.decisionengine.repository;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
+
+import com.ymatou.doorgod.decisionengine.model.MongoSamplePo;
 
 /**
  * 
  * @author qianmin 2016年9月13日 下午2:48:03
  * 
  */
-public interface SampleUnionRepository extends MongoRepository<TypedTuple<String>, String> {
+public interface MongoSampleRepository extends MongoRepository<MongoSamplePo, String> {
 
 }

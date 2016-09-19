@@ -3,14 +3,17 @@
  */
 package com.ymatou.doorgod.decisionengine.service.job;
 
+import static com.ymatou.doorgod.decisionengine.constants.Constants.EMPTY_SET;
 import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHMS;
 import static com.ymatou.doorgod.decisionengine.constants.Constants.MONGO_UNION;
-import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getBlackListMapName;
+import static com.ymatou.doorgod.decisionengine.constants.Constants.UNION_FOR_MONGO_PERSISTENCE_EXPIRE_TIME;
+import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getOffendersMapName;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -23,9 +26,10 @@ import org.springframework.stereotype.Component;
 
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
-import com.ymatou.doorgod.decisionengine.model.po.OffenderPo;
+import com.ymatou.doorgod.decisionengine.model.MongoSamplePo;
+import com.ymatou.doorgod.decisionengine.model.OffenderPo;
+import com.ymatou.doorgod.decisionengine.repository.MongoSampleRepository;
 import com.ymatou.doorgod.decisionengine.repository.OffenderRepository;
-import com.ymatou.doorgod.decisionengine.repository.SampleUnionRepository;
 import com.ymatou.doorgod.decisionengine.util.RedisHelper;
 import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
 
@@ -42,51 +46,73 @@ public class RulePersistence implements Job {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         LocalDateTime now = LocalDateTime.now();
-        logger.info("begin to presist to mongo. {}", now.format(FORMATTER_YMDHMS));
         for (LimitTimesRule rule : RuleHolder.rules.values()) {
             persistUnionSample(rule, now);
-            persistOffender(rule);
+            persistOffender(rule, now);
         }
-        logger.info("end to presist to mongo. {}", now.format(FORMATTER_YMDHMS));
+        logger.info("presist redis data to mongodb. {}", now.format(FORMATTER_YMDHMS));
     }
 
+    /**
+     * 每一分钟持久化一次访问记录(各个rule的sample)
+     * 
+     * @param rule
+     * @param now
+     */
     public void persistUnionSample(LimitTimesRule rule, LocalDateTime now) {
         StringRedisTemplate redisTemplate = SpringContextHolder.getBean(StringRedisTemplate.class);
         RuleExecutor ruleExecutor = SpringContextHolder.getBean(RuleExecutor.class);
         String currentBucket = RedisHelper.getUnionSetName(rule.getName(), now.format(FORMATTER_YMDHMS), MONGO_UNION);
         List<String> timeBuckets = ruleExecutor.getAllTimeBucket(rule, now);
-        String firstTimeBucket = timeBuckets.get(0);
-        timeBuckets.remove(0);
-        long count = redisTemplate.opsForZSet().unionAndStore(firstTimeBucket, timeBuckets, currentBucket);
+        long count = redisTemplate.opsForZSet().unionAndStore(RedisHelper.getEmptySetName(EMPTY_SET), timeBuckets,
+                currentBucket);
+        redisTemplate.opsForSet().getOperations().expire(currentBucket, UNION_FOR_MONGO_PERSISTENCE_EXPIRE_TIME,
+                TimeUnit.SECONDS);
 
-        SampleUnionRepository sampleUnionRepository = SpringContextHolder.getBean(SampleUnionRepository.class);
+        MongoSampleRepository sampleUnionRepository = SpringContextHolder.getBean(MongoSampleRepository.class);
         Set<TypedTuple<String>> sampleUnion =
                 redisTemplate.opsForZSet().rangeByScoreWithScores(currentBucket, 1, Double.MAX_VALUE);
-
-        sampleUnionRepository.save(sampleUnion);
-
+        if (sampleUnion != null && sampleUnion.size() > 0) {
+            List<MongoSamplePo> mongoSamples = new ArrayList<>();
+            for (TypedTuple<String> sample : sampleUnion) {
+                MongoSamplePo msp = new MongoSamplePo();
+                msp.setRuleName(msp.getRuleName());
+                msp.setSample(sample.getValue());
+                msp.setCount(sample.getScore());
+                msp.setTime(now.format(FORMATTER_YMDHMS));
+                mongoSamples.add(msp);
+            }
+            sampleUnionRepository.save(mongoSamples);
+        }
         logger.info("persist union sample size: {}, rule: {}", count, rule.getName());
     }
 
-    public void persistOffender(LimitTimesRule rule) {
+    /**
+     * 每一分钟持久化一次Offender
+     * 
+     * @param rule
+     * @param now
+     */
+    public void persistOffender(LimitTimesRule rule, LocalDateTime now) {
         // 持久化Offender
         StringRedisTemplate redisTemplate = SpringContextHolder.getBean(StringRedisTemplate.class);
         OffenderRepository offenderRepository = SpringContextHolder.getBean(OffenderRepository.class);
         Set<TypedTuple<String>> blackList =
-                redisTemplate.opsForZSet().rangeWithScores(getBlackListMapName(rule.getName()), 0, -1);
-        if (blackList != null && blackList.isEmpty()) {
+                redisTemplate.opsForZSet().rangeWithScores(getOffendersMapName(rule.getName()), 0, -1);
+        if (blackList != null && !blackList.isEmpty()) {
             List<OffenderPo> offenderPos = new ArrayList<>();
             for (TypedTuple<String> typeTuple : blackList) {
                 OffenderPo offenderPo = new OffenderPo();
+                offenderPo.setAddTime(now.format(FORMATTER_YMDHMS));
                 offenderPo.setSample(typeTuple.getValue());
-                offenderPo.setTime(String.valueOf(typeTuple.getScore()));
+                offenderPo.setRejectTime(String.valueOf(typeTuple.getScore().longValue()));
                 offenderPos.add(offenderPo);
             }
             offenderRepository.save(offenderPos);
         }
 
         // 删除到期的Offender
-        redisTemplate.opsForZSet().removeRangeByScore(getBlackListMapName(rule.getName()), 0,
+        redisTemplate.opsForZSet().removeRangeByScore(getOffendersMapName(rule.getName()), 0,
                 Double.valueOf(LocalDateTime.now().format(FORMATTER_YMDHMS)));
         logger.info("persist offender size: {}, rule: {}", blackList.size(), rule.getName());
     }

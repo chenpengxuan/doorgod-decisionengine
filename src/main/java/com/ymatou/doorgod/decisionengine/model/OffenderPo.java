@@ -1,7 +1,7 @@
 /*
  * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
  */
-package com.ymatou.doorgod.decisionengine.model.po;
+package com.ymatou.doorgod.decisionengine.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -17,16 +17,21 @@ public class OffenderPo {
 
     @Id
     private String id;
+
     @Field("sample")
     private String sample;
-    @Field("time")
-    private String time;
+
+    @Field("addTime")
+    private String addTime;
+
+    @Field("rejectTime")
+    private String rejectTime;
 
     public OffenderPo() {}
 
-    public OffenderPo(String sample, String time) {
+    public OffenderPo(String sample, String rejectTime) {
         this.sample = sample;
-        this.time = time;
+        this.rejectTime = rejectTime;
     }
 
     public String getId() {
@@ -45,11 +50,19 @@ public class OffenderPo {
         this.sample = sample;
     }
 
-    public String getTime() {
-        return time;
+    public String getRejectTime() {
+        return rejectTime;
     }
 
-    public void setTime(String time) {
-        this.time = time;
+    public void setRejectTime(String rejectTime) {
+        this.rejectTime = rejectTime;
+    }
+
+    public String getAddTime() {
+        return addTime;
+    }
+
+    public void setAddTime(String addTime) {
+        this.addTime = addTime;
     }
 }

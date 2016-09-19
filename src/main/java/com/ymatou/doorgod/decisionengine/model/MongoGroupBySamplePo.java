@@ -13,7 +13,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 /**
  * @author luoshiqian 2016/9/14 16:24
  */
-@Document(collection = "sample")
+@Document(collection = "groupbysample")
 public class MongoGroupBySamplePo {
 
     @Id

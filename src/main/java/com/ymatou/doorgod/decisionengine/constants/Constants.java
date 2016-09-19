@@ -20,8 +20,13 @@ public class Constants {
 
     public static final String MONGO_UNION = "Mongo";
 
-    public static final String BLACK_LIST_CHANNEL = "BlackList";
+    public static final String OffENDER_CHANNEL = "Offender";
 
     public static final String EMPTY_SET = "DoorGodEmptySet";
+
+    public static final int UNION_FOR_MONGO_PERSISTENCE_EXPIRE_TIME = 60; // 为mongo持久化而union的并集过期时间,
+                                                                          // 60s
+
+    public static final int PREVIOUS_COUNT = 10; // 当union后得时间窗口不存在时， 往前找多少格
 
 }

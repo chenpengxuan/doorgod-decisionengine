@@ -5,7 +5,8 @@ package com.ymatou.doorgod.decisionengine.repository;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import com.ymatou.doorgod.decisionengine.model.po.OffenderPo;
+import com.ymatou.doorgod.decisionengine.model.OffenderPo;
+
 
 /**
  * 

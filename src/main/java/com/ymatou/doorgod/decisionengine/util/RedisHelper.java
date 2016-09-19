@@ -18,6 +18,8 @@ public class RedisHelper {
 
     private static final String BLACK_LIST_MAP_NAME_TEMPLATE = "doorgod:%s:%s";
 
+    private static final String EMPTY_SET_NAME_TEMPLATE = "doorgod:%s";
+
     public static String getNormalSetName(String ruleName, String time) {
         return String.format(SET_NAME_TEMPLATE, ruleName, "set", time);
     }
@@ -26,7 +28,11 @@ public class RedisHelper {
         return String.format(UNION_SET_NAME_TEMPLATE, ruleName, "set", time, flag);
     }
 
-    public static String getBlackListMapName(String ruleName) {
+    public static String getOffendersMapName(String ruleName) {
         return String.format(BLACK_LIST_MAP_NAME_TEMPLATE, ruleName, "offenders");
+    }
+
+    public static String getEmptySetName(String name) {
+        return String.format(EMPTY_SET_NAME_TEMPLATE, name);
     }
 }
