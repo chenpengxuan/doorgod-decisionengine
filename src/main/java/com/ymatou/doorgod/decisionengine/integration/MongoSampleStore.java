@@ -7,25 +7,29 @@
 
 package com.ymatou.doorgod.decisionengine.integration;
 
-import com.mongodb.MongoClient;
-import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
-import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
-import com.ymatou.doorgod.decisionengine.model.MongoGroupBySamplePo;
-import com.ymatou.doorgod.decisionengine.model.Sample;
-import com.ymatou.doorgod.decisionengine.repository.MongoGroupBySampleRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.ymatou.doorgod.decisionengine.util.MongoHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
+import com.ymatou.doorgod.decisionengine.constants.Constants;
+import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
+import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
+import com.ymatou.doorgod.decisionengine.model.MongoGroupBySamplePo;
+import com.ymatou.doorgod.decisionengine.model.Sample;
 
 /**
  * @author luoshiqian 2016/9/14 16:01
@@ -34,10 +38,7 @@ import java.util.stream.Collectors;
 public class MongoSampleStore extends AbstractSampleStore {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoSampleStore.class);
-    @Autowired
-    private MongoGroupBySampleRepository mongoGroupBySampleRepository;
-    @Autowired
-    private MongoClient mongo;
+
     @Autowired
     private MongoTemplate mongoTemplate;
 
@@ -61,6 +62,10 @@ public class MongoSampleStore extends AbstractSampleStore {
     protected void uploadSampleToDb(LimitTimesRule rule, String uploadTime,
             Collection<Map.Entry<Sample, Object>> samples) {
 
+        String collectionName = MongoHelper.getGroupByCollectionName(rule);
+        if(!mongoTemplate.collectionExists(collectionName)){
+            mongoTemplate.createCollection(collectionName);
+        }
         samples.forEach(entry -> {
 
             Sample sample = entry.getKey();
@@ -69,37 +74,33 @@ public class MongoSampleStore extends AbstractSampleStore {
             String groupByKeys = sample.toString();
             sampleSet.forEach(s -> {
                 String leftKeys = s.toString();
-                //todo uploadtime 找到start end time
-                MongoGroupBySamplePo samplePo = new MongoGroupBySamplePo(uploadTime,uploadTime,groupByKeys,leftKeys);
-                Query query = new Query(Criteria.where("startTime").is(uploadTime)
-                        .and("startTime").is(uploadTime)
+
+                //uploadtime 找到start end time
+                LocalDateTime localDateTime = LocalDateTime.parse(uploadTime, Constants.FORMATTER_YMDHMS);
+                String startMinute = localDateTime.format(Constants.FORMATTER_YMDHM);
+                String endMinute = localDateTime.plusMinutes(1).format(Constants.FORMATTER_YMDHM);
+
+//                MongoGroupBySamplePo samplePo = new MongoGroupBySamplePo(startMinute,endMinute,groupByKeys,leftKeys);
+                Query query = new Query(Criteria.where("startTime").is(startMinute)
+                        .and("endTime").is(endMinute)
                         .and("groupByKeys").is(groupByKeys)
                         .and("leftKeys").is(leftKeys)
                 );
+                Update update = new Update();
+                update.set("startTime",startMinute);
+                update.set("endTime",endMinute);
+                update.set("groupByKeys",groupByKeys);
+                update.set("leftKeys",leftKeys);
+                mongoTemplate.findAndModify(query,update,new FindAndModifyOptions()
+                        .returnNew(true).upsert(true),MongoGroupBySamplePo.class,collectionName);
 
-                if(!mongoTemplate.exists(query,MongoGroupBySamplePo.class)){
-                    mongoTemplate.insert(samplePo,getCollectionName(rule));
-                }
+//                mongoTemplate.upsert(query,update,MongoGroupBySamplePo.class,collectionName);
+//                if(!mongoTemplate.exists(query,collectionName)){
+//                    mongoTemplate.insert(samplePo,collectionName);
+//                }
             });
-//            logger.debug("ruleName:{},count:{},sample:{}", rule.getName(), samplePo.getCount(), samplePo.getSample());
         });
     }
 
-    private String getCollectionName(LimitTimesRule rule){
-        return "GroupSample_"+rule.getName();
-    }
-
-    /**
-     * 获取规则的过期时间 小于60秒 系数为 1.5 大于60秒 系数为 1.2
-     * 
-     * @param rule
-     * @return
-     */
-    private long getExpireByRule(LimitTimesRule rule) {
-        if (rule.getTimesCap() < 60) {
-            return ((Double) (rule.getStatisticSpan() * 1.5)).longValue();
-        }
-        return ((Double) (rule.getStatisticSpan() * 1.2)).longValue();
-    }
 
 }

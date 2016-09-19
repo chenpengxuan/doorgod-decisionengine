@@ -15,11 +15,13 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.core.task.TaskExecutor;
 
 import com.ymatou.doorgod.decisionengine.holder.KafkaConsumerInstance;
-import com.ymatou.doorgod.decisionengine.holder.RedisTest;
 import com.ymatou.doorgod.decisionengine.holder.ShutdownLatch;
 import com.ymatou.doorgod.decisionengine.service.job.RuleDiscoverer;
 
 import kafka.javaapi.consumer.ConsumerConnector;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 
 /**
  * 
@@ -42,11 +44,12 @@ public class Application {
         ConsumerConnector consumerConnector = ctx.getBean(ConsumerConnector.class);
         TaskExecutor taskExecutor = (TaskExecutor) ctx.getBean("taskExecutor");
         new Thread(new KafkaConsumerInstance(kafkaConsumer,consumerConnector, taskExecutor)).start();
-        new Thread(new RedisTest()).start();
 
         // 加载Rule数据， 添加修改Rule的定时任务， RedisToMongo同步任务
         RuleDiscoverer ruleDiscoverer = ctx.getBean(RuleDiscoverer.class);
         ruleDiscoverer.execute();
+
+
 
         ShutdownLatch shutdownLatch = new ShutdownLatch("decisionengine");
         try {

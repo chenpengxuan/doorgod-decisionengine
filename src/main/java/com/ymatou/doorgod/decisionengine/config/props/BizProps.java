@@ -24,10 +24,18 @@ public class BizProps {
     private String rulePersistenceCronExpression;
     // 定时统计Redis数据生成黑名单
     private String ruleExecutorCronExpression;
+    // 定时统计mongo groupby 数据生成黑名单
+    private String mongoSampleOffendersCronExpression;
     // 上报redis topN >0 才topN
     private int uploadRedisTopN;
     // 上报mongo topN >0 才topN
     private int uploadMongoTopN;
+
+    // 上传redis定时器频率 单位：毫秒
+    private int uploadRedisTimerInterval;
+
+    // 上传mongo定时器频率 单位：毫秒
+    private int uploadMongoTimerInterval;
 
     // 每秒 每个rule map中最多元素个数
     private int maxSizePerSecAndRule;
@@ -84,5 +92,32 @@ public class BizProps {
 
     public void setUploadMongoTopN(int uploadMongoTopN) {
         this.uploadMongoTopN = uploadMongoTopN;
+    }
+
+    @DisconfFileItem(name = "biz.uploadRedisTimerInterval")
+    public int getUploadRedisTimerInterval() {
+        return uploadRedisTimerInterval;
+    }
+
+    public void setUploadRedisTimerInterval(int uploadRedisTimerInterval) {
+        this.uploadRedisTimerInterval = uploadRedisTimerInterval;
+    }
+
+    @DisconfFileItem(name = "biz.uploadMongoTimerInterval")
+    public int getUploadMongoTimerInterval() {
+        return uploadMongoTimerInterval;
+    }
+
+    public void setUploadMongoTimerInterval(int uploadMongoTimerInterval) {
+        this.uploadMongoTimerInterval = uploadMongoTimerInterval;
+    }
+
+    @DisconfFileItem(name = "biz.mongoSampleOffendersCronExpression")
+    public String getMongoSampleOffendersCronExpression() {
+        return mongoSampleOffendersCronExpression;
+    }
+
+    public void setMongoSampleOffendersCronExpression(String mongoSampleOffendersCronExpression) {
+        this.mongoSampleOffendersCronExpression = mongoSampleOffendersCronExpression;
     }
 }

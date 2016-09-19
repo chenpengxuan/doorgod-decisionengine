@@ -38,7 +38,7 @@ public class Sample {
         }
     }
 
-    public String getUri(){
+    public String findUri(){
         return dimensionValues.get(KEY_URI);
     }
 

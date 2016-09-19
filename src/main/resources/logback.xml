@@ -1,37 +1,81 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration scan="true" scanPeriod="60 seconds" debug="true" >
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ /*
+  ~  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
+  ~  All rights reserved.
+  ~  */
+  -->
 
-    <contextName>dev</contextName>
+<configuration>
+	<property name="pattern"
+		value="%date [%thread] %-5level %logger{40} KEY[%X{logPrefix}] - %msg%n" />
+	<property name="appId" value="decision.ymatou.cn" />
+	<property name="basePackage" value="com.ymatou.doorgod.decisionengine" />
+	<property name="baseDir" value="/usr/local/log/${appId}" />
+	
+	<property name="level" value="debug" />
+	<property name="charset" value="UTF-8" />
+	<property name="immediateFlush" value="true" />
+	<property name="queueSize" value="1024" />
 
-    <property name="LOG_HOME" value="/usr/local/log/decisionengine.ymatou.cn" />
+	
+	<appender name="HTTP-POST-ERROR-APPENDER"
+		class="com.ymatou.errorreporter.logbackappender.HttpPostErrorAppender">
+		<!-- http post target url -->
+		<param name="targetUrl" value="http://alarm.ymatou.com/Alarm/SaveSingle" />
 
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <FileNamePattern>${LOG_HOME}/decisionengine.%d{yyyy-MM-dd}.log</FileNamePattern>
-            <MaxHistory>30</MaxHistory>
-        </rollingPolicy>
-        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{100} - %msg%n</pattern>
-        </encoder>
-        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <MaxFileSize>30MB</MaxFileSize>
-        </triggeringPolicy>
-    </appender>
+		<!-- your application id -->
+		<param name="appId" value="${appId}" />
+	</appender>
+
+	<appender name="ERROR-APPENDER"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>ERROR</level>
+		</filter>
+		<file>${baseDir}/error.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${baseDir}/error.%d{yyyy-MM-dd}
+			</fileNamePattern>
+			<maxHistory>30</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<charset>${charset}</charset>
+			<pattern>${pattern}</pattern>
+			<immediateFlush>${immediateFlush}</immediateFlush>
+		</encoder>
+	</appender>
+
+	<appender name="ASYNC-ERROR-APPENDER" class="ch.qos.logback.classic.AsyncAppender">
+		<queueSize>${queueSize}</queueSize>
+		<appender-ref ref="ERROR-APPENDER" />
+	</appender>
+
+	<appender name="DEFAULT-APPENDER"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${baseDir}/default.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${baseDir}/default.%d{yyyy-MM-dd}
+			</fileNamePattern>
+			<maxHistory>30</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<charset>${charset}</charset>
+			<pattern>${pattern}</pattern>
+			<immediateFlush>${immediateFlush}</immediateFlush>
+		</encoder>
+	</appender>
+
+	<appender name="ASYNC-DEFAULT-APPENDER" class="ch.qos.logback.classic.AsyncAppender">
+		<queueSize>${queueSize}</queueSize>
+		<appender-ref ref="DEFAULT-APPENDER" />
+	</appender>
 
 
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{100} - %msg%n</pattern>
-        </encoder>
-    </appender>
-
-    <root level="INFO">
-        <appender-ref ref="STDOUT" />
-        <appender-ref ref="FILE" />
-    </root>
-
-    <logger name="com.ymatou" level="INFO"/>
-    <logger name="org.springframework" level="INFO"/>
-
-
+	<!-- default -->
+	<root level="${level}">
+		<appender-ref ref="ASYNC-DEFAULT-APPENDER" />
+		<appender-ref ref="ASYNC-ERROR-APPENDER" />
+		<appender-ref ref="HTTP-POST-ERROR-APPENDER" />
+	</root>
 </configuration>

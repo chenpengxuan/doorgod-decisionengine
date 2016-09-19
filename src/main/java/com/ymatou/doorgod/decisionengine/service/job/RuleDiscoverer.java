@@ -27,6 +27,7 @@ import com.ymatou.doorgod.decisionengine.model.ScopeEnum;
 import com.ymatou.doorgod.decisionengine.model.po.RulePo;
 import com.ymatou.doorgod.decisionengine.repository.RuleRepository;
 import com.ymatou.doorgod.decisionengine.service.SchedulerService;
+import org.springframework.util.CollectionUtils;
 
 /**
  * 
@@ -65,7 +66,12 @@ public class RuleDiscoverer {
                 switch (rule.getUpdateType()) {
                     case "add":
                         RuleHolder.rules.put(ruleName, rule);
-                        schedulerService.addJob(RuleExecutor.class, ruleName, bizProps.getRuleExecutorCronExpression());
+                        if(CollectionUtils.isEmpty(rule.getGroupByKeys())){
+                            schedulerService.addJob(RuleExecutor.class, ruleName, bizProps.getRuleExecutorCronExpression());
+                        }else {
+                            schedulerService.addJob(MongoSampleOffendersExecutor.class, "groupBy"+ruleName,
+                                    bizProps.getMongoSampleOffendersCronExpression());
+                        }
                         break;
                     case "delete":
                         RuleHolder.rules.remove(ruleName);
