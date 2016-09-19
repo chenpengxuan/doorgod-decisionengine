@@ -18,6 +18,9 @@ public class OffenderPo {
     @Id
     private String id;
 
+    @Field("ruleName")
+    private String ruleName;
+
     @Field("sample")
     private String sample;
 
@@ -52,6 +55,14 @@ public class OffenderPo {
 
     public String getRejectTime() {
         return rejectTime;
+    }
+
+    public String getRuleName() {
+        return ruleName;
+    }
+
+    public void setRuleName(String ruleName) {
+        this.ruleName = ruleName;
     }
 
     public void setRejectTime(String rejectTime) {

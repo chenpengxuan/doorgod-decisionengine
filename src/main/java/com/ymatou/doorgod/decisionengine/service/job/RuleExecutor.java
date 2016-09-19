@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSON;
@@ -50,6 +51,7 @@ public class RuleExecutor implements Job {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         StringRedisTemplate redisTemplate = SpringContextHolder.getBean(StringRedisTemplate.class);
+        ZSetOperations<String, String> zSetOps = redisTemplate.opsForZSet();
 
         // 被统计的规则
         String jobName = context.getJobDetail().getKey().getName();
@@ -61,11 +63,12 @@ public class RuleExecutor implements Job {
         List<String> timeBuckets = getAllTimeBucket(rule, now);
         String previousBucket = getUnionSetName(ruleName, now.minusSeconds(1).format(FORMATTER_YMDHMS), UNION);
         String currentBucket = getUnionSetName(ruleName, now.format(FORMATTER_YMDHMS), UNION);
-        String secAdd = getNormalSetName(rule.getName(), now.minusSeconds(1).format(FORMATTER_YMDHMS));
-        String secDelete = getNormalSetName(rule.getName(),
+        String secAdd = getNormalSetName(ruleName, now.minusSeconds(1).format(FORMATTER_YMDHMS));
+        String secDelete = getNormalSetName(ruleName,
                 now.minusSeconds(rule.getStatisticSpan() + 1).format(FORMATTER_YMDHMS));
         logger.debug("begin to execute rule:{},time:{},previousBucket:{},currentBucket:{},secAdd:{},secDelete:{}",
                 ruleName, now.format(FORMATTER_YMDHMS), previousBucket, currentBucket, secAdd, secDelete);
+
         try {
             if (Long.valueOf(now.getSecond()) % 2 == 0) {
                 Thread.sleep(3500); // TODO REMOVE
@@ -73,16 +76,16 @@ public class RuleExecutor implements Job {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
         // 合并时间窗口
-        if (redisTemplate.opsForZSet().size(previousBucket) > 0) { // 前一秒合并的时间窗口不为空
-            redisTemplate.opsForZSet().scan(secDelete, ScanOptions.scanOptions().build())
-                    .forEachRemaining(c -> {
-                        redisTemplate.opsForZSet().incrementScore(previousBucket, c.getValue(), c.getScore() * -1);
-                    });
-            redisTemplate.opsForZSet().unionAndStore(previousBucket, secAdd, currentBucket);
-            redisTemplate.opsForSet().getOperations().expire(currentBucket, getExpireByRule(rule), TimeUnit.SECONDS);
+        if (zSetOps.size(previousBucket) > 0) { // 前一秒合并的时间窗口不为空
+            zSetOps.scan(secDelete, ScanOptions.scanOptions().build()).forEachRemaining(c -> {
+                redisTemplate.opsForZSet().incrementScore(previousBucket, c.getValue(), c.getScore() * -1);
+            });
+            zSetOps.unionAndStore(previousBucket, secAdd, currentBucket);
+            zSetOps.getOperations().expire(currentBucket, getExpireByRule(rule), TimeUnit.SECONDS);
         } else {
-            String notEmptyUnionTimeBucket = getNoEmptyUnionTimeBucket(rule, now, redisTemplate);
+            String notEmptyUnionTimeBucket = getNoEmptyUnionTimeBucket(rule, now, zSetOps);
             if (!StringUtils.isBlank(notEmptyUnionTimeBucket)) { // 存在合并后的时间窗口
                 LocalDateTime time = LocalDateTime.parse(notEmptyUnionTimeBucket.split(":")[3], FORMATTER_YMDHMS);
                 int seconds = (int) Duration.between(time, now).getSeconds();
@@ -96,40 +99,35 @@ public class RuleExecutor implements Job {
                         now.format(FORMATTER_YMDHMS), notEmptyUnionTimeBucket, JSON.toJSONString(deleteSecTimeBuckets),
                         JSON.toJSONString(addSecTimeBuckets));
 
-                redisTemplate.opsForZSet().unionAndStore(getEmptySetName(EMPTY_SET), deleteSecTimeBuckets,
-                        deleteTimeBucket); // 合并需要被删除的时间窗口
-                redisTemplate.opsForZSet().unionAndStore(getEmptySetName(EMPTY_SET), addSecTimeBuckets,
-                        addTimeBucket); // 合并需要被添加的时间窗口
-                redisTemplate.opsForZSet().scan(deleteTimeBucket, ScanOptions.scanOptions().build())
+                zSetOps.unionAndStore(getEmptySetName(EMPTY_SET), deleteSecTimeBuckets, deleteTimeBucket); // 合并需要被删除的时间窗口
+                zSetOps.unionAndStore(getEmptySetName(EMPTY_SET), addSecTimeBuckets, addTimeBucket); // 合并需要被添加的时间窗口
+                zSetOps.scan(deleteTimeBucket, ScanOptions.scanOptions().build())
                         .forEachRemaining(c -> {
                             redisTemplate.opsForZSet().incrementScore(deleteTimeBucket, c.getValue(),
                                     c.getScore() * -1); // 被删除的score * -1
                         });
-                redisTemplate.opsForZSet().unionAndStore(deleteTimeBucket,
+                zSetOps.unionAndStore(deleteTimeBucket,
                         Arrays.asList(new String[] {notEmptyUnionTimeBucket, addTimeBucket}),
                         currentBucket); // 合并需要被删除的， 被添加的， 已经合并的
 
-                redisTemplate.opsForSet().getOperations().expire(addTimeBucket, 1, TimeUnit.SECONDS);
-                redisTemplate.opsForSet().getOperations().expire(deleteTimeBucket, 1, TimeUnit.SECONDS);
-                redisTemplate.opsForSet().getOperations().expire(currentBucket, getExpireByRule(rule),
-                        TimeUnit.SECONDS);
+                zSetOps.getOperations().expire(addTimeBucket, 1, TimeUnit.SECONDS);
+                zSetOps.getOperations().expire(deleteTimeBucket, 1, TimeUnit.SECONDS);
+                zSetOps.getOperations().expire(currentBucket, getExpireByRule(rule), TimeUnit.SECONDS);
             } else {// 不存在合并后的时间窗口
                 // 合并所有的子时间窗口
-                redisTemplate.opsForZSet().unionAndStore(getEmptySetName(EMPTY_SET), timeBuckets, currentBucket);
-                redisTemplate.opsForSet().getOperations().expire(currentBucket, getExpireByRule(rule),
-                        TimeUnit.SECONDS);
+                zSetOps.unionAndStore(getEmptySetName(EMPTY_SET), timeBuckets, currentBucket);
+                zSetOps.getOperations().expire(currentBucket, getExpireByRule(rule), TimeUnit.SECONDS);
             }
         }
 
-        Set<String> offenders =
-                redisTemplate.opsForZSet().rangeByScore(currentBucket, rule.getTimesCap(), Integer.MAX_VALUE);
+        // 获取Offender
+        Set<String> offenders = zSetOps.rangeByScore(currentBucket, rule.getTimesCap(), Integer.MAX_VALUE);
         if (!offenders.isEmpty()) {
-            redisTemplate.opsForZSet().removeRangeByScore(currentBucket, rule.getTimesCap(), Double.MAX_VALUE);
+            zSetOps.removeRangeByScore(currentBucket, rule.getTimesCap(), Double.MAX_VALUE);
             String rejectTime = now.plusSeconds(rule.getRejectionSpan()).format(FORMATTER_YMDHMS);
             boolean isOffendersChanged = false;
             for (String offender : offenders) {
-                if (redisTemplate.opsForZSet().add(getOffendersMapName(ruleName), offender,
-                        Double.valueOf(rejectTime))) {
+                if (zSetOps.add(getOffendersMapName(ruleName), offender, Double.valueOf(rejectTime))) {
                     isOffendersChanged = true;
                 }
             }
@@ -141,12 +139,19 @@ public class RuleExecutor implements Job {
         logger.debug("end to execute rule: {}, time: {}", ruleName, now.format(FORMATTER_YMDHMS));
     }
 
+    /**
+     * 往前找N秒，找到最近已合并的时间窗口
+     * 
+     * @param rule
+     * @param now
+     * @return
+     */
     private String getNoEmptyUnionTimeBucket(LimitTimesRule rule, LocalDateTime now,
-            StringRedisTemplate redisTemplate) {
+            ZSetOperations<String, String> zSetOps) {
         List<String> unionTimeBuckets = getPreviousUionTimeBucket(rule, now);
         String notEmptyUnionTimeBucket = null;
         for (String utb : unionTimeBuckets) {
-            if (redisTemplate.opsForZSet().size(utb) > 0) {
+            if (zSetOps.size(utb) > 0) {
                 notEmptyUnionTimeBucket = utb; // 找到已经合并的时间窗口
                 break;
             }
@@ -155,7 +160,14 @@ public class RuleExecutor implements Job {
         return notEmptyUnionTimeBucket;
     }
 
-    public List<String> getAllTimeBucket(LimitTimesRule rule, LocalDateTime now) {
+    /**
+     * 找到所以需要合并的时间窗口
+     * 
+     * @param rule
+     * @param now
+     * @return
+     */
+    private List<String> getAllTimeBucket(LimitTimesRule rule, LocalDateTime now) {
         List<String> timeBuckets = new ArrayList<>();
         for (int second = rule.getStatisticSpan(); second >= 1; second--) {
             timeBuckets.add(getNormalSetName(rule.getName(), now.minusSeconds(second).format(FORMATTER_YMDHMS)));

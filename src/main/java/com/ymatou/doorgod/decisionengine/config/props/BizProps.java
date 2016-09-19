@@ -40,6 +40,9 @@ public class BizProps {
     // 每秒 每个rule map中最多元素个数
     private int maxSizePerSecAndRule;
 
+    // 每次持久化前N个Sample
+    private int presistToMongoTopN;
+
     @DisconfFileItem(name = "biz.ruleDiscoverCronExpression")
     public String getRuleDiscoverCronExpression() {
         return ruleDiscoverCronExpression;
@@ -119,5 +122,14 @@ public class BizProps {
 
     public void setMongoSampleOffendersCronExpression(String mongoSampleOffendersCronExpression) {
         this.mongoSampleOffendersCronExpression = mongoSampleOffendersCronExpression;
+    }
+
+    @DisconfFileItem(name = "biz.presistToMongoTopN")
+    public int getPresistToMongoTopN() {
+        return presistToMongoTopN;
+    }
+
+    public void setPresistToMongoTopN(int presistToMongoTopN) {
+        this.presistToMongoTopN = presistToMongoTopN;
     }
 }

@@ -30,4 +30,6 @@ public class Constants {
 
     public static final int PREVIOUS_COUNT = 10; // 当union后得时间窗口不存在时， 往前找多少格
 
+    public static final int PRESIST_TO_MONGO_COUNT = -1000;
+
 }

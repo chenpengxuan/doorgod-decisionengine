@@ -5,9 +5,13 @@
  */
 package com.ymatou.doorgod.decisionengine.service.job;
 
-import static com.ymatou.doorgod.decisionengine.constants.Constants.*;
-import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getBlackListMapName;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
+import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHM;
+import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHMS;
+import static com.ymatou.doorgod.decisionengine.constants.Constants.OffENDER_CHANNEL;
+import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getOffendersMapName;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.match;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.sort;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,7 +23,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.*;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.Fields;
+import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
@@ -51,20 +58,20 @@ public class MongoSampleOffendersExecutor implements Job {
                 SpringContextHolder.getBean(StringRedisTemplate.class);
 
         String jobName = context.getJobDetail().getKey().getName();
-        LimitTimesRule rule = RuleHolder.rules.get(jobName.replace("groupBy",""));
+        LimitTimesRule rule = RuleHolder.rules.get(jobName.replace("groupBy", ""));
         LocalDateTime now = LocalDateTime.now();
         String ruleName = rule.getName();
 
         String startTime = now.minusSeconds(rule.getStatisticSpan()).format(FORMATTER_YMDHM);
         String endTime = now.format(FORMATTER_YMDHM);
-//        String startTime = "201609181750";
-//        String endTime = "201609181803";
+        // String startTime = "201609181750";
+        // String endTime = "201609181803";
 
         Criteria criteria = Criteria.where("startTime").gte(startTime).and("endTime").lte(endTime);
 
         TypedAggregation<MongoGroupBySamplePo> aggregation = Aggregation.newAggregation(MongoGroupBySamplePo.class,
                 match(criteria),
-                group(Fields.from(Fields.field("groupByKeys","groupByKeys"))).count().as("count"),
+                group(Fields.from(Fields.field("groupByKeys", "groupByKeys"))).count().as("count"),
                 sort(Sort.Direction.DESC, "count"));
 
         String collectionName = MongoHelper.getGroupByCollectionName(rule);
@@ -79,7 +86,7 @@ public class MongoSampleOffendersExecutor implements Job {
                 if (state.getCount() >= rule.getTimesCap()) {
                     blackList.add(state);
                     String rejectTime = now.plusSeconds(rule.getRejectionSpan()).format(FORMATTER_YMDHMS);
-                    if (redisTemplate.opsForZSet().add(getBlackListMapName(ruleName), state.getGroupByKeys(),
+                    if (redisTemplate.opsForZSet().add(getOffendersMapName(ruleName), state.getGroupByKeys(),
                             Double.valueOf(rejectTime))) {
                         isBlackListChanged = true;
                     }
@@ -87,7 +94,7 @@ public class MongoSampleOffendersExecutor implements Job {
             }
 
             if (isBlackListChanged) {
-                redisTemplate.convertAndSend(BLACK_LIST_CHANNEL, ruleName);
+                redisTemplate.convertAndSend(OffENDER_CHANNEL, ruleName);
                 logger.debug("got blacklist: {}, time: {}", JSON.toJSONString(blackList));
             }
         }
