@@ -5,13 +5,9 @@
  */
 package com.ymatou.doorgod.decisionengine.service.job;
 
-import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHM;
-import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHMS;
-import static com.ymatou.doorgod.decisionengine.constants.Constants.OffENDER_CHANNEL;
+import static com.ymatou.doorgod.decisionengine.constants.Constants.*;
 import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getOffendersMapName;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.match;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.sort;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,7 +21,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.Fields;
 import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -71,7 +66,7 @@ public class MongoSampleOffendersExecutor implements Job {
 
         TypedAggregation<MongoGroupBySamplePo> aggregation = Aggregation.newAggregation(MongoGroupBySamplePo.class,
                 match(criteria),
-                group(Fields.from(Fields.field("groupByKeys", "groupByKeys"))).count().as("count"),
+                group("groupByKeys").count().as("count"),
                 sort(Sort.Direction.DESC, "count"));
 
         String collectionName = MongoHelper.getGroupByCollectionName(rule);
@@ -99,7 +94,7 @@ public class MongoSampleOffendersExecutor implements Job {
             }
         }
 
-        // todo 删除之前无用数据
+        // todo mongo中删除之前无用数据
 
     }
 }
