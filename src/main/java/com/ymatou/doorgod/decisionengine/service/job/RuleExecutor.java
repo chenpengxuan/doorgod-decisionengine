@@ -47,7 +47,6 @@ public class RuleExecutor implements Job {
 
     private static final Logger logger = LoggerFactory.getLogger(RuleExecutor.class);
 
-
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         StringRedisTemplate redisTemplate = SpringContextHolder.getBean(StringRedisTemplate.class);
@@ -64,10 +63,10 @@ public class RuleExecutor implements Job {
         String previousBucket = getUnionSetName(ruleName, now.minusSeconds(1).format(FORMATTER_YMDHMS), UNION);
         String currentBucket = getUnionSetName(ruleName, now.format(FORMATTER_YMDHMS), UNION);
         String secAdd = getNormalSetName(ruleName, now.minusSeconds(1).format(FORMATTER_YMDHMS));
-        String secDelete = getNormalSetName(ruleName,
+        String secDel = getNormalSetName(ruleName,
                 now.minusSeconds(rule.getStatisticSpan() + 1).format(FORMATTER_YMDHMS));
         logger.debug("begin to execute rule:{},time:{},previousBucket:{},currentBucket:{},secAdd:{},secDelete:{}",
-                ruleName, now.format(FORMATTER_YMDHMS), previousBucket, currentBucket, secAdd, secDelete);
+                ruleName, now.format(FORMATTER_YMDHMS), previousBucket, currentBucket, secAdd, secDel);
 
         try {
             if (Long.valueOf(now.getSecond()) % 2 == 0) {
@@ -79,39 +78,37 @@ public class RuleExecutor implements Job {
 
         // 合并时间窗口
         if (zSetOps.size(previousBucket) > 0) { // 前一秒合并的时间窗口不为空
-            zSetOps.scan(secDelete, ScanOptions.scanOptions().build()).forEachRemaining(c -> {
+            zSetOps.scan(secDel, ScanOptions.scanOptions().build()).forEachRemaining(c -> {
                 redisTemplate.opsForZSet().incrementScore(previousBucket, c.getValue(), c.getScore() * -1);
             });
             zSetOps.unionAndStore(previousBucket, secAdd, currentBucket);
             zSetOps.getOperations().expire(currentBucket, getExpireByRule(rule), TimeUnit.SECONDS);
         } else {
             String notEmptyUnionTimeBucket = getNoEmptyUnionTimeBucket(rule, now, zSetOps);
-            if (!StringUtils.isBlank(notEmptyUnionTimeBucket)) { // 存在合并后的时间窗口
+            if (StringUtils.isNotBlank(notEmptyUnionTimeBucket)) { // 存在合并后的时间窗口
                 LocalDateTime time = LocalDateTime.parse(notEmptyUnionTimeBucket.split(":")[3], FORMATTER_YMDHMS);
                 int seconds = (int) Duration.between(time, now).getSeconds();
                 String addTimeBucket = getUnionSetName(ruleName, time.format(FORMATTER_YMDHMS), "UnionAdd");
-                String deleteTimeBucket = getUnionSetName(ruleName, time.format(FORMATTER_YMDHMS), "UnionDelete");
-                List<String> deleteSecTimeBuckets = getAllDeleteSecTimeBucket(rule, seconds, now);
+                String delTimeBucket = getUnionSetName(ruleName, time.format(FORMATTER_YMDHMS), "UnionDelete");
+                List<String> delSecTimeBuckets = getAllDeleteSecTimeBucket(rule, seconds, now);
                 List<String> addSecTimeBuckets = getAllAddSecTimeBucket(rule, seconds, now);
 
                 logger.debug(
-                        "union any. Now:{}, notEmptyUnionTimeBucket:{}, deleteSecTimeBuckets:{}, addSecTimeBuckets: {}",
-                        now.format(FORMATTER_YMDHMS), notEmptyUnionTimeBucket, JSON.toJSONString(deleteSecTimeBuckets),
+                        "union any.Now:{}, notEmptyUnionTimeBucket:{}, delSecTimeBuckets:{}, addSecTimeBuckets: {}",
+                        now.format(FORMATTER_YMDHMS), notEmptyUnionTimeBucket, JSON.toJSONString(delSecTimeBuckets),
                         JSON.toJSONString(addSecTimeBuckets));
 
-                zSetOps.unionAndStore(getEmptySetName(EMPTY_SET), deleteSecTimeBuckets, deleteTimeBucket); // 合并需要被删除的时间窗口
+                zSetOps.unionAndStore(getEmptySetName(EMPTY_SET), delSecTimeBuckets, delTimeBucket); // 合并需要被删除的时间窗口
                 zSetOps.unionAndStore(getEmptySetName(EMPTY_SET), addSecTimeBuckets, addTimeBucket); // 合并需要被添加的时间窗口
-                zSetOps.scan(deleteTimeBucket, ScanOptions.scanOptions().build())
+                zSetOps.scan(delTimeBucket, ScanOptions.scanOptions().build())
                         .forEachRemaining(c -> {
-                            redisTemplate.opsForZSet().incrementScore(deleteTimeBucket, c.getValue(),
-                                    c.getScore() * -1); // 被删除的score * -1
+                            redisTemplate.opsForZSet().add(delTimeBucket, c.getValue(), c.getScore() * -1); // 被删除的score*-1
                         });
-                zSetOps.unionAndStore(deleteTimeBucket,
-                        Arrays.asList(new String[] {notEmptyUnionTimeBucket, addTimeBucket}),
+                zSetOps.unionAndStore(delTimeBucket, Arrays.asList(notEmptyUnionTimeBucket, addTimeBucket),
                         currentBucket); // 合并需要被删除的， 被添加的， 已经合并的
 
-                zSetOps.getOperations().expire(addTimeBucket, 1, TimeUnit.SECONDS);
-                zSetOps.getOperations().expire(deleteTimeBucket, 1, TimeUnit.SECONDS);
+                zSetOps.getOperations().expire(addTimeBucket, 200, TimeUnit.SECONDS); // TODO 1
+                zSetOps.getOperations().expire(delTimeBucket, 200, TimeUnit.SECONDS); // TODO 1
                 zSetOps.getOperations().expire(currentBucket, getExpireByRule(rule), TimeUnit.SECONDS);
             } else {// 不存在合并后的时间窗口
                 // 合并所有的子时间窗口
@@ -127,13 +124,15 @@ public class RuleExecutor implements Job {
             String rejectTime = now.plusSeconds(rule.getRejectionSpan()).format(FORMATTER_YMDHMS);
             boolean isOffendersChanged = false;
             for (String offender : offenders) {
-                if (zSetOps.add(getOffendersMapName(ruleName), offender, Double.valueOf(rejectTime))) {
-                    isOffendersChanged = true;
+                Double oldOffenderScore = zSetOps.score(getOffendersMapName(ruleName), offender);
+                if (oldOffenderScore == null || oldOffenderScore.longValue() != Long.valueOf(rejectTime)) {
+                    isOffendersChanged = true; // 当拒绝访问时间有更新时， 通知ApiGateway
                 }
+                zSetOps.add(getOffendersMapName(ruleName), offender, Double.valueOf(rejectTime));
             }
             if (isOffendersChanged) {
                 redisTemplate.convertAndSend(OffENDER_CHANNEL, ruleName);
-                logger.info("got offenders: {}, time: {}", JSON.toJSONString(offenders));
+                logger.info("got offenders: {}", JSON.toJSONString(offenders));
             }
         }
         logger.debug("end to execute rule: {}, time: {}", ruleName, now.format(FORMATTER_YMDHMS));
@@ -144,6 +143,7 @@ public class RuleExecutor implements Job {
      * 
      * @param rule
      * @param now
+     * @param zSetOps
      * @return
      */
     private String getNoEmptyUnionTimeBucket(LimitTimesRule rule, LocalDateTime now,

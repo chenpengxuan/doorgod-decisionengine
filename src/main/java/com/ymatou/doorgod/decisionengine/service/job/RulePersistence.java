@@ -69,7 +69,7 @@ public class RulePersistence implements Job {
         // 合并Redis以备持久化
         String currentBucket = RedisHelper.getUnionSetName(rule.getName(), now.format(FORMATTER_YMDHMS), MONGO_UNION);
         List<String> timeBuckets = getAllTimeBucket(rule, now);
-        long count = redisTemplate.opsForZSet().unionAndStore(RedisHelper.getEmptySetName(EMPTY_SET), timeBuckets,
+        redisTemplate.opsForZSet().unionAndStore(RedisHelper.getEmptySetName(EMPTY_SET), timeBuckets,
                 currentBucket);
         redisTemplate.opsForSet().getOperations().expire(currentBucket, UNION_FOR_MONGO_PERSISTENCE_EXPIRE_TIME,
                 TimeUnit.SECONDS);
@@ -77,7 +77,7 @@ public class RulePersistence implements Job {
         // 持久化
         MongoSampleRepository sampleUnionRepository = SpringContextHolder.getBean(MongoSampleRepository.class);
         Set<TypedTuple<String>> sampleUnion =
-                redisTemplate.opsForZSet().rangeWithScores(currentBucket, bizProps.getPresistToMongoTopN(), -1);
+                redisTemplate.opsForZSet().rangeWithScores(currentBucket, bizProps.getPresistToMongoTopN() * -1, -1);
         if (sampleUnion != null && sampleUnion.size() > 0) {
             List<MongoSamplePo> mongoSamples = new ArrayList<>();
             for (TypedTuple<String> sample : sampleUnion) {
@@ -89,8 +89,8 @@ public class RulePersistence implements Job {
                 mongoSamples.add(msp);
             }
             sampleUnionRepository.save(mongoSamples);
+            logger.info("persist union sample size: {}, rule: {}", mongoSamples.size(), rule.getName());
         }
-        logger.info("persist union sample size: {}, rule: {}", count, rule.getName());
     }
 
     /**
@@ -122,17 +122,17 @@ public class RulePersistence implements Job {
                 }
             }
             offenderRepository.save(offenderPos);
+            logger.info("persist offender size: {}, rule: {}", offenderPos.size(), rule.getName());
         }
 
         // 删除到期的Offender
         redisTemplate.opsForZSet().removeRangeByScore(getOffendersMapName(rule.getName()), 0,
                 Double.valueOf(LocalDateTime.now().format(FORMATTER_YMDHMS)));
-        logger.info("persist offender size: {}, rule: {}", blackList.size(), rule.getName());
     }
 
     private List<String> getAllTimeBucket(LimitTimesRule rule, LocalDateTime now) {
         List<String> timeBuckets = new ArrayList<>();
-        for (int second = rule.getStatisticSpan(); second >= 1; second--) { // TODO一分钟还是规则的统计时间
+        for (int second = rule.getStatisticSpan(); second >= 1; second--) { // TODO 一分钟还是规则的统计时间
             timeBuckets.add(getNormalSetName(rule.getName(), now.minusSeconds(second).format(FORMATTER_YMDHMS)));
         }
         return timeBuckets;
