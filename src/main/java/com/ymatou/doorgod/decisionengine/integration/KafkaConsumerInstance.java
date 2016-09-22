@@ -1,7 +1,10 @@
 /*
- * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
+ *
+ *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
+ *  All rights reserved.
+ *
  */
-package com.ymatou.doorgod.decisionengine.holder;
+package com.ymatou.doorgod.decisionengine.integration;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,40 +29,17 @@ import kafka.javaapi.consumer.ConsumerConnector;
  */
 public class KafkaConsumerInstance implements Runnable {
 
-    private final AtomicBoolean closed = new AtomicBoolean(false);
-    private KafkaConsumer<String, String> kafkaConsumer;
     private ConsumerConnector consumerConnector;
     private TaskExecutor taskExecutor;
 
-    public KafkaConsumerInstance(KafkaConsumer<String, String> kafkaConsumer, ConsumerConnector consumerConnector,
+    public KafkaConsumerInstance(ConsumerConnector consumerConnector,
             TaskExecutor taskExecutor) {
-        this.kafkaConsumer = kafkaConsumer;
         this.taskExecutor = taskExecutor;
         this.consumerConnector = consumerConnector;
     }
 
     @Override
     public void run() {
-        // try {
-        // DecisionEngine decisionEngine = SpringContextHolder.getBean(DecisionEngine.class);
-        // kafkaConsumer.subscribe(Arrays.asList("test111")); // TODO
-        // while (!closed.get()) {
-        // ConsumerRecords<String, String> records = kafkaConsumer.poll(10000);
-        //
-        // taskExecutor.execute(() -> {
-        // for (ConsumerRecord<String, String> record : records) {
-        // String sampleStr = record.value();
-        // decisionEngine.putStaticItem(JSON.parseObject(sampleStr, StatisticItem.class));
-        // }
-        // });
-        // }
-        // } catch (WakeupException e) {
-        // // Ignore exception if closing
-        // if (!closed.get())
-        // throw e;
-        // } finally {
-        // kafkaConsumer.close();
-        // }
 
         KafkaProps kafkaProps = SpringContextHolder.getBean(KafkaProps.class);
 
@@ -79,10 +59,5 @@ public class KafkaConsumerInstance implements Runnable {
         for (final KafkaStream stream : streams) {
             executor.execute(new KafkaConsumeSample(stream));
         }
-    }
-
-    public void shutdown() {
-        closed.set(true);
-        kafkaConsumer.wakeup();
     }
 }

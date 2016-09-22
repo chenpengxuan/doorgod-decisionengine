@@ -67,7 +67,7 @@ public class RedisSampleStore extends AbstractSampleStore {
                 redisTemplate.opsForZSet().getOperations().expire(zSetName, getExpireByRule(rule), TimeUnit.SECONDS);// 单位秒
             }
 
-            logger.debug("ruleName:{},zsetName:{},zsetsample:{},score:{}", rule.getName(),
+            logger.info("ruleName:{},zsetName:{},zsetsample:{},score:{}", rule.getName(),
                     zSetName, entry.getKey().toString(), score);
         });
     }

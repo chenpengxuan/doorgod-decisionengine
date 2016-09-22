@@ -8,7 +8,6 @@ import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YM
 import static com.ymatou.doorgod.decisionengine.constants.Constants.MONGO_UNION;
 import static com.ymatou.doorgod.decisionengine.constants.Constants.UNION_FOR_MONGO_PERSISTENCE_EXPIRE_TIME;
 import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getNormalSetName;
-import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getOffendersMapName;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,7 +20,6 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Example;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Component;
@@ -29,10 +27,8 @@ import org.springframework.stereotype.Component;
 import com.ymatou.doorgod.decisionengine.config.props.BizProps;
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
-import com.ymatou.doorgod.decisionengine.model.MongoSamplePo;
-import com.ymatou.doorgod.decisionengine.model.OffenderPo;
+import com.ymatou.doorgod.decisionengine.model.mongo.MongoSamplePo;
 import com.ymatou.doorgod.decisionengine.repository.MongoSampleRepository;
-import com.ymatou.doorgod.decisionengine.repository.OffenderRepository;
 import com.ymatou.doorgod.decisionengine.util.RedisHelper;
 import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
 
@@ -42,16 +38,17 @@ import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
  * 
  */
 @Component
-public class RulePersistence implements Job {
+public class MongoSamplePersistenceJob implements Job {
 
-    private static final Logger logger = LoggerFactory.getLogger(RulePersistence.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoSamplePersistenceJob.class);
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         LocalDateTime now = LocalDateTime.now();
+
+        logger.info("exec job persist");
         for (LimitTimesRule rule : RuleHolder.rules.values()) {
             persistUnionSample(rule, now);
-            persistOffender(rule, now);
         }
         logger.info("presist redis data to mongodb. {}", now.format(FORMATTER_YMDHMS));
     }
@@ -93,42 +90,6 @@ public class RulePersistence implements Job {
         }
     }
 
-    /**
-     * 每一分钟持久化一次Offender
-     * 
-     * @param rule
-     * @param now
-     */
-    public void persistOffender(LimitTimesRule rule, LocalDateTime now) {
-        // 持久化Offender
-        StringRedisTemplate redisTemplate = SpringContextHolder.getBean(StringRedisTemplate.class);
-        OffenderRepository offenderRepository = SpringContextHolder.getBean(OffenderRepository.class);
-        Set<TypedTuple<String>> blackList =
-                redisTemplate.opsForZSet().rangeWithScores(getOffendersMapName(rule.getName()), 0, -1);
-        if (blackList != null && !blackList.isEmpty()) {
-            List<OffenderPo> offenderPos = new ArrayList<>();
-            for (TypedTuple<String> typeTuple : blackList) {
-                OffenderPo offenderPo = new OffenderPo();
-                offenderPo.setRuleName(rule.getName());
-                offenderPo.setSample(typeTuple.getValue());
-                offenderPo.setRejectTime(String.valueOf(typeTuple.getScore().longValue()));
-
-                // 查询MongoDB中是否已经存在， 若不存在则保存
-                Example<OffenderPo> example = Example.of(offenderPo);
-                OffenderPo result = offenderRepository.findOne(example);
-                if (result == null) {
-                    offenderPo.setAddTime(now.format(FORMATTER_YMDHMS));
-                    offenderPos.add(offenderPo);
-                }
-            }
-            offenderRepository.save(offenderPos);
-            logger.info("persist offender size: {}, rule: {}", offenderPos.size(), rule.getName());
-        }
-
-        // 删除到期的Offender
-        redisTemplate.opsForZSet().removeRangeByScore(getOffendersMapName(rule.getName()), 0,
-                Double.valueOf(LocalDateTime.now().format(FORMATTER_YMDHMS)));
-    }
 
     private List<String> getAllTimeBucket(LimitTimesRule rule, LocalDateTime now) {
         List<String> timeBuckets = new ArrayList<>();

@@ -8,8 +8,8 @@
 package com.ymatou.doorgod.decisionengine.test.repository;
 
 import com.ymatou.doorgod.decisionengine.model.Demo;
-import com.ymatou.doorgod.decisionengine.model.MongoGroupBySamplePo;
-import com.ymatou.doorgod.decisionengine.model.MongoGroupBySampleStats;
+import com.ymatou.doorgod.decisionengine.model.mongo.MongoGroupBySamplePo;
+import com.ymatou.doorgod.decisionengine.model.mongo.MongoGroupBySampleStats;
 import com.ymatou.doorgod.decisionengine.repository.DemoRepository;
 import com.ymatou.doorgod.decisionengine.test.BaseTest;
 import org.apache.commons.lang.RandomStringUtils;

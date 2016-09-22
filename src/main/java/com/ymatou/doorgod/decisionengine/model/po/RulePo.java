@@ -40,15 +40,6 @@ public class RulePo extends Audit {
     @Column(name = "rejection_span")
     private int rejectionSpan;
 
-    @Column(name = "update_type")
-    private String updateType;
-
-    /**
-     * @see com.ymatou.doorgod.decisionengine.model.ScopeEnum
-     */
-    @Column(name = "scope")
-    private String scope;
-
     @Column(name = "keys")
     private String keys;
 
@@ -112,21 +103,6 @@ public class RulePo extends Audit {
         this.rejectionSpan = rejectionSpan;
     }
 
-    public String getUpdateType() {
-        return updateType;
-    }
-
-    public void setUpdateType(String updateType) {
-        this.updateType = updateType;
-    }
-
-    public String getScope() {
-        return scope;
-    }
-
-    public void setScope(String scope) {
-        this.scope = scope;
-    }
 
     public String getKeys() {
         return keys;
@@ -167,4 +143,6 @@ public class RulePo extends Audit {
     public void setUris(String uris) {
         this.uris = uris;
     }
+
+
 }

@@ -61,6 +61,7 @@ public class SchedulerServiceImpl implements SchedulerService {
 
         // 借助于原trigger相关联的triggerBuilder修改trigger
         TriggerBuilder tb = oldTrigger.getTriggerBuilder();
+
         Trigger newTrigger = tb.withSchedule(CronScheduleBuilder.cronSchedule(cronExpression)).build();
 
         scheduler.rescheduleJob(oldTrigger.getKey(), newTrigger);

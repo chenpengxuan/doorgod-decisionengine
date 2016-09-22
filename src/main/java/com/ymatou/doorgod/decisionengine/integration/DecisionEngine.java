@@ -126,12 +126,12 @@ public class DecisionEngine {
             if(null != sampleCount){
                 sampleCount.incrementAndGet();
             }
-            logger.debug("ruleName:{},key:{},mapSize:{},sample:{},sampleCount:{}", rule.getName(),reqTime, sampleMap.size(),
+            logger.info("ruleName:{},key:{},mapSize:{},sample:{},sampleCount:{}", rule.getName(),reqTime, sampleMap.size(),
                     roleSample, sampleCount);
         } else {
             sampleMap.putIfAbsent(roleSample, new AtomicInteger(0));
             int sampleCount = sampleMap.get(roleSample).incrementAndGet();// ++
-            logger.debug("ruleName:{},key:{},mapSize:{},sample:{},sampleCount:{}", rule.getName(),reqTime, sampleMap.size(),
+            logger.info("ruleName:{},key:{},mapSize:{},sample:{},sampleCount:{}", rule.getName(),reqTime, sampleMap.size(),
                     roleSample, sampleCount);
         }
 
@@ -167,12 +167,12 @@ public class DecisionEngine {
             if(null != leftKeySet){
                 leftKeySet.add(originSample.unNarrow(groupByKeys));
             }
-            logger.debug("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},groupBySetCount:{}", rule.getName(),
+            logger.info("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},groupBySetCount:{}", rule.getName(),
                     reqTime, sampleMap.size(),
                     originSample, groupBySample, leftKeySet.size());
         } else {
             sampleMap.putIfAbsent(groupBySample, Sets.newHashSet(originSample.unNarrow(groupByKeys)));
-            logger.debug("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},new groupBySetCount:1",
+            logger.info("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},new groupBySetCount:1",
                     rule.getName(), reqTime, sampleMap.size(), originSample, groupBySample);
         }
     }

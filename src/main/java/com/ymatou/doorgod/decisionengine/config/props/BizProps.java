@@ -43,6 +43,9 @@ public class BizProps {
     // 每次持久化前N个Sample
     private int presistToMongoTopN;
 
+    //redis 统计时 前多少秒 每次都使用最新的union集 默认10秒
+    private int previousSecondsRedisSkip = 10;
+
     @DisconfFileItem(name = "biz.ruleDiscoverCronExpression")
     public String getRuleDiscoverCronExpression() {
         return ruleDiscoverCronExpression;
@@ -131,5 +134,14 @@ public class BizProps {
 
     public void setPresistToMongoTopN(int presistToMongoTopN) {
         this.presistToMongoTopN = presistToMongoTopN;
+    }
+
+    @DisconfFileItem(name = "biz.previousSecondsRedisSkip")
+    public int getPreviousSecondsRedisSkip() {
+        return previousSecondsRedisSkip;
+    }
+
+    public void setPreviousSecondsRedisSkip(int previousSecondsRedisSkip) {
+        this.previousSecondsRedisSkip = previousSecondsRedisSkip;
     }
 }

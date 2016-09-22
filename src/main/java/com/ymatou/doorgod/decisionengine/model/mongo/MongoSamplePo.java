@@ -1,7 +1,10 @@
 /*
- * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
+ *
+ *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
+ *  All rights reserved.
+ *
  */
-package com.ymatou.doorgod.decisionengine.model;
+package com.ymatou.doorgod.decisionengine.model.mongo;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -12,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
  * @author qianmin 2016年9月18日 上午11:02:52
  * 
  */
-@Document(collection = "sampletest")
+@Document(collection = "sample")
 public class MongoSamplePo {
 
     @Id

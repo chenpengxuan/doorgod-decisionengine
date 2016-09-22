@@ -1,10 +1,21 @@
 /*
  *
- * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
+ *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
+ *  All rights reserved.
  *
  */
 
 package com.ymatou.doorgod.decisionengine.test;
+
+import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Sets;
+import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
+import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
+import com.ymatou.doorgod.decisionengine.model.Sample;
+import com.ymatou.doorgod.decisionengine.model.StatisticItem;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,21 +27,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerRecord;
-
-import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Sets;
-import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
-import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
-import com.ymatou.doorgod.decisionengine.model.Sample;
-import com.ymatou.doorgod.decisionengine.model.StatisticItem;
-
 /**
  * @author luoshiqian 2016/9/13 15:34
  */
-public class ProducerTest {
+public class ProducerSingleTest {
 
     static ExecutorService writeExecutor = Executors.newFixedThreadPool(5);
     static Producer<String, String> producer = null;
@@ -109,33 +109,29 @@ public class ProducerTest {
         RuleHolder.rules.put("testrule3", rule);
 
 
-        for (int i = 0; i < 5; i++) {
+        while (true){
+            StatisticItem a = new StatisticItem();
+            LocalDateTime dateTime = LocalDateTime.now();
+            String str = dateTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            a.setReqTime(str);
+            Sample sample2 = new Sample();
+            sample2.addDimensionValue("uri", "/api/1xxx.do");
+            sample2.addDimensionValue("ip", ips[new Random().nextInt(1)]);
+            sample2.addDimensionValue("deviceId", deviceIds[new Random().nextInt(1)]);
+            a.setSample(sample2);
 
-            writeExecutor.execute(() -> {
-                while (true) {
-                    StatisticItem a = new StatisticItem();
-                    LocalDateTime dateTime = LocalDateTime.now();
-                    String str = dateTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-                    a.setReqTime(str);
-                    Sample sample2 = new Sample();
-                    sample2.addDimensionValue("uri", "/api/1xxx.do");
-                    sample2.addDimensionValue("ip", ips[new Random().nextInt(20)]);
-                    sample2.addDimensionValue("deviceId", deviceIds[new Random().nextInt(20)]);
-                    a.setSample(sample2);
-
-                    ProducerRecord<String, String> record =
-                            new ProducerRecord<String, String>("kafka.topic.statisticSampleEvent",
-                                    JSON.toJSONString(a));
-                    producer.send(record);
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(new Random().nextInt(1000));
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-
+            ProducerRecord<String, String> record =
+                    new ProducerRecord<String, String>("doorgod.statisticSampleEvent",
+                            JSON.toJSONString(a));
+            producer.send(record);
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
+
+
     }
 
 }

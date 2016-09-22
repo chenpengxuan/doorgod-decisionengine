@@ -12,6 +12,8 @@ import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.ymatou.doorgod.decisionengine.integration.KafkaClients;
+import com.ymatou.doorgod.decisionengine.service.OffenderService;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -29,8 +31,8 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
-import com.ymatou.doorgod.decisionengine.model.MongoGroupBySamplePo;
-import com.ymatou.doorgod.decisionengine.model.MongoGroupBySampleStats;
+import com.ymatou.doorgod.decisionengine.model.mongo.MongoGroupBySamplePo;
+import com.ymatou.doorgod.decisionengine.model.mongo.MongoGroupBySampleStats;
 import com.ymatou.doorgod.decisionengine.util.MongoHelper;
 import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
 
@@ -39,28 +41,32 @@ import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
  * @author luoshiqian
  * 
  */
-public class MongoSampleOffendersExecutor implements Job {
+public class MongoGroupBySampleOffendersJob implements Job {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoSampleOffendersExecutor.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoGroupBySampleOffendersJob.class);
 
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        MongoTemplate mongoTemplate =
-                SpringContextHolder.getBean(MongoTemplate.class);
-
-        StringRedisTemplate redisTemplate =
-                SpringContextHolder.getBean(StringRedisTemplate.class);
+        MongoTemplate mongoTemplate = SpringContextHolder.getBean(MongoTemplate.class);
+        KafkaClients kafkaClients = SpringContextHolder.getBean(KafkaClients.class);
+        OffenderService offenderService = SpringContextHolder.getBean(OffenderService.class);
 
         String jobName = context.getJobDetail().getKey().getName();
         LimitTimesRule rule = RuleHolder.rules.get(jobName.replace("groupBy", ""));
+
+        if(null == rule){
+            logger.info("exec MongoGroupBySampleOffendersJob:{} rule==null",jobName);
+            return;
+        }
         LocalDateTime now = LocalDateTime.now();
+        String nowFormated = now.format(FORMATTER_YMDHMS);
         String ruleName = rule.getName();
+
+        logger.info("exec MongoGroupBySampleOffendersJob :{}",ruleName);
 
         String startTime = now.minusSeconds(rule.getStatisticSpan()).format(FORMATTER_YMDHM);
         String endTime = now.format(FORMATTER_YMDHM);
-        // String startTime = "201609181750";
-        // String endTime = "201609181803";
 
         Criteria criteria = Criteria.where("startTime").gte(startTime).and("endTime").lte(endTime);
 
@@ -74,23 +80,21 @@ public class MongoSampleOffendersExecutor implements Job {
                 mongoTemplate.aggregate(aggregation, collectionName, MongoGroupBySampleStats.class);
 
         if (null != result) {
-            boolean isBlackListChanged = false;
-            List<MongoGroupBySampleStats> blackList = Lists.newArrayList();
+            boolean isOffendersChanged = false;
             for (MongoGroupBySampleStats state : result.getMappedResults()) {
                 // 超过 加入黑名单
                 if (state.getCount() >= rule.getTimesCap()) {
-                    blackList.add(state);
-                    String rejectTime = now.plusSeconds(rule.getRejectionSpan()).format(FORMATTER_YMDHMS);
-                    if (redisTemplate.opsForZSet().add(getOffendersMapName(ruleName), state.getGroupByKeys(),
-                            Double.valueOf(rejectTime))) {
-                        isBlackListChanged = true;
+
+                    String releaseDate = now.plusSeconds(rule.getRejectionSpan()).format(FORMATTER_YMDHMS);
+                    if(offenderService.saveOffender(rule,state.getGroupByKeys(),releaseDate,nowFormated)){
+                        isOffendersChanged = true;
                     }
                 }
             }
 
-            if (isBlackListChanged) {
-                redisTemplate.convertAndSend(OffENDER_CHANNEL, ruleName);
-                logger.debug("got blacklist: {}, time: {}", JSON.toJSONString(blackList));
+            if (isOffendersChanged) {
+                kafkaClients.sendUpdateOffendersEvent(ruleName);
+                logger.info("got groupby offenders");
             }
         }
 

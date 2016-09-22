@@ -1,7 +1,10 @@
 /*
- * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
+ *
+ *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
+ *  All rights reserved.
+ *
  */
-package com.ymatou.doorgod.decisionengine.model;
+package com.ymatou.doorgod.decisionengine.model.mongo;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -12,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
  * @author qianmin 2016年9月14日 下午6:54:45
  * 
  */
-@Document(collection = "offender")
+@Document(collection = "LimitTimesRuleOffender")
 public class OffenderPo {
 
     @Id
@@ -27,14 +30,14 @@ public class OffenderPo {
     @Field("addTime")
     private String addTime;
 
-    @Field("rejectTime")
-    private String rejectTime;
+    @Field("releaseDate")
+    private Long releaseDate;
 
     public OffenderPo() {}
 
-    public OffenderPo(String sample, String rejectTime) {
+    public OffenderPo(String sample, Long releaseDate) {
         this.sample = sample;
-        this.rejectTime = rejectTime;
+        this.releaseDate = releaseDate;
     }
 
     public String getId() {
@@ -53,10 +56,6 @@ public class OffenderPo {
         this.sample = sample;
     }
 
-    public String getRejectTime() {
-        return rejectTime;
-    }
-
     public String getRuleName() {
         return ruleName;
     }
@@ -65,8 +64,12 @@ public class OffenderPo {
         this.ruleName = ruleName;
     }
 
-    public void setRejectTime(String rejectTime) {
-        this.rejectTime = rejectTime;
+    public Long getReleaseDate() {
+        return releaseDate;
+    }
+
+    public void setReleaseDate(Long releaseDate) {
+        this.releaseDate = releaseDate;
     }
 
     public String getAddTime() {

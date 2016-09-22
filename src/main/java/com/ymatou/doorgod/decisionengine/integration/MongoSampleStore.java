@@ -28,7 +28,7 @@ import org.springframework.util.CollectionUtils;
 import com.ymatou.doorgod.decisionengine.constants.Constants;
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
-import com.ymatou.doorgod.decisionengine.model.MongoGroupBySamplePo;
+import com.ymatou.doorgod.decisionengine.model.mongo.MongoGroupBySamplePo;
 import com.ymatou.doorgod.decisionengine.model.Sample;
 
 /**

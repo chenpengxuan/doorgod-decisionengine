@@ -5,14 +5,17 @@ package com.ymatou.doorgod.decisionengine.config;
 
 import java.util.Properties;
 
-import kafka.consumer.ConsumerConfig;
-import kafka.javaapi.consumer.ConsumerConnector;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.ymatou.doorgod.decisionengine.config.props.KafkaProps;
+
+import kafka.consumer.ConsumerConfig;
+import kafka.javaapi.consumer.ConsumerConnector;
 
 /**
  * 
@@ -44,10 +47,11 @@ public class KafkaConfig {
 
     /**
      * 配置详见 http://kafka.apache.org/documentation.html#newconsumerconfigs
+     * 
      * @return
      */
     @Bean
-    public ConsumerConnector consumerConnector(){
+    public ConsumerConnector consumerConnector() {
         Properties props = new Properties();
         props.put("bootstrap.servers", kafkaProps.getBootstrapServers());
         props.put("group.id", kafkaProps.getGroupId());
@@ -62,5 +66,23 @@ public class KafkaConfig {
         ConsumerConnector consumerConnector =
                 kafka.consumer.Consumer.createJavaConsumerConnector(new ConsumerConfig(props));
         return consumerConnector;
+    }
+
+    @Bean(name = "offendersProducer")
+    public Producer<String, String> offendersProducer() {
+        Properties props = new Properties();
+
+        props.put("bootstrap.servers", kafkaProps.getBootstrapServers());
+        props.put("acks", "all");
+        props.put("retries", 0);
+        props.put("batch.size", 16384);
+        props.put("linger.ms", 1);
+        props.put("buffer.memory", 33554432);
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+
+        Producer<String, String> producer = new KafkaProducer<String, String>(props);
+
+        return producer;
     }
 }
