@@ -15,7 +15,7 @@ public class Constants {
     public static final DateTimeFormatter FORMATTER_YMDHMS = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     public static final DateTimeFormatter FORMATTER_YMDHM = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
 
-    public static final String SEPARATOR = ";";
+    public static final String SEPARATOR = ",";
 
     public static final String UNION = "Union";
 
