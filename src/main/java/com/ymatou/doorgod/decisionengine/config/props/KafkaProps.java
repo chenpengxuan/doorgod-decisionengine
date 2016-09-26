@@ -19,8 +19,16 @@ public class KafkaProps {
 
     private String bootstrapServers;
     private String groupId;
+
+    //topic
     private String statisticSampleTopic;
     private String updateOffendersTopic;
+    private String updateRuleTopic;
+    private String rejectReqTopic;
+
+    private int statisticSampleThreadNums;
+    private int rejectReqThreadNums;
+
 
     @DisconfFileItem(name = "kafka.bootstrapServers")
     public String getBootstrapServers() {
@@ -56,5 +64,41 @@ public class KafkaProps {
 
     public void setUpdateOffendersTopic(String updateOffendersTopic) {
         this.updateOffendersTopic = updateOffendersTopic;
+    }
+
+    @DisconfFileItem(name = "kafka.topic.updateRuleEvent")
+    public String getUpdateRuleTopic() {
+        return updateRuleTopic;
+    }
+
+    public void setUpdateRuleTopic(String updateRuleTopic) {
+        this.updateRuleTopic = updateRuleTopic;
+    }
+
+    @DisconfFileItem(name = "kafka.consumer.statisticSampleThreadNums")
+    public int getStatisticSampleThreadNums() {
+        return statisticSampleThreadNums;
+    }
+
+    public void setStatisticSampleThreadNums(int statisticSampleThreadNums) {
+        this.statisticSampleThreadNums = statisticSampleThreadNums;
+    }
+
+    @DisconfFileItem(name = "kafka.topic.rejectReqEvent")
+    public String getRejectReqTopic() {
+        return rejectReqTopic;
+    }
+
+    public void setRejectReqTopic(String rejectReqTopic) {
+        this.rejectReqTopic = rejectReqTopic;
+    }
+
+    @DisconfFileItem(name = "kafka.consumer.rejectReqThreadNums")
+    public int getRejectReqThreadNums() {
+        return rejectReqThreadNums;
+    }
+
+    public void setRejectReqThreadNums(int rejectReqThreadNums) {
+        this.rejectReqThreadNums = rejectReqThreadNums;
     }
 }

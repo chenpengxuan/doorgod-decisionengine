@@ -9,16 +9,23 @@ package com.ymatou.doorgod.decisionengine.integration;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
+import com.ymatou.doorgod.decisionengine.util.DateUtils;
 import com.ymatou.doorgod.decisionengine.util.MongoHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.index.Index;
+import org.springframework.data.mongodb.core.index.IndexDefinition;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -65,6 +72,9 @@ public class MongoSampleStore extends AbstractSampleStore {
         String collectionName = MongoHelper.getGroupByCollectionName(rule);
         if(!mongoTemplate.collectionExists(collectionName)){
             mongoTemplate.createCollection(collectionName);
+            Index index = new Index("addTime", Sort.Direction.ASC);
+            index.expire(rule.getTimesCap() * 2);
+            mongoTemplate.indexOps(collectionName).ensureIndex(index);
         }
         samples.forEach(entry -> {
 
@@ -76,11 +86,10 @@ public class MongoSampleStore extends AbstractSampleStore {
                 String leftKeys = s.toString();
 
                 //uploadtime 找到start end time
-                LocalDateTime localDateTime = LocalDateTime.parse(uploadTime, Constants.FORMATTER_YMDHMS);
+                LocalDateTime localDateTime = DateUtils.parseDefault(uploadTime);
                 String startMinute = localDateTime.format(Constants.FORMATTER_YMDHM);
                 String endMinute = localDateTime.plusMinutes(1).format(Constants.FORMATTER_YMDHM);
 
-//                MongoGroupBySamplePo samplePo = new MongoGroupBySamplePo(startMinute,endMinute,groupByKeys,leftKeys);
                 Query query = new Query(Criteria.where("startTime").is(startMinute)
                         .and("endTime").is(endMinute)
                         .and("groupByKeys").is(groupByKeys)
@@ -91,13 +100,12 @@ public class MongoSampleStore extends AbstractSampleStore {
                 update.set("endTime",endMinute);
                 update.set("groupByKeys",groupByKeys);
                 update.set("leftKeys",leftKeys);
+                update.set("addTime",new Date());
+
+
                 mongoTemplate.findAndModify(query,update,new FindAndModifyOptions()
                         .returnNew(true).upsert(true),MongoGroupBySamplePo.class,collectionName);
 
-//                mongoTemplate.upsert(query,update,MongoGroupBySamplePo.class,collectionName);
-//                if(!mongoTemplate.exists(query,collectionName)){
-//                    mongoTemplate.insert(samplePo,collectionName);
-//                }
             });
         });
     }

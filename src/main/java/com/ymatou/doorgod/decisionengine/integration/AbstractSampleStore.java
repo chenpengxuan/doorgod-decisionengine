@@ -161,8 +161,10 @@ public abstract class AbstractSampleStore {
         if(Long.valueOf(currentTime) >= Long.valueOf(nextTimeClearMap.get(memoryMap))){
             logger.info("begin to clear useless data,size:{}",memoryMap.size());
             //清空
-            memoryMap.entrySet()
-                    .removeIf(stringMapEntry -> Long.valueOf(stringMapEntry.getKey()) <= Long.valueOf(twoHoursLater));
+            memoryMap.entrySet().stream().forEach(ruleMapEntry -> {
+                ruleMapEntry.getValue().entrySet()
+                        .removeIf(entry -> Long.valueOf(entry.getKey()) <= Long.valueOf(twoHoursLater));
+            });
             nextTimeClearMap.put(memoryMap,twoHoursLater);
 
             logger.info("end to clear useless data,size:{}",memoryMap.size());

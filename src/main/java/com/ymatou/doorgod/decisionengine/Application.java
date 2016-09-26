@@ -11,13 +11,9 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.core.task.TaskExecutor;
 
-import com.ymatou.doorgod.decisionengine.integration.KafkaConsumerInstance;
 import com.ymatou.doorgod.decisionengine.holder.ShutdownLatch;
 import com.ymatou.doorgod.decisionengine.service.job.RuleDiscoverer;
-
-import kafka.javaapi.consumer.ConsumerConnector;
 
 /**
  * 
@@ -35,11 +31,6 @@ public class Application {
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         ConfigurableApplicationContext ctx = SpringApplication.run(Application.class, args);
-
-        ConsumerConnector consumerConnector = ctx.getBean(ConsumerConnector.class);
-        TaskExecutor taskExecutor = (TaskExecutor) ctx.getBean("taskExecutor");
-        new Thread(new KafkaConsumerInstance(consumerConnector, taskExecutor)).start();
-
 
         RuleDiscoverer ruleDiscoverer = ctx.getBean(RuleDiscoverer.class);
         ruleDiscoverer.execute();

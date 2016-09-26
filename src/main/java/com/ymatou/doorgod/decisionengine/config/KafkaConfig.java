@@ -13,9 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.ymatou.doorgod.decisionengine.config.props.KafkaProps;
-
-import kafka.consumer.ConsumerConfig;
-import kafka.javaapi.consumer.ConsumerConnector;
+import com.ymatou.doorgod.decisionengine.util.Utils;
 
 /**
  * 
@@ -28,19 +26,19 @@ public class KafkaConfig {
     @Autowired
     private KafkaProps kafkaProps;
 
-    @Bean
-    public KafkaConsumer<String, String> kafkaConsumer() {
-        Properties props = new Properties();
-        props.put("bootstrap.servers", kafkaProps.getBootstrapServers());
-        props.put("group.id", kafkaProps.getGroupId());
-        props.put("enable.auto.commit", "true");
-        props.put("auto.commit.interval.ms", "1000");
-        props.put("session.timeout.ms", "30000");
-        props.put("max.poll.records", "50000");
-        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+    @Bean(name = "cacheReloaderConsumer")
+    public KafkaConsumer<String, String> cacheReloaderConsumer() {
+        String localIp = Utils.localIp();
+        if (localIp == null || localIp.equals("127.0.0.1")) {
+            // 本地ip将用作groupId, 本地Ip拿不到，拒绝应用启动
+            throw new RuntimeException("Failed to fetch local ip");
+        }
 
+        Properties props = consumerCommonProps();
+        props.put("group.id", localIp);
+        props.put("client.id", localIp);
+
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
 
         return consumer;
     }
@@ -50,23 +48,29 @@ public class KafkaConfig {
      * 
      * @return
      */
-    @Bean
-    public ConsumerConnector consumerConnector() {
+    @Bean(name = "autoCommitConsumerProps")
+    public Properties statisticSampleConsumerProps() {
+        Properties props = consumerCommonProps();
+
+        props.put("auto.offset.reset", "latest");
+        props.put("enable.auto.commit", "true");
+        props.put("auto.commit.interval.ms", "1000");
+
+        return props;
+    }
+
+    @Bean(name = "consumerCommonProps")
+    public Properties consumerCommonProps() {
         Properties props = new Properties();
         props.put("bootstrap.servers", kafkaProps.getBootstrapServers());
         props.put("group.id", kafkaProps.getGroupId());
-        props.put("zookeeper.connect", "172.16.100.105:2181");
-        props.put("enable.auto.commit", "true");
-        props.put("auto.offset.reset", "smallest");
         props.put("max.poll.records", "50000");
-        props.put("auto.commit.interval.ms", "1000");
         props.put("session.timeout.ms", "30000");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        ConsumerConnector consumerConnector =
-                kafka.consumer.Consumer.createJavaConsumerConnector(new ConsumerConfig(props));
-        return consumerConnector;
+        return props;
     }
+
 
     @Bean(name = "offendersProducer")
     public Producer<String, String> offendersProducer() {

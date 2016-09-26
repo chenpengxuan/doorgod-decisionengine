@@ -12,32 +12,34 @@ import java.util.List;
 
 import javax.transaction.Transactional;
 
-import com.ymatou.doorgod.decisionengine.constants.Constants;
-import com.ymatou.doorgod.decisionengine.model.StatusEnum;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import com.alibaba.fastjson.JSON;
 import com.ymatou.doorgod.decisionengine.config.props.BizProps;
+import com.ymatou.doorgod.decisionengine.constants.Constants;
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import com.ymatou.doorgod.decisionengine.model.ScopeEnum;
+import com.ymatou.doorgod.decisionengine.model.StatusEnum;
 import com.ymatou.doorgod.decisionengine.model.po.RulePo;
 import com.ymatou.doorgod.decisionengine.repository.RuleRepository;
 import com.ymatou.doorgod.decisionengine.service.SchedulerService;
-import org.springframework.util.CollectionUtils;
 
 /**
  * 加载Rule数据， 添加修改Rule的定时任务， RedisToMongo同步任务
+ * 
  * @author qianmin 2016年9月12日 上午11:03:49
  * 
  */
 @Component
-public class RuleDiscoverer{
+public class RuleDiscoverer {
 
     private static final Logger logger = LoggerFactory.getLogger(RuleDiscoverer.class);
 
@@ -54,50 +56,61 @@ public class RuleDiscoverer{
     public void execute() {
         // 加载Redis定时同步数据到MongoDB任务(添加/修改)
         try {
-            schedulerService.addJob(MongoSamplePersistenceJob.class, "RedisToMongo", bizProps.getRulePersistenceCronExpression());
+            schedulerService.addJob(MongoSamplePersistenceJob.class, "RedisToMongo",
+                    bizProps.getRulePersistenceCronExpression());
         } catch (SchedulerException e) {
             logger.error("add redis to mongo job failed.", e);
         }
         logger.info("load redis to mongo task success.");
 
         // 加载规则数据，更新规则统计的定时任务
+        reload();
+    }
+
+    public void reload() {
+        // 加载规则数据，更新规则统计的定时任务
         HashMap<String, LimitTimesRule> ruleData = fecthRuleData();
+        HashMap<String, LimitTimesRule> rules = new HashMap<>();
         for (LimitTimesRule rule : ruleData.values()) {
             try {
-            String ruleName = rule.getName();
-            RuleHolder.rules.put(ruleName, rule);
-            if(CollectionUtils.isEmpty(rule.getGroupByKeys())){
-                schedulerService.addJob(MongoSampleOffendersJob.class, ruleName, bizProps.getRuleExecutorCronExpression());
-            }else {
-                schedulerService.addJob(MongoGroupBySampleOffendersJob.class, "groupBy"+ruleName,
-                        bizProps.getMongoSampleOffendersCronExpression());
-            }
+                String ruleName = rule.getName();
+                rules.put(ruleName, rule);
 
-//                switch (rule.getUpdateType()) {
-//                    case "add":
-//
-//                        break;
-//                    case "delete":
-//                        RuleHolder.rules.remove(ruleName);
-//                        schedulerService.removeScheduler(ruleName);
-//                        break;
-//                    case "pause":
-//                        RuleHolder.rules.remove(ruleName);
-//                        schedulerService.pauseScheduler(ruleName);
-//                        break;
-//                    case "resume":
-//                        RuleHolder.rules.put(ruleName, rule);
-//                        schedulerService.resumeScheduler(ruleName);
-//                        break;
-//                    default:
-//                        logger.error("Rule UpdateType not supported.");
-//                        break;
-//                }
+                if (CollectionUtils.isEmpty(rule.getGroupByKeys())) {
+                    schedulerService.addJob(MongoSampleOffendersJob.class, ruleName,
+                            bizProps.getRuleExecutorCronExpression());
+                } else {
+                    schedulerService.addJob(MongoGroupBySampleOffendersJob.class, "groupBy" + ruleName,
+                            bizProps.getMongoSampleOffendersCronExpression());
+                }
             } catch (SchedulerException e) {
                 logger.error("update rule schduler failed.", e);
             }
         }
+        // 已删除的规则 定时任务
+        RuleHolder.rules.keySet().stream()
+                .filter(ruleName -> ruleData.values().stream().noneMatch(rule -> rule.getName().equals(ruleName)))
+                .forEach(ruleName -> {
+                    try {
+                        RulePo rulePo = new RulePo();
+                        rulePo.setName(ruleName);
+                        RulePo rule = ruleRepository.findOne(Example.of(rulePo));
+                        if (rule != null) {
+                            String jobName = ruleName;
+                            if (StringUtils.isNotBlank(rule.getGroupByKeys())) {
+                                jobName = "groupBy" + ruleName;
+                            }
+                            schedulerService.removeScheduler(jobName);
+                        }
+                    } catch (Exception e) {
+                        logger.error("update rule schduler failed.", e);
+                    }
+                });
+
+        // 替换
+        RuleHolder.rules = rules;
         logger.info("load rule data: {}", JSON.toJSONString(ruleData));
+
     }
 
     public HashMap<String, LimitTimesRule> fecthRuleData() {
@@ -120,7 +133,7 @@ public class RuleDiscoverer{
             if (!StringUtils.isBlank(rulePo.getUris())) {
                 rule.setScope(ScopeEnum.SPECIFIC_URIS);
                 rule.setApplicableUris(new HashSet<>(Arrays.asList(rulePo.getUris().split(SEPARATOR))));
-            }else {
+            } else {
                 rule.setScope(ScopeEnum.ALL);
             }
             rules.put(rulePo.getName(), rule);

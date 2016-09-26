@@ -7,6 +7,8 @@
 
 package com.ymatou.doorgod.decisionengine.model.mongo;
 
+import java.util.Date;
+
 /**
  * @author luoshiqian 2016/9/14 16:24
  */
@@ -22,6 +24,8 @@ public class MongoGroupBySamplePo {
     private String groupByKeys;
 
     private String leftKeys;
+
+    private Date addTime;
 
 
     public MongoGroupBySamplePo() {}
@@ -71,5 +75,13 @@ public class MongoGroupBySamplePo {
 
     public void setLeftKeys(String leftKeys) {
         this.leftKeys = leftKeys;
+    }
+
+    public Date getAddTime() {
+        return addTime;
+    }
+
+    public void setAddTime(Date addTime) {
+        this.addTime = addTime;
     }
 }
