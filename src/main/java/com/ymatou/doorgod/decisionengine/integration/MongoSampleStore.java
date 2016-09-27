@@ -14,10 +14,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.mongodb.DBObject;
-import com.mongodb.MongoClient;
-import com.ymatou.doorgod.decisionengine.util.DateUtils;
-import com.ymatou.doorgod.decisionengine.util.MongoHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +21,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
-import org.springframework.data.mongodb.core.index.IndexDefinition;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -35,8 +30,10 @@ import org.springframework.util.CollectionUtils;
 import com.ymatou.doorgod.decisionengine.constants.Constants;
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
-import com.ymatou.doorgod.decisionengine.model.mongo.MongoGroupBySamplePo;
 import com.ymatou.doorgod.decisionengine.model.Sample;
+import com.ymatou.doorgod.decisionengine.model.mongo.MongoGroupBySamplePo;
+import com.ymatou.doorgod.decisionengine.util.DateUtils;
+import com.ymatou.doorgod.decisionengine.util.MongoHelper;
 
 /**
  * @author luoshiqian 2016/9/14 16:01
@@ -101,7 +98,6 @@ public class MongoSampleStore extends AbstractSampleStore {
                 update.set("groupByKeys",groupByKeys);
                 update.set("leftKeys",leftKeys);
                 update.set("addTime",new Date());
-
 
                 mongoTemplate.findAndModify(query,update,new FindAndModifyOptions()
                         .returnNew(true).upsert(true),MongoGroupBySamplePo.class,collectionName);
