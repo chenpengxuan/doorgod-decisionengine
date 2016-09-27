@@ -81,6 +81,7 @@ public abstract class AbstractSampleStore {
     protected abstract void uploadSampleToDb(LimitTimesRule rule,String uploadTime, Collection<Map.Entry<Sample, Object>> samples);
 
 
+    //FIXME:加一个定时删除10s之前的内存统计
     private final void putSample(LimitTimesRule rule,String currentTime){
 
         //1.组装规则需要 上报的数据
@@ -106,14 +107,11 @@ public abstract class AbstractSampleStore {
             if(sampleMap == null){
                 return;
             }
-            if(topN > 0){
-                List<Map.Entry<Sample, Object>> sampleList = topNOfSamples(sampleMap, topN);
-                uploadSampleToDb(rule,uploadTime,sampleList);
-                sampleList = null;
-            }else {
-                uploadSampleToDb(rule,uploadTime,sampleMap.entrySet());
-                sampleMap.clear();
-            }
+
+            List<Map.Entry<Sample, Object>> sampleList = topNOfSamples(sampleMap, topN);
+            uploadSampleToDb(rule,uploadTime,sampleList);
+            sampleList = null;
+
         });
     }
 
