@@ -77,6 +77,8 @@ public class KafkaConfig {
         Properties props = new Properties();
 
         props.put("bootstrap.servers", kafkaProps.getBootstrapServers());
+
+        //FIXME: more consideration
         props.put("acks", "all");
         props.put("retries", 0);
         props.put("batch.size", 16384);

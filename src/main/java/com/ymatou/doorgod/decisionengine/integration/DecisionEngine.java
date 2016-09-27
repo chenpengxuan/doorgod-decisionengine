@@ -3,6 +3,7 @@
  */
 package com.ymatou.doorgod.decisionengine.integration;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.ymatou.doorgod.decisionengine.config.props.BizProps;
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
@@ -128,11 +129,13 @@ public class DecisionEngine {
             if(null != sampleCount){
                 sampleCount.incrementAndGet();
             }
+            //FIXME: error, 具体sample值无需输出
             logger.info("ruleName:{},key:{},mapSize:{},sample:{},sampleCount:{}", rule.getName(),reqTime, sampleMap.size(),
                     roleSample, sampleCount);
         } else {
             sampleMap.putIfAbsent(roleSample, new AtomicInteger(0));
             int sampleCount = sampleMap.get(roleSample).incrementAndGet();// ++
+            //FIXME: 具体sample值无需输出
             logger.info("ruleName:{},key:{},mapSize:{},sample:{},sampleCount:{}", rule.getName(),reqTime, sampleMap.size(),
                     roleSample, sampleCount);
         }
@@ -169,11 +172,15 @@ public class DecisionEngine {
             if(null != leftKeySet){
                 leftKeySet.add(originSample.unNarrow(groupByKeys));
             }
+            //FIXME: logger.error，具体sample值无需输出
+            //具体sample值无需输出
             logger.info("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},groupBySetCount:{}", rule.getName(),
                     reqTime, sampleMap.size(),
                     originSample, groupBySample, leftKeySet.size());
         } else {
-            sampleMap.putIfAbsent(groupBySample, Sets.newHashSet(originSample.unNarrow(groupByKeys)));
+            sampleMap.putIfAbsent(groupBySample, Sets.newConcurrentHashSet(Lists.newArrayList(originSample.unNarrow(groupByKeys))));
+
+            //FIXME: 具体sample值无需输出
             logger.info("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},new groupBySetCount:1",
                     rule.getName(), reqTime, sampleMap.size(), originSample, groupBySample);
         }
