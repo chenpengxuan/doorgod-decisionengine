@@ -50,7 +50,7 @@ public class DecisionEngine {
      * key: rulename
      * value: hashMap: //FIXME: treeMap
      *                 key: reqTime (seconds)
-     *                 value: treemap //FIXME: hashMap
+     *                 value: treemap
      *                               key: sample
      *                               value: AtomicInteger 计数
      */
@@ -178,9 +178,9 @@ public class DecisionEngine {
                     reqTime, sampleMap.size(),
                     originSample, groupBySample, leftKeySet.size());
         } else {
-            Sample withoutGroupBy = originSample.unNarrow(groupByKeys);
-            sampleMap.putIfAbsent(groupBySample, Sets.newConcurrentHashSet(Lists.newArrayList( withoutGroupBy )));
-            sampleMap.get(groupBySample).add(withoutGroupBy);
+            Sample leftKeySample = originSample.unNarrow(groupByKeys);
+            sampleMap.putIfAbsent(groupBySample, Sets.newConcurrentHashSet(Lists.newArrayList( leftKeySample )));
+            sampleMap.get(groupBySample).add(leftKeySample);
 
             //FIXME: 具体sample值无需输出
             logger.info("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},new groupBySetCount:1",
