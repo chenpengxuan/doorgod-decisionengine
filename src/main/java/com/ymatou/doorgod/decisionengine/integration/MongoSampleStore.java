@@ -70,6 +70,7 @@ public class MongoSampleStore extends AbstractSampleStore {
         if(!mongoTemplate.collectionExists(collectionName)){
             mongoTemplate.createCollection(collectionName);
             Index index = new Index("addTime", Sort.Direction.ASC);
+            //FIXME:先不设
             index.expire(rule.getTimesCap() * 2);
             mongoTemplate.indexOps(collectionName).ensureIndex(index);
         }
@@ -87,6 +88,7 @@ public class MongoSampleStore extends AbstractSampleStore {
                 String startMinute = localDateTime.format(Constants.FORMATTER_YMDHM);
                 String endMinute = localDateTime.plusMinutes(1).format(Constants.FORMATTER_YMDHM);
 
+                //FIXME: 一个分钟时间Key就可以了
                 Query query = new Query(Criteria.where("startTime").is(startMinute)
                         .and("endTime").is(endMinute)
                         .and("groupByKeys").is(groupByKeys)

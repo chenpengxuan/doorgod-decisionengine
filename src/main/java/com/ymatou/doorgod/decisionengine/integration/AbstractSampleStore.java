@@ -46,6 +46,7 @@ public abstract class AbstractSampleStore {
         String currentTime =  dateTime.format(Constants.FORMATTER_YMDHMS);
 
         findRule().forEach(rule -> {
+            //FIXME: 添加一个线程池
             try {
                 putSample(rule,currentTime);
             } catch (Exception e) {
@@ -94,6 +95,7 @@ public abstract class AbstractSampleStore {
         }
 
         //获取比当前时间小的所有数据
+        //FIXME: Treeset优势没用上
         Set<String> needUploadTimes = secondsTreeMap.keySet().stream()
                 .filter(key -> Long.valueOf(key).compareTo(Long.valueOf(currentTime)) < 0)
                 .collect(Collectors.toSet());
@@ -107,7 +109,7 @@ public abstract class AbstractSampleStore {
             if(topN > 0){
                 List<Map.Entry<Sample, Object>> sampleList = topNOfSamples(sampleMap, topN);
                 uploadSampleToDb(rule,uploadTime,sampleList);
-                sampleList.clear();
+                sampleList = null;
             }else {
                 uploadSampleToDb(rule,uploadTime,sampleMap.entrySet());
                 sampleMap.clear();
@@ -140,8 +142,7 @@ public abstract class AbstractSampleStore {
         if (list.size() >= topNums) {
             newList = new ArrayList<>(topNums);
             newList.addAll(list.subList(0, topNums));
-            list.clear();
-            //list = null;
+            list = null;
         }else {
             newList = list;
         }
@@ -149,6 +150,7 @@ public abstract class AbstractSampleStore {
     }
 
     /**
+     * FIXME:更简单的做法, rule变更事件统一处理
      * 删除2小时之前 无用的内存 预防 规则变更等情况引起的无用数据
      */
     private void clearUselessMemory(Map<String,Map<String,Map<Sample,Object>>> memoryMap,String currentTime){

@@ -35,6 +35,7 @@ public class TimerConfig {
     @Autowired
     private DecisionEngine decisionEngine;
 
+    //FIXME: rename with biz meaning
     @PostConstruct
     public void initRedisTimer() {
         // 初始化延迟5秒开始执行 固定每n毫秒执行一次
@@ -49,6 +50,7 @@ public class TimerConfig {
 
     }
 
+    //FIXME: rename with biz meaning
     @PostConstruct
     public void initMongoTimer() {
         mongoExecutor.scheduleAtFixedRate(() -> {
