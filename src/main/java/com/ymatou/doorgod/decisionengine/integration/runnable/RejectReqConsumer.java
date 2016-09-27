@@ -45,6 +45,8 @@ public class RejectReqConsumer implements Runnable{
             consumer.subscribe(topics);
 
             while (true) {
+
+                //FIXME:消费过程中异常，导致consumer被close
                 ConsumerRecords<String, String> records = consumer.poll(Long.MAX_VALUE);
                 for (ConsumerRecord<String, String> record : records) {
 

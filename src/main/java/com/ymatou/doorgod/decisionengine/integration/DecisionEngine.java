@@ -47,9 +47,9 @@ public class DecisionEngine {
 
     /**
      * key: rulename
-     * value: hashMap:
+     * value: hashMap: //FIXME: treeMap
      *                 key: reqTime (seconds)
-     *                 value: treemap
+     *                 value: treemap //FIXME: hashMap
      *                               key: sample
      *                               value: AtomicInteger 计数
      */
@@ -85,6 +85,8 @@ public class DecisionEngine {
 
         Sample sample = statisticItem.getSample();
         String reqTime = statisticItem.getReqTime();
+
+        //FIXME: StatisticItem应该有一个Field:uri，ApiGateway直接发过来
         String uri = sample.findUri();
         Set<LimitTimesRule> set = getRulesByUri(uri);
 

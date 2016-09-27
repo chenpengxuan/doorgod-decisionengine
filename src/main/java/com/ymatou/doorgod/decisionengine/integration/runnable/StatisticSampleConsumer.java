@@ -48,8 +48,12 @@ public class StatisticSampleConsumer implements Runnable {
             consumer.subscribe(topics);
 
             while (true) {
+
+                //FIXME:消费过程中异常导致 consumer被close
                 ConsumerRecords<String, String> records = consumer.poll(Long.MAX_VALUE);
                 for (ConsumerRecord<String, String> record : records) {
+
+                    //FIXME: 不需要，record有很好的toString()实现
                     Map<String, Object> data = new HashMap<>();
                     data.put("partition", record.partition());
                     data.put("offset", record.offset());

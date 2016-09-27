@@ -20,6 +20,8 @@ public abstract class AbstractRule implements Ordered, Comparable<AbstractRule> 
     private int order;
 
     /**
+     * FIXME:没用，直接删除
+     * applicableUris为空，代表全匹配
      * 使用范围
      */
     private ScopeEnum scope;
