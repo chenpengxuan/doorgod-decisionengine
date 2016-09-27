@@ -178,7 +178,9 @@ public class DecisionEngine {
                     reqTime, sampleMap.size(),
                     originSample, groupBySample, leftKeySet.size());
         } else {
-            sampleMap.putIfAbsent(groupBySample, Sets.newConcurrentHashSet(Lists.newArrayList(originSample.unNarrow(groupByKeys))));
+            Sample withoutGroupBy = originSample.unNarrow(groupByKeys);
+            sampleMap.putIfAbsent(groupBySample, Sets.newConcurrentHashSet(Lists.newArrayList( withoutGroupBy )));
+            sampleMap.get(groupBySample).add(withoutGroupBy);
 
             //FIXME: 具体sample值无需输出
             logger.info("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},new groupBySetCount:1",
