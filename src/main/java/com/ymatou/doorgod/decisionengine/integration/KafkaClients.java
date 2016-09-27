@@ -66,6 +66,8 @@ public class KafkaClients implements ApplicationListener {
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
         if (event instanceof ApplicationReadyEvent) {
+
+            //FIXME: 直接用注入的 kafkaProps
             KafkaProps kafkaProps = SpringContextHolder.getBean(KafkaProps.class);
 
             int numConsumers = kafkaProps.getStatisticSampleThreadNums();

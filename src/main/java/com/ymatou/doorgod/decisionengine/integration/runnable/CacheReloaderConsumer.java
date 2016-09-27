@@ -34,6 +34,7 @@ public class CacheReloaderConsumer implements Runnable {
     public CacheReloaderConsumer(List<String> topics) {
         this.topics = topics;
 
+        //FIXME:应该是根据配置创建一个consumer, autocommit务必设置为false
         this.consumer = SpringContextHolder.getBean("cacheReloaderConsumer");
 
         ruleDiscoverer = SpringContextHolder.getBean(RuleDiscoverer.class);
@@ -48,10 +49,14 @@ public class CacheReloaderConsumer implements Runnable {
                 ConsumerRecords<String, String> records = consumer.poll(Long.MAX_VALUE);
                 for (ConsumerRecord<String, String> record : records) {
 
+                    //FIXME: 消费过程中发生异常，导致consumer被close
                     ruleDiscoverer.reload();
 
                     consumer.commitSync(Collections.singletonMap(new TopicPartition(record.topic(), record.partition()),
+                            //FIXME: record.offset()+1　??
                             new OffsetAndMetadata(record.offset())));
+
+                    //FIXME:刷新缓存频率低，建议打info，便于分析/确认问题
                     logger.debug("consume record:", record);
                 }
             }
@@ -62,6 +67,7 @@ public class CacheReloaderConsumer implements Runnable {
         }
     }
 
+    //FIXME: never called
     public void shutdown() {
         consumer.wakeup();
     }
