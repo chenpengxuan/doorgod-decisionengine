@@ -57,6 +57,8 @@ public class RedisSampleStore extends AbstractSampleStore {
         String zSetName = RedisHelper.getNormalSetName(rule.getName(), uploadTime);
 
         samples.forEach(entry -> {
+            //FIXME:一个失败，全部失败？
+            //FIXME：batch operations?
             double score = 1;
             if (redisTemplate.opsForZSet().getOperations().hasKey(zSetName)) {
                 score = redisTemplate.opsForZSet().incrementScore(zSetName, entry.getKey().toString(),
