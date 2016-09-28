@@ -84,6 +84,8 @@ public class DecisionEngine {
     //累计
     public void putStaticItem(StatisticItem statisticItem){
 
+        //FIXME:如果样本是5s之前的，记error日志，直接返回。无需统计超期样本
+
         Sample sample = statisticItem.getSample();
         String reqTime = statisticItem.getReqTime();
 
