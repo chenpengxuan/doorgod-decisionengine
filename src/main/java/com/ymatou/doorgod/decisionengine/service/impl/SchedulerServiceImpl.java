@@ -36,6 +36,7 @@ public class SchedulerServiceImpl implements SchedulerService {
     public void addJob(Class<? extends Job> job, String jobName, String cronExpression) throws SchedulerException {
         List<? extends Trigger> triggerList = scheduler.getTriggersOfJob(new JobKey(jobName));
         if (triggerList == null || triggerList.isEmpty()) {
+            //FIXME:必须确保单机也无并发
             JobDetail jobDetail = JobBuilder.newJob(job)
                     .withIdentity(jobName)
                     // .storeDurably(false) //Job是非持久性的，若没有活动的Trigger与之相关联，该Job会从Scheduler中删除掉

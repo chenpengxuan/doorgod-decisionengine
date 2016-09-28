@@ -49,6 +49,8 @@ public class MongoGroupBySampleOffendersJob implements Job {
         OffenderService offenderService = SpringContextHolder.getBean(OffenderService.class);
 
         String jobName = context.getJobDetail().getKey().getName();
+
+        //FIXME: 不要加groupBy前缀。。。
         LimitTimesRule rule = RuleHolder.rules.get(jobName.replace("groupBy", ""));
 
         if(null == rule){
@@ -64,8 +66,10 @@ public class MongoGroupBySampleOffendersJob implements Job {
         String startTime = now.minusSeconds(rule.getStatisticSpan()).format(FORMATTER_YMDHM);
         String endTime = now.format(FORMATTER_YMDHM);
 
+        //FIXME:写入时, startTime/endTime是不是已经合并了?
         Criteria criteria = Criteria.where("startTime").gte(startTime).and("endTime").lte(endTime);
 
+        //FIXME: distinct count
         TypedAggregation<MongoGroupBySamplePo> aggregation = Aggregation.newAggregation(MongoGroupBySamplePo.class,
                 match(criteria),
                 group("groupByKeys").count().as("count"),
@@ -89,6 +93,8 @@ public class MongoGroupBySampleOffendersJob implements Job {
             }
             if (isOffendersChanged) {
                 kafkaClients.sendUpdateOffendersEvent(ruleName);
+
+                //FIXME:更详尽的日志
                 logger.info("got groupby offenders");
             }
         }

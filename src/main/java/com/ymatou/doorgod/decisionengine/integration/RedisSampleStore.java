@@ -72,6 +72,8 @@ public class RedisSampleStore extends AbstractSampleStore {
             logger.info("ruleName:{},zsetName:{},zsetsample:{},score:{}", rule.getName(),
                     zSetName, entry.getKey().toString(), score);
         });
+
+        //FIXME:异步将Top数据写入到Mongo，一分钟汇聚一次
     }
 
     /**

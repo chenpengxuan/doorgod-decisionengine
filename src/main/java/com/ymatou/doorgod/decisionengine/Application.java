@@ -23,7 +23,7 @@ import com.ymatou.doorgod.decisionengine.service.job.RuleDiscoverer;
 @EnableAspectJAutoProxy
 @Configuration
 @EnableAutoConfiguration
-@ComponentScan(basePackages = "com.ymatou")
+@ComponentScan(basePackages = "com.ymatou.doorgod.decisionengine")
 public class Application {
 
     public static final Logger logger = LoggerFactory.getLogger(Application.class);

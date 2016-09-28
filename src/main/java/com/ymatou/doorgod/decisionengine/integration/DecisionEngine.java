@@ -27,7 +27,7 @@ import com.ymatou.doorgod.decisionengine.model.StatisticItem;
 
 
 /**
- *
+ * FIXME: rename class name
  * @author qianmin 2016年9月6日 下午7:01:48
  *
  */
@@ -73,6 +73,8 @@ public class DecisionEngine {
 
     //累计
     public void putStaticItem(StatisticItem statisticItem){
+
+        //FIXME:如果样本是5s之前的，记error日志，直接返回。无需统计超期样本
 
         Sample sample = statisticItem.getSample();
         String reqTime = statisticItem.getReqTime();

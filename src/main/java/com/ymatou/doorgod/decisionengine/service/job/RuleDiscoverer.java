@@ -55,6 +55,7 @@ public class RuleDiscoverer {
     public void execute() {
         // 加载Redis定时同步数据到MongoDB任务(添加/修改)
         try {
+            //FIXME:不需要
             schedulerService.addJob(MongoSamplePersistenceJob.class, "RedisToMongo",
                     bizProps.getRulePersistenceCronExpression());
         } catch (SchedulerException e) {
@@ -123,6 +124,7 @@ public class RuleDiscoverer {
             rule.setStatisticSpan(rulePo.getStatisticSpan());
             rule.setTimesCap(rulePo.getTimesCap());
             rule.setRejectionSpan(rulePo.getRejectionSpan());
+                //FIXME:更完备的split,参考apigateway
             if (StringUtils.isNotBlank(rulePo.getKeys())) {
                 rule.setDimensionKeys(new HashSet<>(Arrays.asList(rulePo.getKeys().split(SEPARATOR))));
             }
