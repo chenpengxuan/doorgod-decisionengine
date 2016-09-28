@@ -26,6 +26,11 @@
 		<appender-ref ref="HTTP-POST-ERROR-APPENDER" />
 	</logger>
 
+	<logger name="org.mongodb">
+		<level value="debug" />
+		<appender-ref ref="HTTP-POST-ERROR-APPENDER" />
+	</logger>
+
 	<logger name="com.ibatis">
 		<level value="${level}" />
 		<appender-ref ref="HTTP-POST-ERROR-APPENDER" />
@@ -38,7 +43,7 @@
 	-
 
 	<logger name="com.ymatou.doorgod">
-		<level value="${level}" />
+		<level value="debug" />
 		<appender-ref ref="HTTP-POST-ERROR-APPENDER" />
 	</logger>
 

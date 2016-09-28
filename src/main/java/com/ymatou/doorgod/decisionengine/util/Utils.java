@@ -14,9 +14,13 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 
+import com.ymatou.doorgod.decisionengine.constants.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 /**
  * Created by tuwenjie on 2016/9/7.
@@ -38,6 +42,20 @@ public class Utils {
     public static Date parseDate( String date ) {
         LocalDateTime localDateTime = LocalDateTime.parse(date, DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    public static Set<String> splitByComma(String text ) {
+        Set<String> result = new HashSet<String>( );
+        if (StringUtils.hasText(text)) {
+            text = text.trim();
+            String[] splits = text.split(Constants.SEPARATOR);
+            for (String split : splits ) {
+                if (StringUtils.hasText(split.trim())) {
+                    result.add(split.trim());
+                }
+            }
+        }
+        return result;
     }
 
     public static String localIp( ) {

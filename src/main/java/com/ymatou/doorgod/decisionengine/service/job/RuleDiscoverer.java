@@ -12,6 +12,7 @@ import java.util.List;
 
 import javax.transaction.Transactional;
 
+import com.ymatou.doorgod.decisionengine.util.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -55,7 +56,6 @@ public class RuleDiscoverer {
     public void execute() {
         // 加载Redis定时同步数据到MongoDB任务(添加/修改)
         try {
-            //FIXME:不需要
             schedulerService.addJob(MongoSamplePersistenceJob.class, "RedisToMongo",
                     bizProps.getRulePersistenceCronExpression());
         } catch (SchedulerException e) {
@@ -80,7 +80,7 @@ public class RuleDiscoverer {
                     schedulerService.addJob(MongoSampleOffendersJob.class, ruleName,
                             bizProps.getRuleExecutorCronExpression());
                 } else {
-                    schedulerService.addJob(MongoGroupBySampleOffendersJob.class, "groupBy" + ruleName,
+                    schedulerService.addJob(MongoGroupBySampleOffendersJob.class,ruleName,
                             bizProps.getMongoSampleOffendersCronExpression());
                 }
             } catch (SchedulerException e) {
@@ -97,9 +97,6 @@ public class RuleDiscoverer {
                         RulePo rule = ruleRepository.findOne(Example.of(rulePo));
                         if (rule != null) {
                             String jobName = ruleName;
-                            if (StringUtils.isNotBlank(rule.getGroupByKeys())) {
-                                jobName = "groupBy" + ruleName;
-                            }
                             schedulerService.removeScheduler(jobName);
                         }
                     } catch (Exception e) {
@@ -124,15 +121,15 @@ public class RuleDiscoverer {
             rule.setStatisticSpan(rulePo.getStatisticSpan());
             rule.setTimesCap(rulePo.getTimesCap());
             rule.setRejectionSpan(rulePo.getRejectionSpan());
-                //FIXME:更完备的split,参考apigateway
+
             if (StringUtils.isNotBlank(rulePo.getKeys())) {
-                rule.setDimensionKeys(new HashSet<>(Arrays.asList(rulePo.getKeys().split(SEPARATOR))));
+                rule.setDimensionKeys(Utils.splitByComma(rulePo.getKeys()));
             }
             if (StringUtils.isNotBlank(rulePo.getGroupByKeys())) {
-                rule.setGroupByKeys(new HashSet<>(Arrays.asList(rulePo.getGroupByKeys().split(SEPARATOR))));
+                rule.setGroupByKeys(Utils.splitByComma(rulePo.getGroupByKeys()));
             }
             if (StringUtils.isNotBlank(rulePo.getUris())) {
-                rule.setApplicableUris(new HashSet<>(Arrays.asList(rulePo.getUris().split(SEPARATOR))));
+                rule.setApplicableUris(Utils.splitByComma(rulePo.getUris()));
             }
             rules.put(rulePo.getName(), rule);
         }
