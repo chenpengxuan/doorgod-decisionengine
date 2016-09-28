@@ -52,10 +52,12 @@ public class RuleDiscoverer {
     @Autowired
     private BizProps bizProps;
 
+    //FIXME:为什么要事务?
     @Transactional
     public void execute() {
         // 加载Redis定时同步数据到MongoDB任务(添加/修改)
         try {
+            //FIXME:不需要
             schedulerService.addJob(MongoSamplePersistenceJob.class, "RedisToMongo",
                     bizProps.getRulePersistenceCronExpression());
         } catch (SchedulerException e) {
@@ -125,6 +127,7 @@ public class RuleDiscoverer {
             rule.setTimesCap(rulePo.getTimesCap());
             rule.setRejectionSpan(rulePo.getRejectionSpan());
             if (!StringUtils.isBlank(rulePo.getKeys())) {
+                //FIXME:更完备的split,参考apigateway
                 rule.setDimensionKeys(new HashSet<>(Arrays.asList(rulePo.getKeys().split(SEPARATOR))));
             }
             if (!StringUtils.isBlank(rulePo.getGroupByKeys())) {

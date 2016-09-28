@@ -16,6 +16,7 @@ import com.ymatou.doorgod.decisionengine.config.props.BizProps;
 import com.ymatou.doorgod.decisionengine.model.mongo.OffenderPo;
 import com.ymatou.doorgod.decisionengine.repository.OffenderRepository;
 import com.ymatou.doorgod.decisionengine.service.OffenderService;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -24,11 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Example;
-import org.springframework.data.mongodb.core.FindAndModifyOptions;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisZSetCommands;
 import org.springframework.data.redis.core.RedisCallback;
@@ -42,9 +38,14 @@ import com.ymatou.doorgod.decisionengine.integration.KafkaClients;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
 
+import javax.persistence.criteria.CriteriaBuilder;
+
 /**
+ * FIXME: rename with better biz meaning
  * 
  * @author qianmin 2016年9月12日 上午11:04:36
+ * @author luoshiqian
+ * @author tuwenjie
  * 
  */
 @Component
@@ -79,55 +80,61 @@ public class MongoSampleOffendersJob implements Job {
             String nowFormated = now.format(FORMATTER_YMDHMS);
 
             List<String> timeBuckets = getAllTimeBucket(rule, now);
-            String previousBucket = getUnionSetName(ruleName, now.minusSeconds(1).format(FORMATTER_YMDHMS), UNION);
-            String currentBucket = getUnionSetName(ruleName, now.format(FORMATTER_YMDHMS), UNION);
-            String secAdd = getNormalSetName(ruleName, now.minusSeconds(1).format(FORMATTER_YMDHMS));
-            String secDel = getNormalSetName(ruleName,
-                    now.minusSeconds(rule.getStatisticSpan() + 1).format(FORMATTER_YMDHMS));
-            logger.info("begin to execute rule:{},time:{},previousBucket:{},currentBucket:{},secAdd:{},secDelete:{}",
-                    ruleName, now.format(FORMATTER_YMDHMS), previousBucket, currentBucket, secAdd, secDel);
+
+            String currentUnionName = getUnionSetName(ruleName, now.format(FORMATTER_YMDHMS), UNION);
+
+            logger.info("begin to execute rule:{},time:{},currentUnionName:{}",
+                    ruleName, now.format(FORMATTER_YMDHMS), currentUnionName);
 
             int previousSeconds = bizProps.getPreviousSecondsRedisSkip();
-            String previousNSecondsUnionTimeBucket = getPreviousNSecondsUnionTimeBucket(rule, now, zSetOps,previousSeconds);//获取10秒前的union 合集
-            if (StringUtils.isNotBlank(previousNSecondsUnionTimeBucket)) { // 存在合并后的时间窗口
-                LocalDateTime time = LocalDateTime.parse(previousNSecondsUnionTimeBucket.split(":")[3], FORMATTER_YMDHMS);
+            String previousNSecondsUnionName = getPreviousNSecondsUnionName(rule, now, zSetOps,previousSeconds);//获取指定秒前的union 合集
+            if (StringUtils.isNotBlank(previousNSecondsUnionName)) { // 存在N秒前的一个Union结果
 
-                String addTimeBucket = getUnionSetName(ruleName, time.format(FORMATTER_YMDHMS), "UnionAdd");
-                String delTimeBucket = getUnionSetName(ruleName, time.format(FORMATTER_YMDHMS), "UnionDelete");
                 List<String> delSecTimeBuckets = getAllDeleteSecTimeBucket(rule, previousSeconds, now);
                 List<String> addSecTimeBuckets = getAllAddSecTimeBucket(rule, previousSeconds, now);
 
                 logger.info(
-                        "union any.Now:{}, previousNSecondsUnionTimeBucket:{}, delSecTimeBuckets:{}, addSecTimeBuckets: {}",
-                        now.format(FORMATTER_YMDHMS), previousNSecondsUnionTimeBucket, JSON.toJSONString(delSecTimeBuckets),
+                        "union any.Now:{}, previousNSecondsUnionName:{}, delSecTimeBuckets:{}, addSecTimeBuckets: {}",
+                        now.format(FORMATTER_YMDHMS), previousNSecondsUnionName, JSON.toJSONString(delSecTimeBuckets),
                         JSON.toJSONString(addSecTimeBuckets));
-
-                zSetOps.unionAndStore(getEmptySetName(EMPTY_SET), delSecTimeBuckets, delTimeBucket); // 合并需要被删除的时间窗口
-                zSetOps.unionAndStore(getEmptySetName(EMPTY_SET), addSecTimeBuckets, addTimeBucket); // 合并需要被添加的时间窗口
 
                 redisTemplate.execute(new RedisCallback<Long>() {
                     @Override
                     public Long doInRedis(RedisConnection connection) throws DataAccessException {
                         // 合并需要被删除的， 被添加的， 已经合并的
-                        byte[][] sets = {delTimeBucket.getBytes(),previousNSecondsUnionTimeBucket.getBytes(),addTimeBucket.getBytes()};
-                        int weight[] = {-1,1,1};
-                        return connection.zUnionStore(currentBucket.getBytes(), RedisZSetCommands.Aggregate.SUM,weight,sets);
+                        int[] weights = new int[delSecTimeBuckets.size() + addSecTimeBuckets.size() + 1];
+                        byte[][] setNameBytes = new byte[weights.length][];
+                        int i = 0;
+                        for ( String setName : delSecTimeBuckets ) {
+                            setNameBytes[i] = setName.getBytes();
+                            weights[i] = -1;
+                            i++;
+                        }
+                        for ( String setName : addSecTimeBuckets ) {
+                            setNameBytes[i] = setName.getBytes();
+                            weights[i] = 1;
+                            i++;
+                        }
+                        setNameBytes[i] = previousNSecondsUnionName.getBytes();
+                        weights[i] = 1;
+
+                        return connection.zUnionStore(currentUnionName.getBytes(), RedisZSetCommands.Aggregate.SUM,
+                                weights, setNameBytes);
                     }
                 });
 
-                zSetOps.getOperations().expire(addTimeBucket, 1, TimeUnit.SECONDS);
-                zSetOps.getOperations().expire(delTimeBucket, 1, TimeUnit.SECONDS);
-                zSetOps.getOperations().expire(currentBucket, getExpireByRule(rule), TimeUnit.SECONDS);
+
             } else {// 不存在合并后的时间窗口
                 // 合并所有的子时间窗口
-                zSetOps.unionAndStore(getEmptySetName(EMPTY_SET), timeBuckets, currentBucket);
-                zSetOps.getOperations().expire(currentBucket, getExpireByRule(rule), TimeUnit.SECONDS);
+                zSetOps.unionAndStore(getEmptySetName(EMPTY_SET), timeBuckets, currentUnionName);
             }
 
+            zSetOps.getOperations().expire(currentUnionName, getExpireByRule(rule), TimeUnit.SECONDS);
+
             // 获取Offender
-            Set<String> offenders = zSetOps.rangeByScore(currentBucket, rule.getTimesCap(), Integer.MAX_VALUE);
+            Set<String> offenders = zSetOps.rangeByScore(currentUnionName, rule.getTimesCap(), Integer.MAX_VALUE);
             if (!offenders.isEmpty()) {
-                zSetOps.removeRangeByScore(currentBucket, rule.getTimesCap(), Double.MAX_VALUE);
+                zSetOps.removeRangeByScore(currentUnionName, rule.getTimesCap(), Double.MAX_VALUE);
                 String releaseDate = now.plusSeconds(rule.getRejectionSpan()).format(FORMATTER_YMDHMS);
 
                 boolean isOffendersChanged = false;
@@ -195,10 +202,10 @@ public class MongoSampleOffendersJob implements Job {
      * @param zSetOps
      * @return
      */
-    private String getPreviousNSecondsUnionTimeBucket(LimitTimesRule rule, LocalDateTime now,ZSetOperations<String, String> zSetOps,int previousSeconds) {
-        String previousNBucket = getUnionSetName(rule.getName(), now.minusSeconds(previousSeconds).format(FORMATTER_YMDHMS), UNION);
-        if (zSetOps.size(previousNBucket) > 0) {
-            return previousNBucket;
+    private String getPreviousNSecondsUnionName(LimitTimesRule rule, LocalDateTime now, ZSetOperations<String, String> zSetOps, int previousSeconds) {
+        String previousNUnionName = getUnionSetName(rule.getName(), now.minusSeconds(previousSeconds).format(FORMATTER_YMDHMS), UNION);
+        if (zSetOps.size(previousNUnionName) > 0) {
+            return previousNUnionName;
         }
         return null;
     }
