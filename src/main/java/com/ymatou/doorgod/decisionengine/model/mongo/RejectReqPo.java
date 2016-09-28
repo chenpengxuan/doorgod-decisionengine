@@ -10,6 +10,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.util.Date;
+
 /**
  * @author luoshiqian 2016/9/14 16:24
  */
@@ -31,6 +33,9 @@ public class RejectReqPo {
 
     @Field("count")
     private Long count;
+
+    @Field("addTime")
+    private Date addTime;
 
 
     public String getId() {
@@ -71,5 +76,13 @@ public class RejectReqPo {
 
     public void setCount(Long count) {
         this.count = count;
+    }
+
+    public Date getAddTime() {
+        return addTime;
+    }
+
+    public void setAddTime(Date addTime) {
+        this.addTime = addTime;
     }
 }

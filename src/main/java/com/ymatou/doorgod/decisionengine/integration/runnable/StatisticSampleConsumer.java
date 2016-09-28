@@ -1,18 +1,14 @@
 /*
  *
- *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
- *  All rights reserved.
+ * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
  *
  */
 
 package com.ymatou.doorgod.decisionengine.integration.runnable;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
-import com.ymatou.doorgod.decisionengine.integration.DecisionEngine;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -21,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
+import com.ymatou.doorgod.decisionengine.integration.DecisionEngine;
 import com.ymatou.doorgod.decisionengine.model.StatisticItem;
 import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
 
@@ -47,24 +44,20 @@ public class StatisticSampleConsumer implements Runnable {
         try {
             consumer.subscribe(topics);
 
-            while (true) {
+            try {
+                while (true) {
 
-                //FIXME:消费过程中异常导致 consumer被close
-                ConsumerRecords<String, String> records = consumer.poll(Long.MAX_VALUE);
-                for (ConsumerRecord<String, String> record : records) {
+                    ConsumerRecords<String, String> records = consumer.poll(Long.MAX_VALUE);
+                    for (ConsumerRecord<String, String> record : records) {
 
-                    //FIXME: 不需要，record有很好的toString()实现
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("partition", record.partition());
-                    data.put("offset", record.offset());
-                    String value = record.value();
-                    data.put("value", value);
-
-
-                    logger.debug("consume record:", data);
-                    decisionEngine.putStaticItem(JSON.parseObject(value, StatisticItem.class));
+                        logger.debug("StatisticSampleConsumer cnsume record:{}", record);
+                        decisionEngine.putStaticItem(JSON.parseObject(record.value(), StatisticItem.class));
+                    }
                 }
+            } catch (Exception e) {
+                logger.error("StatisticSampleConsumer consume record error", e);
             }
+
         } catch (WakeupException e) {
             // ignore for shutdown
         } finally {

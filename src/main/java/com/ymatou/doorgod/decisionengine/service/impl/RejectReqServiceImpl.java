@@ -23,6 +23,8 @@ import com.ymatou.doorgod.decisionengine.repository.RejectReqRepository;
 import com.ymatou.doorgod.decisionengine.service.RejectReqService;
 import com.ymatou.doorgod.decisionengine.util.DateUtils;
 
+import java.util.Date;
+
 /**
  * @author luoshiqian 2016/9/26 14:40
  */
@@ -48,6 +50,7 @@ public class RejectReqServiceImpl implements RejectReqService {
 
         Update update = new Update();
         update.inc("count",1);
+        update.set("addTime",new Date());
 
         mongoTemplate.findAndModify(query,update,new FindAndModifyOptions()
                 .returnNew(true).upsert(true),RejectReqPo.class);

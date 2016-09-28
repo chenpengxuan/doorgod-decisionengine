@@ -38,10 +38,6 @@ public class Sample {
         }
     }
 
-    public String findUri(){
-        return dimensionValues.get(KEY_URI);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o)

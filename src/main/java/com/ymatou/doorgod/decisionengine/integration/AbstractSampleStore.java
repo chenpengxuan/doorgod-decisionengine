@@ -9,14 +9,17 @@ package com.ymatou.doorgod.decisionengine.integration;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Maps;
+import javax.annotation.Resource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.collect.Maps;
 import com.ymatou.doorgod.decisionengine.config.props.BizProps;
 import com.ymatou.doorgod.decisionengine.constants.Constants;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
@@ -40,19 +43,23 @@ public abstract class AbstractSampleStore {
     @Autowired
     protected BizProps bizProps;
 
+    @Resource(name = "putSampleThreadPool")
+    private ExecutorService putSampleThreadPool;
+
     public void putSample(){
 
         LocalDateTime dateTime  = LocalDateTime.now();
         String currentTime =  dateTime.format(Constants.FORMATTER_YMDHMS);
 
-        findRule().forEach(rule -> {
-            //FIXME: 添加一个线程池
-            try {
-                putSample(rule,currentTime);
-            } catch (Exception e) {
-                logger.error("putSample rule:{},currentTime:{} error",rule,currentTime,e);
-            }
-        });
+        findRule().forEach(rule ->
+            putSampleThreadPool.execute(() -> {
+                try {
+                    putSample(rule,currentTime);
+                } catch (Exception e) {
+                    logger.error("putSample rule:{},currentTime:{} error",rule,currentTime,e);
+                }
+            })
+        );
     }
 
 
@@ -81,14 +88,10 @@ public abstract class AbstractSampleStore {
     protected abstract void uploadSampleToDb(LimitTimesRule rule,String uploadTime, Collection<Map.Entry<Sample, Object>> samples);
 
 
-    //FIXME:加一个定时删除10s之前的内存统计
     private final void putSample(LimitTimesRule rule,String currentTime){
 
         //1.组装规则需要 上报的数据
         Map<String,Map<String,Map<Sample,Object>>> memoryMap = getMemoryMap();
-
-        //删除无用的内存 预防 规则变更等情况引起的无用数据
-        clearUselessMemory(memoryMap,currentTime);
 
         Map<String, Map<Sample, Object>> secondsTreeMap = memoryMap.get(rule.getName());
         if(secondsTreeMap == null){
@@ -96,7 +99,6 @@ public abstract class AbstractSampleStore {
         }
 
         //获取比当前时间小的所有数据
-        //FIXME: Treeset优势没用上
         Set<String> needUploadTimes = secondsTreeMap.keySet().stream()
                 .filter(key -> Long.valueOf(key).compareTo(Long.valueOf(currentTime)) < 0)
                 .collect(Collectors.toSet());
@@ -147,28 +149,4 @@ public abstract class AbstractSampleStore {
         return newList;
     }
 
-    /**
-     * FIXME:更简单的做法, rule变更事件统一处理
-     * 删除2小时之前 无用的内存 预防 规则变更等情况引起的无用数据
-     */
-    private void clearUselessMemory(Map<String,Map<String,Map<Sample,Object>>> memoryMap,String currentTime){
-
-        String twoHoursLater = LocalDateTime.parse(currentTime, Constants.FORMATTER_YMDHMS)
-                                            .plusHours(2).format(Constants.FORMATTER_YMDHMS);
-        nextTimeClearMap.putIfAbsent(memoryMap,twoHoursLater );
-
-        //当前时间超过下次清空时间 则执行清空
-        if(Long.valueOf(currentTime) >= Long.valueOf(nextTimeClearMap.get(memoryMap))){
-            logger.info("begin to clear useless data,size:{}",memoryMap.size());
-            //清空
-            memoryMap.entrySet().stream().forEach(ruleMapEntry -> {
-                ruleMapEntry.getValue().entrySet()
-                        .removeIf(entry -> Long.valueOf(entry.getKey()) <= Long.valueOf(twoHoursLater));
-            });
-            nextTimeClearMap.put(memoryMap,twoHoursLater);
-
-            logger.info("end to clear useless data,size:{}",memoryMap.size());
-
-        }
-    }
 }

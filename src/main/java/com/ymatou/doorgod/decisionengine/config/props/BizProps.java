@@ -18,8 +18,7 @@ import com.baidu.disconf.client.common.annotations.DisconfFileItem;
 @Component
 @DisconfFile(fileName = "biz.properties")
 public class BizProps {
-    // 定时发现Rule变化
-    private String ruleDiscoverCronExpression;
+
     // 定时同步Redis数据到Mongo
     private String rulePersistenceCronExpression;
     // 定时统计Redis数据生成黑名单
@@ -46,14 +45,12 @@ public class BizProps {
     //redis 统计时 前多少秒 每次都使用最新的union集 默认10秒
     private int previousSecondsRedisSkip = 10;
 
-    @DisconfFileItem(name = "biz.ruleDiscoverCronExpression")
-    public String getRuleDiscoverCronExpression() {
-        return ruleDiscoverCronExpression;
-    }
+    //将sample放入redis 或 mongo 线程数
+    private int putSampleThreadNums;
 
-    public void setRuleDiscoverCronExpression(String ruleDiscoverCronExpression) {
-        this.ruleDiscoverCronExpression = ruleDiscoverCronExpression;
-    }
+    //端口号
+    private int port;
+
 
     @DisconfFileItem(name = "biz.rulePersistenceCronExpression")
     public String getRulePersistenceCronExpression() {
@@ -143,5 +140,23 @@ public class BizProps {
 
     public void setPreviousSecondsRedisSkip(int previousSecondsRedisSkip) {
         this.previousSecondsRedisSkip = previousSecondsRedisSkip;
+    }
+
+    @DisconfFileItem(name = "biz.putSampleThreadNums")
+    public int getPutSampleThreadNums() {
+        return putSampleThreadNums;
+    }
+
+    public void setPutSampleThreadNums(int putSampleThreadNums) {
+        this.putSampleThreadNums = putSampleThreadNums;
+    }
+
+    @DisconfFileItem(name = "biz.server.port")
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 }

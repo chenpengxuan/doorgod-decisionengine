@@ -93,7 +93,7 @@ public class MongoSamplePersistenceJob implements Job {
 
     private List<String> getAllTimeBucket(LimitTimesRule rule, LocalDateTime now) {
         List<String> timeBuckets = new ArrayList<>();
-        for (int second = rule.getStatisticSpan(); second >= 1; second--) { // TODO 一分钟还是规则的统计时间
+        for (int second = rule.getStatisticSpan(); second >= 1; second--) {
             timeBuckets.add(getNormalSetName(rule.getName(), now.minusSeconds(second).format(FORMATTER_YMDHMS)));
         }
         return timeBuckets;

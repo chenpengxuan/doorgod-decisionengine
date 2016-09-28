@@ -65,6 +65,7 @@ public class KafkaConfig {
         props.put("bootstrap.servers", kafkaProps.getBootstrapServers());
         props.put("group.id", kafkaProps.getGroupId());
         props.put("max.poll.records", "50000");
+        props.put("enable.auto.commit", "false"); //默认设置为false
         props.put("session.timeout.ms", "30000");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");

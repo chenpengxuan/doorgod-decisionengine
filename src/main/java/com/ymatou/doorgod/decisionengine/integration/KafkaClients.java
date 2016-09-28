@@ -67,9 +67,6 @@ public class KafkaClients implements ApplicationListener {
     public void onApplicationEvent(ApplicationEvent event) {
         if (event instanceof ApplicationReadyEvent) {
 
-            //FIXME: 直接用注入的 kafkaProps
-            KafkaProps kafkaProps = SpringContextHolder.getBean(KafkaProps.class);
-
             int numConsumers = kafkaProps.getStatisticSampleThreadNums();
 
             ExecutorService executor = Executors.newFixedThreadPool(kafkaProps.getStatisticSampleThreadNums());
@@ -93,8 +90,8 @@ public class KafkaClients implements ApplicationListener {
 
 
             // cache reload thread
-            Thread cacheReloaderThread = new Thread(
-                    new CacheReloaderConsumer(Arrays.asList(kafkaProps.getUpdateRuleTopic())), "cacheReloaderThread");
+            CacheReloaderConsumer cacheReloaderConsumer = new CacheReloaderConsumer(Arrays.asList(kafkaProps.getUpdateRuleTopic()));
+            Thread cacheReloaderThread = new Thread(cacheReloaderConsumer, "cacheReloaderThread");
             cacheReloaderThread.setDaemon(true);
             cacheReloaderThread.start();
 
@@ -110,6 +107,8 @@ public class KafkaClients implements ApplicationListener {
                     for (RejectReqConsumer consumer : rejectReqConsumers) {
                         consumer.shutdown();
                     }
+
+                    cacheReloaderConsumer.shutdown();
 
                     shutDownExectors(Lists.newArrayList(executor, rejectReqExecutor));
                 }

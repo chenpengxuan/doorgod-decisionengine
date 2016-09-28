@@ -26,7 +26,6 @@ import com.ymatou.doorgod.decisionengine.config.props.BizProps;
 import com.ymatou.doorgod.decisionengine.constants.Constants;
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
-import com.ymatou.doorgod.decisionengine.model.ScopeEnum;
 import com.ymatou.doorgod.decisionengine.model.StatusEnum;
 import com.ymatou.doorgod.decisionengine.model.po.RulePo;
 import com.ymatou.doorgod.decisionengine.repository.RuleRepository;
@@ -124,17 +123,14 @@ public class RuleDiscoverer {
             rule.setStatisticSpan(rulePo.getStatisticSpan());
             rule.setTimesCap(rulePo.getTimesCap());
             rule.setRejectionSpan(rulePo.getRejectionSpan());
-            if (!StringUtils.isBlank(rulePo.getKeys())) {
+            if (StringUtils.isNotBlank(rulePo.getKeys())) {
                 rule.setDimensionKeys(new HashSet<>(Arrays.asList(rulePo.getKeys().split(SEPARATOR))));
             }
-            if (!StringUtils.isBlank(rulePo.getGroupByKeys())) {
+            if (StringUtils.isNotBlank(rulePo.getGroupByKeys())) {
                 rule.setGroupByKeys(new HashSet<>(Arrays.asList(rulePo.getGroupByKeys().split(SEPARATOR))));
             }
-            if (!StringUtils.isBlank(rulePo.getUris())) {
-                rule.setScope(ScopeEnum.SPECIFIC_URIS);
+            if (StringUtils.isNotBlank(rulePo.getUris())) {
                 rule.setApplicableUris(new HashSet<>(Arrays.asList(rulePo.getUris().split(SEPARATOR))));
-            } else {
-                rule.setScope(ScopeEnum.ALL);
             }
             rules.put(rulePo.getName(), rule);
         }

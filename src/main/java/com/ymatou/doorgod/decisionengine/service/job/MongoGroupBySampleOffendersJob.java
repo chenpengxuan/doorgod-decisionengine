@@ -93,7 +93,5 @@ public class MongoGroupBySampleOffendersJob implements Job {
             }
         }
 
-        // todo mongo中删除之前无用数据
-
     }
 }

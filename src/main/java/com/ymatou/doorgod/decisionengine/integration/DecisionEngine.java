@@ -3,25 +3,6 @@
  */
 package com.ymatou.doorgod.decisionengine.integration;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.ymatou.doorgod.decisionengine.config.props.BizProps;
-import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
-import com.ymatou.doorgod.decisionengine.model.*;
-import com.ymatou.doorgod.decisionengine.util.MongoHelper;
-import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -30,10 +11,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static com.ymatou.doorgod.decisionengine.model.ScopeEnum.ALL;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.match;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.sort;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.ymatou.doorgod.decisionengine.config.props.BizProps;
+import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
+import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
+import com.ymatou.doorgod.decisionengine.model.Sample;
+import com.ymatou.doorgod.decisionengine.model.StatisticItem;
 
 
 /**
@@ -48,20 +38,20 @@ public class DecisionEngine {
 
     /**
      * key: rulename
-     * value: hashMap: //FIXME: treeMap
+     * value: ConcurrentHashMap:
      *                 key: reqTime (seconds)
-     *                 value: treemap
+     *                 value: ConcurrentHashMap
      *                               key: sample
      *                               value: AtomicInteger 计数
      */
     public static Map<String,Map<String,Map<Sample,AtomicInteger>>> ruleTimeSampleMaps = new HashMap<>();
     /**
      * key: rulename
-     * value: hashMap:
+     * value: ConcurrentHashMap:
      *                 key: reqTime (seconds)
-     *                 value: treemap
+     *                 value: ConcurrentHashMap
      *                               key: sample (groupby key)
-     *                               value: Set<Sample> (去掉groupby key 第下的)
+     *                               value: Set<Sample> (去掉groupby key 剩下的)
      */
     public static Map<String,Map<String,Map<Sample,Set<Sample>>>> groupByRuleTimeSampleMaps = new HashMap<>();
 
@@ -87,8 +77,7 @@ public class DecisionEngine {
         Sample sample = statisticItem.getSample();
         String reqTime = statisticItem.getReqTime();
 
-        //FIXME: StatisticItem应该有一个Field:uri，ApiGateway直接发过来
-        String uri = sample.findUri();
+        String uri = statisticItem.getUri();
         Set<LimitTimesRule> set = getRulesByUri(uri);
 
         set.forEach(rule -> {
@@ -115,7 +104,7 @@ public class DecisionEngine {
         Sample roleSample = sample.narrow(keys);
 
         //rule map 不存在则新建
-        ruleTimeSampleMaps.putIfAbsent(rule.getName(),new TreeMap<>());
+        ruleTimeSampleMaps.putIfAbsent(rule.getName(),new ConcurrentHashMap<>());
         Map<String,Map<Sample,AtomicInteger>> secondsTreeMap = ruleTimeSampleMaps.get(rule.getName());
 
         //秒级别map key:20160809122504 value: ConcurrentHashMap
@@ -129,15 +118,13 @@ public class DecisionEngine {
             if(null != sampleCount){
                 sampleCount.incrementAndGet();
             }
-            //FIXME: error, 具体sample值无需输出
-            logger.info("ruleName:{},key:{},mapSize:{},sample:{},sampleCount:{}", rule.getName(),reqTime, sampleMap.size(),
-                    roleSample, sampleCount);
+            logger.debug("ruleName:{},key:{},mapSize:{},sampleCount:{}", rule.getName(), reqTime, sampleMap.size(),
+                    sampleCount);
         } else {
             sampleMap.putIfAbsent(roleSample, new AtomicInteger(0));
             int sampleCount = sampleMap.get(roleSample).incrementAndGet();// ++
-            //FIXME: 具体sample值无需输出
-            logger.info("ruleName:{},key:{},mapSize:{},sample:{},sampleCount:{}", rule.getName(),reqTime, sampleMap.size(),
-                    roleSample, sampleCount);
+            logger.debug("ruleName:{},key:{},mapSize:{},sampleCount:{}", rule.getName(),reqTime, sampleMap.size(),
+                    sampleCount);
         }
 
     }
@@ -158,7 +145,7 @@ public class DecisionEngine {
         Sample groupBySample = sample.narrow(groupByKeys);
 
         //rule map 不存在则新建
-        groupByRuleTimeSampleMaps.putIfAbsent(rule.getName(),new TreeMap<>());
+        groupByRuleTimeSampleMaps.putIfAbsent(rule.getName(),new ConcurrentHashMap<>());
         Map<String,Map<Sample,Set<Sample>>> secondsTreeMap = groupByRuleTimeSampleMaps.get(rule.getName());
 
         //秒级别map key:20160809122504 value: ConcurrentHashMap
@@ -172,9 +159,8 @@ public class DecisionEngine {
             if(null != leftKeySet){
                 leftKeySet.add(originSample.unNarrow(groupByKeys));
             }
-            //FIXME: logger.error，具体sample值无需输出
             //具体sample值无需输出
-            logger.info("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},groupBySetCount:{}", rule.getName(),
+            logger.debug("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},groupBySetCount:{}", rule.getName(),
                     reqTime, sampleMap.size(),
                     originSample, groupBySample, leftKeySet.size());
         } else {
@@ -182,7 +168,6 @@ public class DecisionEngine {
             sampleMap.putIfAbsent(groupBySample, Sets.newConcurrentHashSet(Lists.newArrayList( leftKeySample )));
             sampleMap.get(groupBySample).add(leftKeySample);
 
-            //FIXME: 具体sample值无需输出
             logger.info("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},new groupBySetCount:1",
                     rule.getName(), reqTime, sampleMap.size(), originSample, groupBySample);
         }
@@ -191,7 +176,8 @@ public class DecisionEngine {
     //获取规则
     public Set<LimitTimesRule> getRulesByUri(String uri){
         return RuleHolder.rules.values().stream().filter(
-                rule -> rule.getScope() == ALL || rule.getApplicableUris().stream().anyMatch(s -> uri.startsWith(s)))
+                rule -> rule.getApplicableUris().size() == 0
+                        || rule.getApplicableUris().stream().anyMatch(s -> uri.startsWith(s)))
                 .collect(Collectors.toSet());
     }
 

@@ -12,6 +12,8 @@ package com.ymatou.doorgod.decisionengine.model;
  */
 public class StatisticItem {
 
+    private String uri;
+
     private Sample sample;
 
     //请求时间:yyyyMMddHHmmss
@@ -31,5 +33,13 @@ public class StatisticItem {
 
     public void setReqTime(String reqTime) {
         this.reqTime = reqTime;
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 }

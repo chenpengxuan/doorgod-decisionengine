@@ -20,14 +20,7 @@ public abstract class AbstractRule implements Ordered, Comparable<AbstractRule> 
     private int order;
 
     /**
-     * FIXME:没用，直接删除
-     * applicableUris为空，代表全匹配
-     * 使用范围
-     */
-    private ScopeEnum scope;
-
-    /**
-     * 适用的uri列表。<code>scope</code>为{@link ScopeEnum#SPECIFIC_URIS}时有效
+     * 适用的uri列表
      */
     private Set<String> applicableUris = new HashSet<String>( );
 
@@ -49,13 +42,6 @@ public abstract class AbstractRule implements Ordered, Comparable<AbstractRule> 
         this.order = order;
     }
 
-    public ScopeEnum getScope() {
-        return scope;
-    }
-
-    public void setScope(ScopeEnum scope) {
-        this.scope = scope;
-    }
 
     public Set<String> getApplicableUris() {
         return applicableUris;

@@ -9,9 +9,6 @@ package com.ymatou.doorgod.decisionengine.integration.runnable;
 import java.util.List;
 import java.util.Properties;
 
-import com.alibaba.fastjson.JSON;
-import com.ymatou.doorgod.decisionengine.model.mongo.RejectReqPo;
-import com.ymatou.doorgod.decisionengine.service.RejectReqService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -19,12 +16,15 @@ import org.apache.kafka.common.errors.WakeupException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alibaba.fastjson.JSON;
+import com.ymatou.doorgod.decisionengine.model.mongo.RejectReqPo;
+import com.ymatou.doorgod.decisionengine.service.RejectReqService;
 import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
 
 /**
  * @author luoshiqian 2016/9/23 14:47
  */
-public class RejectReqConsumer implements Runnable{
+public class RejectReqConsumer implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(RejectReqConsumer.class);
 
     private final KafkaConsumer<String, String> consumer;
@@ -44,18 +44,21 @@ public class RejectReqConsumer implements Runnable{
         try {
             consumer.subscribe(topics);
 
-            while (true) {
+            try {
+                while (true) {
 
-                //FIXME:消费过程中异常，导致consumer被close
-                ConsumerRecords<String, String> records = consumer.poll(Long.MAX_VALUE);
-                for (ConsumerRecord<String, String> record : records) {
+                    ConsumerRecords<String, String> records = consumer.poll(Long.MAX_VALUE);
+                    for (ConsumerRecord<String, String> record : records) {
 
+                        rejectReqService.saveRejectReq(JSON.parseObject(record.value(), RejectReqPo.class));
+                        logger.debug("RejectReqConsumer consume record:{}", record);
 
-                    rejectReqService.saveRejectReq(JSON.parseObject(record.value(), RejectReqPo.class));
-                    logger.debug("consume record:", record);
-
+                    }
                 }
+            } catch (Exception e) {
+                logger.error("RejectReqConsumer consume record error", e);
             }
+
         } catch (WakeupException e) {
             // ignore for shutdown
         } finally {

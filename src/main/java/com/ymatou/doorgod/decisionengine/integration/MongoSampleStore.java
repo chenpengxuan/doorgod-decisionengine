@@ -1,7 +1,6 @@
 /*
  *
- *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
- *  All rights reserved.
+ * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
  *
  */
 
@@ -67,42 +66,33 @@ public class MongoSampleStore extends AbstractSampleStore {
             Collection<Map.Entry<Sample, Object>> samples) {
 
         String collectionName = MongoHelper.getGroupByCollectionName(rule);
-        if(!mongoTemplate.collectionExists(collectionName)){
+        if (!mongoTemplate.collectionExists(collectionName)) {
             mongoTemplate.createCollection(collectionName);
             Index index = new Index("addTime", Sort.Direction.ASC);
-            //FIXME:先不设
-            index.expire(rule.getTimesCap() * 2);
             mongoTemplate.indexOps(collectionName).ensureIndex(index);
         }
         samples.forEach(entry -> {
 
             Sample sample = entry.getKey();
-            Set<Sample> sampleSet = ((Set)entry.getValue());
+            Set<Sample> sampleSet = ((Set) entry.getValue());
 
             String groupByKeys = sample.toString();
             sampleSet.forEach(s -> {
                 String leftKeys = s.toString();
 
-                //uploadtime 找到start end time
+                // uploadtime 找到 那一分钟
                 LocalDateTime localDateTime = DateUtils.parseDefault(uploadTime);
-                String startMinute = localDateTime.format(Constants.FORMATTER_YMDHM);
-                String endMinute = localDateTime.plusMinutes(1).format(Constants.FORMATTER_YMDHM);
+                String sampleTime = localDateTime.format(Constants.FORMATTER_YMDHM);
 
-                //FIXME: 一个分钟时间Key就可以了
-                Query query = new Query(Criteria.where("startTime").is(startMinute)
-                        .and("endTime").is(endMinute)
-                        .and("groupByKeys").is(groupByKeys)
-                        .and("leftKeys").is(leftKeys)
-                );
+                Query query = new Query(
+                        Criteria.where("sampleTime").is(sampleTime)
+                                .and("groupByKeys").is(groupByKeys)
+                                .and("leftKeys").is(leftKeys));
                 Update update = new Update();
-                update.set("startTime",startMinute);
-                update.set("endTime",endMinute);
-                update.set("groupByKeys",groupByKeys);
-                update.set("leftKeys",leftKeys);
-                update.set("addTime",new Date());
+                update.set("addTime", new Date());
 
-                mongoTemplate.findAndModify(query,update,new FindAndModifyOptions()
-                        .returnNew(true).upsert(true),MongoGroupBySamplePo.class,collectionName);
+                mongoTemplate.findAndModify(query, update, new FindAndModifyOptions()
+                        .returnNew(true).upsert(true), MongoGroupBySamplePo.class, collectionName);
 
             });
         });

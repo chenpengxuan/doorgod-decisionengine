@@ -3,12 +3,14 @@
  */
 package com.ymatou.doorgod.decisionengine.config;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import com.ymatou.doorgod.decisionengine.util.LogRejectedPolicy;
+import com.ymatou.doorgod.decisionengine.config.props.BizProps;
 
 /**
  * 
@@ -18,16 +20,12 @@ import com.ymatou.doorgod.decisionengine.util.LogRejectedPolicy;
 @Configuration
 public class ExecutorConfig {
 
-    @Bean
-    public TaskExecutor taskExecutor() {
-        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-        taskExecutor.setCorePoolSize(10);
-        taskExecutor.setMaxPoolSize(50);
-        taskExecutor.setQueueCapacity(1000);
-        taskExecutor.setKeepAliveSeconds(300);
-        taskExecutor.setRejectedExecutionHandler(new LogRejectedPolicy());
-        return taskExecutor;
-    }
+    @Autowired
+    private BizProps bizProps;
 
-//    public TaskExecutor taskExecutorForRedis
+    @Bean(name = "putSampleThreadPool")
+    public ExecutorService putSampleThreadPool() {
+
+        return Executors.newFixedThreadPool(bizProps.getPutSampleThreadNums());
+    }
 }

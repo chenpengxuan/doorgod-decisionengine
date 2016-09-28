@@ -17,9 +17,7 @@ public class MongoGroupBySamplePo {
 
     private String id;
 
-    private String startTime;
-
-    private String endTime;
+    private String sampleTime;
 
     private String groupByKeys;
 
@@ -28,13 +26,12 @@ public class MongoGroupBySamplePo {
     private Date addTime;
 
 
-    public MongoGroupBySamplePo() {}
+    public String getSampleTime() {
+        return sampleTime;
+    }
 
-    public MongoGroupBySamplePo(String startTime, String endTime, String groupByKeys, String leftKeys) {
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.groupByKeys = groupByKeys;
-        this.leftKeys = leftKeys;
+    public void setSampleTime(String sampleTime) {
+        this.sampleTime = sampleTime;
     }
 
     public String getId() {
@@ -45,21 +42,6 @@ public class MongoGroupBySamplePo {
         this.id = id;
     }
 
-    public String getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(String startTime) {
-        this.startTime = startTime;
-    }
-
-    public String getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(String endTime) {
-        this.endTime = endTime;
-    }
 
     public String getGroupByKeys() {
         return groupByKeys;
