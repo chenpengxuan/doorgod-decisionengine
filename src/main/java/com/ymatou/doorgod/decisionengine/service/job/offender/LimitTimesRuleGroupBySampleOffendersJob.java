@@ -74,9 +74,6 @@ public class LimitTimesRuleGroupBySampleOffendersJob implements Job {
             Criteria criteria = Criteria.where("sampleTime").gte(startTime)
                                         .andOperator(Criteria.where("sampleTime").lte(endTime));
 
-            logger.debug("test schedule ruleName:{} now:{} and sleep 2seconds",ruleName,System.currentTimeMillis());
-            TimeUnit.SECONDS.sleep(2L);
-
             TypedAggregation<MongoGroupBySamplePo> aggregation = Aggregation.newAggregation(MongoGroupBySamplePo.class,
                     match(criteria),
                     group(fields("groupByKeys","leftKeys")),
