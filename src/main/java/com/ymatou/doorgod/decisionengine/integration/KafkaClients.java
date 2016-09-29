@@ -1,6 +1,7 @@
 /*
  *
- * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
+ *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
+ *  All rights reserved.
  *
  */
 
@@ -22,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
@@ -33,13 +33,12 @@ import com.ymatou.doorgod.decisionengine.config.props.KafkaProps;
 import com.ymatou.doorgod.decisionengine.integration.runnable.CacheReloaderConsumer;
 import com.ymatou.doorgod.decisionengine.integration.runnable.RejectReqConsumer;
 import com.ymatou.doorgod.decisionengine.integration.runnable.StatisticSampleConsumer;
-import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
 
 /**
  * @author luoshiqian 2016/9/21 13:05
  */
 @Component
-public class KafkaClients implements ApplicationListener {
+public class KafkaClients implements ApplicationListener<ApplicationReadyEvent> {
     private static final Logger logger = LoggerFactory.getLogger(KafkaClients.class);
 
     @Resource(name = "offendersProducer")
@@ -64,57 +63,58 @@ public class KafkaClients implements ApplicationListener {
 
 
     @Override
-    public void onApplicationEvent(ApplicationEvent event) {
-        if (event instanceof ApplicationReadyEvent) {
-
-            int numConsumers = kafkaProps.getStatisticSampleThreadNums();
-
-            ExecutorService executor = Executors.newFixedThreadPool(kafkaProps.getStatisticSampleThreadNums());
-            ExecutorService rejectReqExecutor = Executors.newFixedThreadPool(kafkaProps.getRejectReqThreadNums());
-
-            List<String> topics = Arrays.asList(kafkaProps.getStatisticSampleTopic());
-
-            final List<StatisticSampleConsumer> consumers = new ArrayList<>();
-            for (int i = 0; i < numConsumers; i++) {
-                StatisticSampleConsumer consumer = new StatisticSampleConsumer(topics);
-                consumers.add(consumer);
-                executor.submit(consumer);
-            }
-
-            final List<RejectReqConsumer> rejectReqConsumers = new ArrayList<>();
-            for (int i = 0; i < numConsumers; i++) {
-                RejectReqConsumer consumer = new RejectReqConsumer(Arrays.asList(kafkaProps.getRejectReqTopic()));
-                rejectReqConsumers.add(consumer);
-                rejectReqExecutor.submit(consumer);
-            }
+    public void onApplicationEvent(ApplicationReadyEvent event) {
 
 
-            // cache reload thread
-            CacheReloaderConsumer cacheReloaderConsumer = new CacheReloaderConsumer(Arrays.asList(kafkaProps.getUpdateRuleTopic()));
-            Thread cacheReloaderThread = new Thread(cacheReloaderConsumer, "cacheReloaderThread");
-            cacheReloaderThread.setDaemon(true);
-            cacheReloaderThread.start();
+        int numConsumers = kafkaProps.getStatisticSampleThreadNums();
 
+        ExecutorService executor = Executors.newFixedThreadPool(kafkaProps.getStatisticSampleThreadNums());
+        ExecutorService rejectReqExecutor = Executors.newFixedThreadPool(kafkaProps.getRejectReqThreadNums());
 
-            // add shutdown hook
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                @Override
-                public void run() {
-                    for (StatisticSampleConsumer consumer : consumers) {
-                        consumer.shutdown();
-                    }
+        List<String> topics = Arrays.asList(kafkaProps.getStatisticSampleTopic());
 
-                    for (RejectReqConsumer consumer : rejectReqConsumers) {
-                        consumer.shutdown();
-                    }
-
-                    cacheReloaderConsumer.shutdown();
-
-                    shutDownExectors(Lists.newArrayList(executor, rejectReqExecutor));
-                }
-            });
+        final List<StatisticSampleConsumer> consumers = new ArrayList<>();
+        for (int i = 0; i < numConsumers; i++) {
+            StatisticSampleConsumer consumer = new StatisticSampleConsumer(topics);
+            consumers.add(consumer);
+            executor.submit(consumer);
         }
+
+        final List<RejectReqConsumer> rejectReqConsumers = new ArrayList<>();
+        for (int i = 0; i < numConsumers; i++) {
+            RejectReqConsumer consumer = new RejectReqConsumer(Arrays.asList(kafkaProps.getRejectReqTopic()));
+            rejectReqConsumers.add(consumer);
+            rejectReqExecutor.submit(consumer);
+        }
+
+
+        // cache reload thread
+        CacheReloaderConsumer cacheReloaderConsumer =
+                new CacheReloaderConsumer(Arrays.asList(kafkaProps.getUpdateRuleTopic()));
+        Thread cacheReloaderThread = new Thread(cacheReloaderConsumer, "cacheReloaderThread");
+        cacheReloaderThread.setDaemon(true);
+        cacheReloaderThread.start();
+
+
+        // add shutdown hook
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                for (StatisticSampleConsumer consumer : consumers) {
+                    consumer.shutdown();
+                }
+
+                for (RejectReqConsumer consumer : rejectReqConsumers) {
+                    consumer.shutdown();
+                }
+
+                cacheReloaderConsumer.shutdown();
+
+                shutDownExectors(Lists.newArrayList(executor, rejectReqExecutor));
+            }
+        });
     }
+
 
     private void shutDownExectors(ArrayList<ExecutorService> executors) {
         executors.forEach(executor -> {
@@ -128,4 +128,5 @@ public class KafkaClients implements ApplicationListener {
 
         });
     }
+    
 }

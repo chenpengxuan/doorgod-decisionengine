@@ -7,7 +7,7 @@
 
 package com.ymatou.doorgod.decisionengine.test;
 
-import com.ymatou.doorgod.decisionengine.integration.SampleStatisticCenter;
+import com.ymatou.doorgod.decisionengine.holder.SampleStatisticCenter;
 import com.ymatou.doorgod.decisionengine.model.Sample;
 import com.ymatou.doorgod.decisionengine.model.StatisticItem;
 import org.apache.commons.lang3.RandomStringUtils;

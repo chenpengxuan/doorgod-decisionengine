@@ -51,6 +51,8 @@ public class BizProps {
     //端口号
     private int port;
 
+    private String performanceServerUrl;
+
 
     @DisconfFileItem(name = "biz.rulePersistenceCronExpression")
     public String getRulePersistenceCronExpression() {
@@ -158,5 +160,15 @@ public class BizProps {
 
     public void setPort(int port) {
         this.port = port;
+    }
+
+
+    @DisconfFileItem(name = "performance.server.url")
+    public String getPerformanceServerUrl() {
+        return performanceServerUrl;
+    }
+
+    public void setPerformanceServerUrl(String performanceServerUrl) {
+        this.performanceServerUrl = performanceServerUrl;
     }
 }

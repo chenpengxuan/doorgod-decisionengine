@@ -1,10 +1,11 @@
 /*
  *
- * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
+ *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
+ *  All rights reserved.
  *
  */
 
-package com.ymatou.doorgod.decisionengine.integration;
+package com.ymatou.doorgod.decisionengine.integration.store;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.ymatou.doorgod.decisionengine.holder.SampleStatisticCenter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +48,7 @@ public class MongoSampleStore extends AbstractSampleStore {
     private MongoTemplate mongoTemplate;
 
     @Override
-    protected Collection<LimitTimesRule> findRule() {
+    public Collection<LimitTimesRule> findRule() {
         return RuleHolder.rules.values().stream()
                 .filter(rule -> !CollectionUtils.isEmpty(rule.getGroupByKeys())).collect(Collectors.toSet());
     }
@@ -62,7 +64,7 @@ public class MongoSampleStore extends AbstractSampleStore {
     }
 
     @Override
-    protected void uploadSampleToDb(LimitTimesRule rule, String uploadTime,
+    public void uploadSampleToDb(LimitTimesRule rule, String uploadTime,
             Collection<Map.Entry<Sample, Object>> samples) {
 
         String collectionName = MongoHelper.getGroupByCollectionName(rule);

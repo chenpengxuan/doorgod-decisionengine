@@ -44,6 +44,7 @@ ext {
     mysqlVersion = "5.1.31"
     jacksonVersion = "2.4.6"
 	errorreporterVersion = "1.0.2"
+	performanceMonitorClientVersion = "1.0.5"
 }
 
 compileJava {
@@ -72,6 +73,7 @@ dependencies {
 	compile 'org.slf4j:slf4j-api:1.7.21'
 	compile 'ch.qos.logback:logback-classic:1.1.7'
 	compile 'com.ymatou.disconf:disconf-client:2.6.35'
+	compile "com.ymatou:performancemonitorclient:${performanceMonitorClientVersion}"
 	compile "com.ymatou.errorreporter:errorreporter-logback:${errorreporterVersion}"
 
 	compile "org.apache.kafka:kafka_2.11:0.10.0.1"

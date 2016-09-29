@@ -27,7 +27,7 @@
 	</logger>
 
 	<logger name="org.mongodb">
-		<level value="debug" />
+		<level value="${level}" />
 		<appender-ref ref="HTTP-POST-ERROR-APPENDER" />
 	</logger>
 
@@ -43,7 +43,7 @@
 	-
 
 	<logger name="com.ymatou.doorgod">
-		<level value="debug" />
+		<level value="info" />
 		<appender-ref ref="HTTP-POST-ERROR-APPENDER" />
 	</logger>
 

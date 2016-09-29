@@ -1,10 +1,11 @@
 /*
  *
- * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
+ *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
+ *  All rights reserved.
  *
  */
 
-package com.ymatou.doorgod.decisionengine.integration;
+package com.ymatou.doorgod.decisionengine.integration.store;
 
 import java.util.Collection;
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.ymatou.doorgod.decisionengine.holder.SampleStatisticCenter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +37,7 @@ public class RedisSampleStore extends AbstractSampleStore {
     private StringRedisTemplate redisTemplate;
 
     @Override
-    protected Collection<LimitTimesRule> findRule() {
+    public Collection<LimitTimesRule> findRule() {
         return RuleHolder.rules.values().stream()
                 .filter(rule -> CollectionUtils.isEmpty(rule.getGroupByKeys())).collect(Collectors.toSet());
     }
@@ -51,7 +53,7 @@ public class RedisSampleStore extends AbstractSampleStore {
     }
 
     @Override
-    protected void uploadSampleToDb(LimitTimesRule rule, String uploadTime,
+    public void uploadSampleToDb(LimitTimesRule rule, String uploadTime,
             Collection<Map.Entry<Sample, Object>> samples) {
         // 获取redis zset name
         String zSetName = RedisHelper.getNormalSetName(rule.getName(), uploadTime);

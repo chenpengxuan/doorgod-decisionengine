@@ -1,6 +1,7 @@
 /*
  *
- * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
+ *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
+ *  All rights reserved.
  *
  */
 
@@ -17,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
-import com.ymatou.doorgod.decisionengine.integration.SampleStatisticCenter;
+import com.ymatou.doorgod.decisionengine.holder.SampleStatisticCenter;
 import com.ymatou.doorgod.decisionengine.model.StatisticItem;
 import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
 

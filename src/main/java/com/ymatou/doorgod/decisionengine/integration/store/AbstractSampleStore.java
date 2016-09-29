@@ -5,7 +5,7 @@
  *
  */
 
-package com.ymatou.doorgod.decisionengine.integration;
+package com.ymatou.doorgod.decisionengine.integration.store;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -48,6 +48,7 @@ public abstract class AbstractSampleStore {
 
     public void putSample(){
 
+
         LocalDateTime dateTime  = LocalDateTime.now();
         String currentTime =  dateTime.format(Constants.FORMATTER_YMDHMS);
 
@@ -68,7 +69,7 @@ public abstract class AbstractSampleStore {
      * 返回需要遍历的规则
      * @return
      */
-    protected abstract Collection<LimitTimesRule> findRule();
+    public abstract Collection<LimitTimesRule> findRule();
 
     /**
      * 返回内存数据
@@ -85,10 +86,10 @@ public abstract class AbstractSampleStore {
     /**
      * 由子类实现 不同的存储
      */
-    protected abstract void uploadSampleToDb(LimitTimesRule rule,String uploadTime, Collection<Map.Entry<Sample, Object>> samples);
+    public abstract void uploadSampleToDb(LimitTimesRule rule,String uploadTime, Collection<Map.Entry<Sample, Object>> samples);
 
 
-    private final void putSample(LimitTimesRule rule,String currentTime){
+    private void putSample(LimitTimesRule rule,String currentTime){
 
         //1.组装规则需要 上报的数据
         Map<String,Map<String,Map<Sample,Object>>> memoryMap = getMemoryMap();

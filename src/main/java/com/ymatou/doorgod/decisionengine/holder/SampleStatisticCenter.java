@@ -1,7 +1,10 @@
 /*
- * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
+ *
+ *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
+ *  All rights reserved.
+ *
  */
-package com.ymatou.doorgod.decisionengine.integration;
+package com.ymatou.doorgod.decisionengine.holder;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -11,6 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.ymatou.doorgod.decisionengine.integration.store.MongoSampleStore;
+import com.ymatou.doorgod.decisionengine.integration.store.RedisSampleStore;
 import com.ymatou.doorgod.decisionengine.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +26,6 @@ import org.springframework.util.CollectionUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.ymatou.doorgod.decisionengine.config.props.BizProps;
-import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import com.ymatou.doorgod.decisionengine.model.Sample;
 import com.ymatou.doorgod.decisionengine.model.StatisticItem;
@@ -103,7 +107,7 @@ public class SampleStatisticCenter {
      * @param sample
      * @param reqTime
      */
-    public void doStatisticNormalSet(LimitTimesRule rule,Sample sample,String reqTime){
+    private void doStatisticNormalSet(LimitTimesRule rule,Sample sample,String reqTime){
 
         Set<String> keys = rule.getDimensionKeys();
 
@@ -141,7 +145,7 @@ public class SampleStatisticCenter {
      * @param sample
      * @param reqTime
      */
-    public void doStatisticGroupBySet(LimitTimesRule rule,Sample sample,String reqTime){
+    private void doStatisticGroupBySet(LimitTimesRule rule,Sample sample,String reqTime){
 
         Set<String> keys = rule.getDimensionKeys();
 

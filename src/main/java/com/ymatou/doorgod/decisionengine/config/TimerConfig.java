@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 
 import com.ymatou.doorgod.decisionengine.config.props.BizProps;
 import com.ymatou.doorgod.decisionengine.constants.Constants;
-import com.ymatou.doorgod.decisionengine.integration.SampleStatisticCenter;
+import com.ymatou.doorgod.decisionengine.holder.SampleStatisticCenter;
 
 /**
  * @author luoshiqian 2016/9/18 15:24
