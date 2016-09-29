@@ -28,8 +28,8 @@ public class LimitTimesRuleSampleOffendersJob implements Job {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
-        LimitTimesRuleGroupBySampleOffendersExecutor executor =
-                SpringContextHolder.getBean(LimitTimesRuleGroupBySampleOffendersExecutor.class);
+        LimitTimesRuleSampleOffendersExecutor executor =
+                SpringContextHolder.getBean(LimitTimesRuleSampleOffendersExecutor.class);
         try {
             executor.execute(context);
         } catch (Exception e) {

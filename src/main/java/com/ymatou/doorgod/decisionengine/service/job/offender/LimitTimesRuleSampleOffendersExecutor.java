@@ -128,6 +128,7 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
                 zSetOps.unionAndStore(getEmptySetName(EMPTY_SET), timeBuckets, currentUnionName);
             }
 
+            zSetOps.unionAndStore(getEmptySetName(EMPTY_SET), timeBuckets, currentUnionName);
             zSetOps.getOperations().expire(currentUnionName, getExpireByRule(rule), TimeUnit.SECONDS);
 
             // 获取Offender

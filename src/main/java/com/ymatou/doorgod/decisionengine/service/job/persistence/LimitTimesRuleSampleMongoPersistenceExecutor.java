@@ -80,7 +80,7 @@ public class LimitTimesRuleSampleMongoPersistenceExecutor implements Job {
             List<MongoSamplePo> mongoSamples = new ArrayList<>();
             for (TypedTuple<String> sample : sampleUnion) {
                 MongoSamplePo msp = new MongoSamplePo();
-                msp.setRuleName(msp.getRuleName());
+                msp.setRuleName(rule.getName());
                 msp.setSample(sample.getValue());
                 msp.setCount(sample.getScore());
                 msp.setTime(now.format(FORMATTER_YMDHMS));
