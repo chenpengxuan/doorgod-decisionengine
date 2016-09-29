@@ -3,14 +3,15 @@
  */
 package com.ymatou.doorgod.decisionengine.integration;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.ymatou.doorgod.decisionengine.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,14 +28,13 @@ import com.ymatou.doorgod.decisionengine.model.StatisticItem;
 
 
 /**
- * FIXME: rename class name
  * @author qianmin 2016年9月6日 下午7:01:48
  *
  */
 @Component
-public class DecisionEngine {
+public class SampleStatisticCenter {
 
-    private static final Logger logger = LoggerFactory.getLogger(DecisionEngine.class);
+    private static final Logger logger = LoggerFactory.getLogger(SampleStatisticCenter.class);
 
     /**
      * key: rulename
@@ -72,12 +72,16 @@ public class DecisionEngine {
 
 
     //累计
-    public void putStaticItem(StatisticItem statisticItem){
-
-        //FIXME:如果样本是5s之前的，记error日志，直接返回。无需统计超期样本
+    public void putStatisticItem(StatisticItem statisticItem){
 
         Sample sample = statisticItem.getSample();
         String reqTime = statisticItem.getReqTime();
+
+        String nowStr = DateUtils.formatDefault(LocalDateTime.now().minusSeconds(5));
+        if(Long.valueOf(nowStr) > Long.valueOf(reqTime)){
+            logger.error("reqTime before now 5 seconds ,will not be statistic");
+            return;
+        }
 
         String uri = statisticItem.getUri();
         Set<LimitTimesRule> set = getRulesByUri(uri);

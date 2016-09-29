@@ -7,7 +7,7 @@
 
 package com.ymatou.doorgod.decisionengine.test;
 
-import com.ymatou.doorgod.decisionengine.integration.DecisionEngine;
+import com.ymatou.doorgod.decisionengine.integration.SampleStatisticCenter;
 import com.ymatou.doorgod.decisionengine.model.Sample;
 import com.ymatou.doorgod.decisionengine.model.StatisticItem;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -25,14 +25,14 @@ import java.util.concurrent.TimeUnit;
  * @author luoshiqian 2016/9/12 15:46
  */
 @EnableAutoConfiguration
-public class DecisionEngineTest extends BaseTest{
+public class SampleStatisticCenterTest extends BaseTest{
 
     ExecutorService writeExecutor = Executors.newFixedThreadPool(5);
     ExecutorService readExecutor = Executors.newFixedThreadPool(5);
 
 
     @Autowired
-    DecisionEngine decisionEngine;
+    SampleStatisticCenter sampleStatisticCenter;
 
     public void testPutStaticItemAndRedis(){
 
@@ -47,7 +47,7 @@ public class DecisionEngineTest extends BaseTest{
                     Sample sample2 = new Sample();
                     sample2.addDimensionValue(aa,aa);
                     a.setSample(sample2);
-                    decisionEngine.putStaticItem(a);
+                    sampleStatisticCenter.putStatisticItem(a);
                     try {
                         TimeUnit.MILLISECONDS.sleep(200+new Random().nextInt(300));
                     } catch (InterruptedException e) {

@@ -1,9 +1,10 @@
 /*
  *
- * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
+ *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
+ *  All rights reserved.
  *
  */
-package com.ymatou.doorgod.decisionengine.service.job;
+package com.ymatou.doorgod.decisionengine.service.job.offender;
 
 import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHM;
 import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHMS;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -40,9 +42,10 @@ import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
  * @author luoshiqian
  * 
  */
-public class MongoGroupBySampleOffendersJob implements Job {
+@DisallowConcurrentExecution
+public class LimitTimesRuleGroupBySampleOffendersJob implements Job {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoGroupBySampleOffendersJob.class);
+    private static final Logger logger = LoggerFactory.getLogger(LimitTimesRuleGroupBySampleOffendersJob.class);
 
 
     @Override
@@ -57,21 +60,21 @@ public class MongoGroupBySampleOffendersJob implements Job {
         LimitTimesRule rule = RuleHolder.rules.get(jobName);
 
         if(null == rule){
-            logger.info("exec MongoGroupBySampleOffendersJob:{} rule==null",jobName);
+            logger.info("exec LimitTimesRuleGroupBySampleOffendersJob:{} rule==null",jobName);
             return;
         }
         LocalDateTime now = LocalDateTime.now();
         String nowFormated = now.format(FORMATTER_YMDHMS);
         String ruleName = rule.getName();
 
-        logger.debug("exec MongoGroupBySampleOffendersJob :{}",ruleName);
+        logger.debug("exec LimitTimesRuleGroupBySampleOffendersJob :{}",ruleName);
         String startTime = now.minusSeconds(rule.getStatisticSpan()).format(FORMATTER_YMDHM);
         String endTime = now.format(FORMATTER_YMDHM);
         try {
             Criteria criteria = Criteria.where("sampleTime").gte(startTime)
                                         .andOperator(Criteria.where("sampleTime").lte(endTime));
 
-            logger.debug("test schedule now:{} and sleep 2seconds",System.currentTimeMillis());
+            logger.debug("test schedule ruleName:{} now:{} and sleep 2seconds",ruleName,System.currentTimeMillis());
             TimeUnit.SECONDS.sleep(2L);
 
             TypedAggregation<MongoGroupBySamplePo> aggregation = Aggregation.newAggregation(MongoGroupBySamplePo.class,
@@ -105,7 +108,7 @@ public class MongoGroupBySampleOffendersJob implements Job {
                 }
             }
         } catch (Exception e) {
-            logger.error("MongoGroupBySampleOffendersJob error,ruleName:{}",ruleName,e);
+            logger.error("LimitTimesRuleGroupBySampleOffendersJob error,ruleName:{}",ruleName,e);
         }
 
     }

@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 
 import com.ymatou.doorgod.decisionengine.config.props.BizProps;
 import com.ymatou.doorgod.decisionengine.constants.Constants;
-import com.ymatou.doorgod.decisionengine.integration.DecisionEngine;
+import com.ymatou.doorgod.decisionengine.integration.SampleStatisticCenter;
 
 /**
  * @author luoshiqian 2016/9/18 15:24
@@ -37,14 +37,14 @@ public class TimerConfig {
     @Autowired
     private BizProps bizProps;
     @Autowired
-    private DecisionEngine decisionEngine;
+    private SampleStatisticCenter sampleStatisticCenter;
 
     @PostConstruct
     public void putSampleToReadisTimer() {
         // 初始化延迟5秒开始执行 固定每n毫秒执行一次
         redisExecutor.scheduleAtFixedRate(() -> {
             try {
-                decisionEngine.putSampleToRedis();
+                sampleStatisticCenter.putSampleToRedis();
             } catch (Exception e) {
                 // 所有异常都catch到 防止异常导致定时任务停止
                 logger.error("上报redis出错", e);
@@ -57,7 +57,7 @@ public class TimerConfig {
     public void putGroupBySampleToMongoTimer() {
         mongoExecutor.scheduleAtFixedRate(() -> {
             try {
-                decisionEngine.putSampleToMongo();
+                sampleStatisticCenter.putSampleToMongo();
             } catch (Exception e) {
                 logger.error("上报mongo出错", e);
             }
@@ -70,10 +70,10 @@ public class TimerConfig {
 
         clearUselessMemoryExecutor.scheduleAtFixedRate(() -> {
             try {
-                Map ruleTimeSampleMaps = DecisionEngine.ruleTimeSampleMaps;
+                Map ruleTimeSampleMaps = SampleStatisticCenter.ruleTimeSampleMaps;
                 clearUselessMemory(ruleTimeSampleMaps);
 
-                Map groupByRuleTimeSampleMaps = DecisionEngine.groupByRuleTimeSampleMaps;
+                Map groupByRuleTimeSampleMaps = SampleStatisticCenter.groupByRuleTimeSampleMaps;
                 clearUselessMemory(groupByRuleTimeSampleMaps);
 
             } catch (Exception e) {

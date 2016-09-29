@@ -20,6 +20,10 @@ public class DateUtils {
         return LocalDateTime.now().format(FORMATTER_YMDHMS);
     }
 
+    public static String formatDefault(LocalDateTime date){
+        return date.format(FORMATTER_YMDHMS);
+    }
+
     public static LocalDateTime parseDefault(String dateStr){
         return LocalDateTime.parse(dateStr, FORMATTER_YMDHMS);
     }

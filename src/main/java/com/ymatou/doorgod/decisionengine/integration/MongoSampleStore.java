@@ -53,7 +53,7 @@ public class MongoSampleStore extends AbstractSampleStore {
 
     @Override
     protected Map<String, Map<String, Map<Sample, Set<Sample>>>> getMemoryMap() {
-        return DecisionEngine.groupByRuleTimeSampleMaps;
+        return SampleStatisticCenter.groupByRuleTimeSampleMaps;
     }
 
     @Override

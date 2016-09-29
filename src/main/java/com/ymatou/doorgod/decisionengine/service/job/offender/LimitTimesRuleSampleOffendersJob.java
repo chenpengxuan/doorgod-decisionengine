@@ -1,7 +1,10 @@
 /*
- * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
+ *
+ *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
+ *  All rights reserved.
+ *
  */
-package com.ymatou.doorgod.decisionengine.service.job;
+package com.ymatou.doorgod.decisionengine.service.job.offender;
 
 import static com.ymatou.doorgod.decisionengine.constants.Constants.*;
 import static com.ymatou.doorgod.decisionengine.util.RedisHelper.*;
@@ -13,10 +16,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.ymatou.doorgod.decisionengine.config.props.BizProps;
-import com.ymatou.doorgod.decisionengine.model.mongo.OffenderPo;
-import com.ymatou.doorgod.decisionengine.repository.OffenderRepository;
 import com.ymatou.doorgod.decisionengine.service.OffenderService;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -24,7 +24,6 @@ import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
-import org.springframework.data.domain.Example;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisZSetCommands;
 import org.springframework.data.redis.core.RedisCallback;
@@ -38,20 +37,16 @@ import com.ymatou.doorgod.decisionengine.integration.KafkaClients;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
 
-import javax.persistence.criteria.CriteriaBuilder;
-
 /**
- * FIXME: rename with better biz meaning
- * 
  * @author qianmin 2016年9月12日 上午11:04:36
  * @author luoshiqian
  * @author tuwenjie
  * 
  */
 @Component
-public class MongoSampleOffendersJob implements Job {
+public class LimitTimesRuleSampleOffendersJob implements Job {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoSampleOffendersJob.class);
+    private static final Logger logger = LoggerFactory.getLogger(LimitTimesRuleSampleOffendersJob.class);
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -154,45 +149,6 @@ public class MongoSampleOffendersJob implements Job {
             logger.error("error execute rule:{}",context.getJobDetail().getKey().getName(),e);
         }
     }
-
-
-    /**
-     * 每一分钟持久化一次Offender
-     *
-     * @param rule
-     * @param now
-     */
-    public void persistOffender(LimitTimesRule rule, LocalDateTime now) {
-        // 持久化Offender
-        StringRedisTemplate redisTemplate = SpringContextHolder.getBean(StringRedisTemplate.class);
-        OffenderRepository offenderRepository = SpringContextHolder.getBean(OffenderRepository.class);
-        Set<ZSetOperations.TypedTuple<String>> blackList =
-                redisTemplate.opsForZSet().rangeWithScores(getOffendersMapName(rule.getName()), 0, -1);
-        if (blackList != null && !blackList.isEmpty()) {
-            List<OffenderPo> offenderPos = new ArrayList<>();
-            for (ZSetOperations.TypedTuple<String> typeTuple : blackList) {
-                OffenderPo offenderPo = new OffenderPo();
-                offenderPo.setRuleName(rule.getName());
-                offenderPo.setSample(typeTuple.getValue());
-                offenderPo.setReleaseDate(typeTuple.getScore().longValue());
-
-                // 查询MongoDB中是否已经存在， 若不存在则保存
-                Example<OffenderPo> example = Example.of(offenderPo);
-                OffenderPo result = offenderRepository.findOne(example);
-                if (result == null) {
-                    offenderPo.setAddTime(now.format(FORMATTER_YMDHMS));
-                    offenderPos.add(offenderPo);
-                }
-            }
-            offenderRepository.save(offenderPos);
-            logger.info("persist offender size: {}, rule: {}", offenderPos.size(), rule.getName());
-        }
-
-        // 删除到期的Offender
-        redisTemplate.opsForZSet().removeRangeByScore(getOffendersMapName(rule.getName()), 0,
-                Double.valueOf(LocalDateTime.now().format(FORMATTER_YMDHMS)));
-    }
-
 
     /**
      * 往前N秒，获取已合并的时间窗口

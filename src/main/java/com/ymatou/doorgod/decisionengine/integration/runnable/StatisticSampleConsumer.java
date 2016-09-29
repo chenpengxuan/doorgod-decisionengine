@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
-import com.ymatou.doorgod.decisionengine.integration.DecisionEngine;
+import com.ymatou.doorgod.decisionengine.integration.SampleStatisticCenter;
 import com.ymatou.doorgod.decisionengine.model.StatisticItem;
 import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
 
@@ -29,14 +29,14 @@ public class StatisticSampleConsumer implements Runnable {
 
     private final KafkaConsumer<String, String> consumer;
     private final List<String> topics;
-    private final DecisionEngine decisionEngine;
+    private final SampleStatisticCenter sampleStatisticCenter;
 
     public StatisticSampleConsumer(List<String> topics) {
         this.topics = topics;
         Properties props = SpringContextHolder.getBean("autoCommitConsumerProps");
 
         this.consumer = new KafkaConsumer<>(props);
-        this.decisionEngine = SpringContextHolder.getBean(DecisionEngine.class);
+        this.sampleStatisticCenter = SpringContextHolder.getBean(SampleStatisticCenter.class);
     }
 
     @Override
@@ -51,7 +51,7 @@ public class StatisticSampleConsumer implements Runnable {
                     for (ConsumerRecord<String, String> record : records) {
 
                         logger.debug("StatisticSampleConsumer cnsume record:{}", record);
-                        decisionEngine.putStaticItem(JSON.parseObject(record.value(), StatisticItem.class));
+                        sampleStatisticCenter.putStatisticItem(JSON.parseObject(record.value(), StatisticItem.class));
                     }
                 }
             } catch (Exception e) {

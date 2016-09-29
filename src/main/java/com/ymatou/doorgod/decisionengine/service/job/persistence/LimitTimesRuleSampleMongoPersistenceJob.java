@@ -1,7 +1,10 @@
 /*
- * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
+ *
+ *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
+ *  All rights reserved.
+ *
  */
-package com.ymatou.doorgod.decisionengine.service.job;
+package com.ymatou.doorgod.decisionengine.service.job.persistence;
 
 import static com.ymatou.doorgod.decisionengine.constants.Constants.EMPTY_SET;
 import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHMS;
@@ -33,14 +36,13 @@ import com.ymatou.doorgod.decisionengine.util.RedisHelper;
 import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
 
 /**
- * FIXME: needless, 向redis上报后做
  * @author qianmin 2016年9月12日 上午11:05:19
  * 
  */
 @Component
-public class MongoSamplePersistenceJob implements Job {
+public class LimitTimesRuleSampleMongoPersistenceJob implements Job {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoSamplePersistenceJob.class);
+    private static final Logger logger = LoggerFactory.getLogger(LimitTimesRuleSampleMongoPersistenceJob.class);
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {

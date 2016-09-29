@@ -3,15 +3,14 @@
  */
 package com.ymatou.doorgod.decisionengine.service.job;
 
-import static com.ymatou.doorgod.decisionengine.constants.Constants.SEPARATOR;
-
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 import javax.transaction.Transactional;
 
+import com.ymatou.doorgod.decisionengine.service.job.offender.LimitTimesRuleGroupBySampleOffendersJob;
+import com.ymatou.doorgod.decisionengine.service.job.offender.LimitTimesRuleSampleOffendersJob;
+import com.ymatou.doorgod.decisionengine.service.job.persistence.LimitTimesRuleSampleMongoPersistenceJob;
 import com.ymatou.doorgod.decisionengine.util.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.SchedulerException;
@@ -56,7 +55,7 @@ public class RuleDiscoverer {
     public void execute() {
         // 加载Redis定时同步数据到MongoDB任务(添加/修改)
         try {
-            schedulerService.addJob(MongoSamplePersistenceJob.class, "RedisToMongo",
+            schedulerService.addJob(LimitTimesRuleSampleMongoPersistenceJob.class, "RedisToMongo",
                     bizProps.getRulePersistenceCronExpression());
         } catch (SchedulerException e) {
             logger.error("add redis to mongo job failed.", e);
@@ -67,6 +66,7 @@ public class RuleDiscoverer {
         reload();
     }
 
+    @Transactional
     public void reload() {
         // 加载规则数据，更新规则统计的定时任务
         HashMap<String, LimitTimesRule> ruleData = fecthRuleData();
@@ -77,10 +77,10 @@ public class RuleDiscoverer {
                 rules.put(ruleName, rule);
 
                 if (CollectionUtils.isEmpty(rule.getGroupByKeys())) {
-                    schedulerService.addJob(MongoSampleOffendersJob.class, ruleName,
+                    schedulerService.addJob(LimitTimesRuleSampleOffendersJob.class, ruleName,
                             bizProps.getRuleExecutorCronExpression());
                 } else {
-                    schedulerService.addJob(MongoGroupBySampleOffendersJob.class,ruleName,
+                    schedulerService.addJob(LimitTimesRuleGroupBySampleOffendersJob.class,ruleName,
                             bizProps.getMongoSampleOffendersCronExpression());
                 }
             } catch (SchedulerException e) {

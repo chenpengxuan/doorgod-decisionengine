@@ -42,7 +42,7 @@ public class RedisSampleStore extends AbstractSampleStore {
 
     @Override
     protected Map<String, Map<String, Map<Sample, AtomicInteger>>> getMemoryMap() {
-        return DecisionEngine.ruleTimeSampleMaps;
+        return SampleStatisticCenter.ruleTimeSampleMaps;
     }
 
     @Override
@@ -57,23 +57,24 @@ public class RedisSampleStore extends AbstractSampleStore {
         String zSetName = RedisHelper.getNormalSetName(rule.getName(), uploadTime);
 
         samples.forEach(entry -> {
-            //FIXME:一个失败，全部失败？
-            //FIXME：batch operations?
-            double score = 1;
-            if (redisTemplate.opsForZSet().getOperations().hasKey(zSetName)) {
-                score = redisTemplate.opsForZSet().incrementScore(zSetName, entry.getKey().toString(),
-                        ((AtomicInteger) entry.getValue()).doubleValue());
-            } else {
-                redisTemplate.opsForZSet().add(zSetName, entry.getKey().toString(),
-                        ((AtomicInteger) entry.getValue()).doubleValue());
-                redisTemplate.opsForZSet().getOperations().expire(zSetName, getExpireByRule(rule), TimeUnit.SECONDS);// 单位秒
-            }
+            try {
+                double score = 1;
+                if (redisTemplate.opsForZSet().getOperations().hasKey(zSetName)) {
+                    score = redisTemplate.opsForZSet().incrementScore(zSetName, entry.getKey().toString(),
+                            ((AtomicInteger) entry.getValue()).doubleValue());
+                } else {
+                    redisTemplate.opsForZSet().add(zSetName, entry.getKey().toString(),
+                            ((AtomicInteger) entry.getValue()).doubleValue());
+                    redisTemplate.opsForZSet().getOperations().expire(zSetName, getExpireByRule(rule), TimeUnit.SECONDS);// 单位秒
+                }
 
-            logger.info("ruleName:{},zsetName:{},zsetsample:{},score:{}", rule.getName(),
-                    zSetName, entry.getKey().toString(), score);
+                logger.debug("ruleName:{},zsetName:{},zsetsample:{},score:{}", rule.getName(),
+                        zSetName, entry.getKey().toString(), score);
+            } catch (Exception e) {
+                logger.error("uploadSample to redis error",e);
+            }
         });
 
-        //FIXME:异步将Top数据写入到Mongo，一分钟汇聚一次
     }
 
     /**
