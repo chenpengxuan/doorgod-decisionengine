@@ -9,7 +9,7 @@
 <configuration>
 	<property name="pattern"
 		value="%date [%thread] %-5level %logger{40} KEY[%X{logPrefix}] - %msg%n" />
-	<property name="appId" value="decision.ymatou.cn" />
+	<property name="appId" value="decisionengine.doorgod.iapi.ymatou.com" />
 	<property name="basePackage" value="com.ymatou.doorgod.decisionengine" />
 	<property name="baseDir" value="/usr/local/log/${appId}" />
 	

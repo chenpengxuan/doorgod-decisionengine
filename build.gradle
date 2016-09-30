@@ -118,6 +118,7 @@ task copyJars(type: Copy,dependsOn:jar) {
 //复制配置
 task copyConfig(type: Copy){
 	from "$projectDir/src/main/resources/logback.xml"
+	from "$projectDir/src/main/resources/quartz.properties"
 	into "$buildDir/dist/conf"
 }
 
