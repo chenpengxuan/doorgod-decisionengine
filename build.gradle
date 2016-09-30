@@ -26,6 +26,10 @@ springBoot {
 jar {
 	baseName = 'doorgod-decisionengine'
 	version = '1.0.0-SNAPSHOT'
+
+	exclude('logback-test.xml')
+	exclude('logback.xml')
+	exclude{ it.name.endsWith('.properties');}
 }
 
 ext {
