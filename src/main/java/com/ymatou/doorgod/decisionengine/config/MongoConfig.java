@@ -12,11 +12,13 @@ import java.util.List;
 
 import javax.annotation.PreDestroy;
 
+import com.mongodb.MongoClientURI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.data.mongodb.MongoDbFactory;
+import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 
@@ -29,7 +31,7 @@ import com.ymatou.doorgod.decisionengine.config.props.MongoProps;
  * @author luoshiqian 2016/9/9 13:51
  */
 @Configuration
-public class MongoConfig {
+public class MongoConfig extends AbstractMongoConfiguration {
 
     @Autowired
     private MongoProps mongoProps;
@@ -47,35 +49,31 @@ public class MongoConfig {
         }
     }
 
+
+    @Override
+    protected String getDatabaseName() {
+        return mongoProps.getMongoDatabaseName();
+    }
+
+    @Override
     @Bean
     public MongoClient mongo() throws UnknownHostException {
 
-        List<ServerAddress> addresses = new ArrayList<ServerAddress>();
-
-        for (String address : mongoProps.getMongoAddress().split("[,]")) {
-            String[] ad = address.split(":");
-            addresses.add(new ServerAddress(ad[0], Integer.valueOf(ad[1])));
-        }
-
-        this.mongo = new MongoClient(addresses);
+        MongoClientURI uri = new MongoClientURI(mongoProps.getMongoAddress());
+        this.mongo = new MongoClient(uri);
         return this.mongo;
     }
 
-    // public MongoClient mongoClient() throws UnknownHostException{
-    //
-    //
-    // MongoClient client = new MongoClient(addresses);
-    // return this.mongoProperties.createMongoClient(this.options,environment);
-    // }
     @Bean
     public MongoDbFactory mongoDbFactory(MongoClient mongo) throws Exception {
         return new SimpleMongoDbFactory(mongo, mongoProps.getMongoDatabaseName());
     }
 
 
+    @Override
     @Bean
-    public MongoTemplate mongoTemplate(MongoDbFactory mongoDbFactory) {
-        MongoTemplate mongoTemplate = new MongoTemplate(mongoDbFactory);
+    public MongoTemplate mongoTemplate() throws Exception {
+        MongoTemplate mongoTemplate = new MongoTemplate(mongo(),mongoProps.getMongoDatabaseName());
         return mongoTemplate;
     }
 
