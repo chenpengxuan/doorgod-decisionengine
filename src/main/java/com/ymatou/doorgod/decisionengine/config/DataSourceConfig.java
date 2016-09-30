@@ -35,7 +35,6 @@ import com.alibaba.druid.pool.DruidDataSource;
 @EnableJpaRepositories(basePackages = "com.ymatou.doorgod.decisionengine.repository")
 @EnableJpaAuditing
 @EnableTransactionManagement(proxyTargetClass = true)
-@EnableConfigurationProperties({ConnectionConfig.class})
 public class DataSourceConfig
         implements TransactionManagementConfigurer {
     @Autowired
@@ -52,6 +51,14 @@ public class DataSourceConfig
         dataSource.setInitialSize(connectionConfig.getInitialSize());
         dataSource.setMinIdle(connectionConfig.getMinIdle());
         dataSource.setMaxActive(connectionConfig.getMaxActive());
+
+        dataSource.setTimeBetweenConnectErrorMillis(Integer.valueOf(DataSourceSettingEnum.timeBetweenEvictionRunsMillis.getValue()));
+        dataSource.setMinEvictableIdleTimeMillis(Integer.valueOf(DataSourceSettingEnum.minEvictableIdleTimeMillis.getValue()));
+        dataSource.setValidationQuery(DataSourceSettingEnum.validationQuery.getValue());
+        dataSource.setTestWhileIdle(Boolean.valueOf(DataSourceSettingEnum.testWhileIdle.getValue()));
+        dataSource.setTestOnBorrow(Boolean.valueOf(DataSourceSettingEnum.testOnBorrow.getValue()));
+        dataSource.setDefaultAutoCommit(false);
+
         dataSource.setDefaultAutoCommit(false);
 
         return dataSource;

@@ -3,10 +3,13 @@
  */
 package com.ymatou.doorgod.decisionengine;
 
+import com.ymatou.doorgod.decisionengine.config.ConnectionConfig;
+import com.ymatou.doorgod.decisionengine.config.props.MongoProps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +27,7 @@ import com.ymatou.doorgod.decisionengine.service.job.RuleDiscoverer;
 @Configuration
 @EnableAutoConfiguration
 @ComponentScan(basePackages = "com.ymatou.doorgod.decisionengine")
+@EnableConfigurationProperties({ConnectionConfig.class, MongoProps.class})
 public class Application {
 
     public static final Logger logger = LoggerFactory.getLogger(Application.class);

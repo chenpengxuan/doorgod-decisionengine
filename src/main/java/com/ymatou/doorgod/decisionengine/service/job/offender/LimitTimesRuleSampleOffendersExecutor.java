@@ -1,7 +1,6 @@
 /*
  *
- *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
- *  All rights reserved.
+ * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
  *
  */
 package com.ymatou.doorgod.decisionengine.service.job.offender;
@@ -66,13 +65,13 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
             // 被统计的规则
             String jobName = context.getJobDetail().getKey().getName();
             LimitTimesRule rule = RuleHolder.rules.get(jobName);
-            if(null == rule){
-                logger.info("exec offenders job :{} rule==null",jobName);
+            if (null == rule) {
+                logger.info("exec offenders job :{} rule==null", jobName);
                 return;
             }
             String ruleName = rule.getName();
 
-            logger.info("exec offenders job :{}",ruleName);
+            logger.info("exec offenders job :{}", ruleName);
 
             // 合并Redis涉及到的时间窗口
             LocalDateTime now = LocalDateTime.now();
@@ -86,7 +85,8 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
                     ruleName, now.format(FORMATTER_YMDHMS), currentUnionName);
 
             int previousSeconds = bizProps.getPreviousSecondsRedisSkip();
-            String previousNSecondsUnionName = getPreviousNSecondsUnionName(rule, now, zSetOps,previousSeconds);//获取指定秒前的union 合集
+            String previousNSecondsUnionName = getPreviousNSecondsUnionName(rule, now, zSetOps, previousSeconds);// 获取指定秒前的union
+                                                                                                                 // 合集
             if (StringUtils.isNotBlank(previousNSecondsUnionName)) { // 存在N秒前的一个Union结果
 
                 List<String> delSecTimeBuckets = getAllDeleteSecTimeBucket(rule, previousSeconds, now);
@@ -104,12 +104,12 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
                         int[] weights = new int[delSecTimeBuckets.size() + addSecTimeBuckets.size() + 1];
                         byte[][] setNameBytes = new byte[weights.length][];
                         int i = 0;
-                        for ( String setName : delSecTimeBuckets ) {
+                        for (String setName : delSecTimeBuckets) {
                             setNameBytes[i] = setName.getBytes();
                             weights[i] = -1;
                             i++;
                         }
-                        for ( String setName : addSecTimeBuckets ) {
+                        for (String setName : addSecTimeBuckets) {
                             setNameBytes[i] = setName.getBytes();
                             weights[i] = 1;
                             i++;
@@ -138,7 +138,7 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
 
                 boolean isOffendersChanged = false;
                 for (String offender : offenders) {
-                    if(offenderService.saveOffender(rule,offender,releaseDate,nowFormated)){
+                    if (offenderService.saveOffender(rule, offender, releaseDate, nowFormated)) {
                         isOffendersChanged = true;
                     }
                 }
@@ -150,7 +150,7 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
             }
             logger.info("end to execute rule: {}, time: {}", ruleName, now.format(FORMATTER_YMDHMS));
         } catch (Exception e) {
-            logger.error("error execute rule:{}",context.getJobDetail().getKey().getName(),e);
+            logger.error("error execute rule:{}", context.getJobDetail().getKey().getName(), e);
         }
     }
 
@@ -162,34 +162,14 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
      * @param zSetOps
      * @return
      */
-    private String getPreviousNSecondsUnionName(LimitTimesRule rule, LocalDateTime now, ZSetOperations<String, String> zSetOps, int previousSeconds) {
-        String previousNUnionName = getUnionSetName(rule.getName(), now.minusSeconds(previousSeconds).format(FORMATTER_YMDHMS), UNION);
+    private String getPreviousNSecondsUnionName(LimitTimesRule rule, LocalDateTime now,
+            ZSetOperations<String, String> zSetOps, int previousSeconds) {
+        String previousNUnionName =
+                getUnionSetName(rule.getName(), now.minusSeconds(previousSeconds).format(FORMATTER_YMDHMS), UNION);
         if (zSetOps.size(previousNUnionName) > 0) {
             return previousNUnionName;
         }
         return null;
-    }
-
-    /**
-     * 往前找N秒，找到最近已合并的时间窗口
-     * 
-     * @param rule
-     * @param now
-     * @param zSetOps
-     * @return
-     */
-    private String getNoEmptyUnionTimeBucket(LimitTimesRule rule, LocalDateTime now,
-            ZSetOperations<String, String> zSetOps) {
-        List<String> unionTimeBuckets = getPreviousUionTimeBucket(rule, now);
-        String notEmptyUnionTimeBucket = null;
-        for (String utb : unionTimeBuckets) {
-            if (zSetOps.size(utb) > 0) {
-                notEmptyUnionTimeBucket = utb; // 找到已经合并的时间窗口
-                break;
-            }
-        }
-
-        return notEmptyUnionTimeBucket;
     }
 
     /**
@@ -201,16 +181,8 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
      */
     private List<String> getAllTimeBucket(LimitTimesRule rule, LocalDateTime now) {
         List<String> timeBuckets = new ArrayList<>();
-        for (int second = rule.getStatisticSpan(); second >= 1; second--) {
+        for (int second = rule.getStatisticSpan(); second >= 3; second--) {
             timeBuckets.add(getNormalSetName(rule.getName(), now.minusSeconds(second).format(FORMATTER_YMDHMS)));
-        }
-        return timeBuckets;
-    }
-
-    private List<String> getPreviousUionTimeBucket(LimitTimesRule rule, LocalDateTime now) {
-        List<String> timeBuckets = new ArrayList<>();
-        for (int second = 1; second <= PREVIOUS_COUNT; second++) {
-            timeBuckets.add(getUnionSetName(rule.getName(), now.minusSeconds(second).format(FORMATTER_YMDHMS), UNION));
         }
         return timeBuckets;
     }
@@ -218,7 +190,7 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
     private List<String> getAllDeleteSecTimeBucket(LimitTimesRule rule, int seconds, LocalDateTime now) {
         List<String> timeBuckets = new ArrayList<>();
         for (int second = rule.getStatisticSpan() + seconds; second > rule.getStatisticSpan(); second--) {
-            timeBuckets.add(getNormalSetName(rule.getName(), now.minusSeconds(second).format(FORMATTER_YMDHMS)));
+            timeBuckets.add(getNormalSetName(rule.getName(), now.minusSeconds(second+2).format(FORMATTER_YMDHMS)));
         }
         return timeBuckets;
     }
@@ -226,7 +198,7 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
     private List<String> getAllAddSecTimeBucket(LimitTimesRule rule, int seconds, LocalDateTime now) {
         List<String> timeBuckets = new ArrayList<>();
         for (int second = seconds; second >= 1; second--) {
-            timeBuckets.add(getNormalSetName(rule.getName(), now.minusSeconds(second).format(FORMATTER_YMDHMS)));
+            timeBuckets.add(getNormalSetName(rule.getName(), now.minusSeconds(second+2).format(FORMATTER_YMDHMS)));
         }
         return timeBuckets;
     }

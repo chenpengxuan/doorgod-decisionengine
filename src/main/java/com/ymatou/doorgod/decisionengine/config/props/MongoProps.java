@@ -1,29 +1,24 @@
 /*
  *
- *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
- *  All rights reserved.
+ * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
  *
  */
 
 package com.ymatou.doorgod.decisionengine.config.props;
 
-import com.baidu.disconf.client.common.annotations.DisconfFile;
-import com.baidu.disconf.client.common.annotations.DisconfFileItem;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * redis属性配置
  *
  */
-@Component
-@DisconfFile(fileName = "mongo.properties")
+@ConfigurationProperties(prefix = "mongo")
 public class MongoProps {
 
     private String mongoAddress;
     private String mongoDatabaseName;
 
 
-    @DisconfFileItem(name = "mongo.address")
     public String getMongoAddress() {
         return mongoAddress;
     }
@@ -32,7 +27,6 @@ public class MongoProps {
         this.mongoAddress = mongoAddress;
     }
 
-    @DisconfFileItem(name = "mongo.databaseName")
     public String getMongoDatabaseName() {
         return mongoDatabaseName;
     }
