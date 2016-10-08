@@ -1,6 +1,7 @@
 package com.ymatou.doorgod.decisionengine.model;
 
 import org.springframework.core.Ordered;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -73,7 +74,16 @@ public abstract class AbstractRule implements Ordered, Comparable<AbstractRule> 
     }
 
     public boolean applicable( String uri ) {
-        return applicableUris.isEmpty() || applicableUris.contains(uri.toLowerCase());
+        if (CollectionUtils.isEmpty(applicableUris)) {
+            return true;
+        }
+        for ( String applicable : applicableUris ) {
+            if ( applicable.startsWith(uri)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }

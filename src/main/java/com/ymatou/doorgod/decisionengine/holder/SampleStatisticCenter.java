@@ -48,7 +48,7 @@ public class SampleStatisticCenter {
      *                               key: sample
      *                               value: AtomicInteger 计数
      */
-    public static Map<String,Map<String,Map<Sample,AtomicInteger>>> ruleTimeSampleMaps = new HashMap<>();
+    public static Map<String,Map<String,Map<Sample,AtomicInteger>>> ruleTimeSampleMaps = new ConcurrentHashMap<>();
     /**
      * key: rulename
      * value: ConcurrentHashMap:
@@ -57,7 +57,7 @@ public class SampleStatisticCenter {
      *                               key: sample (groupby key)
      *                               value: Set<Sample> (去掉groupby key 剩下的)
      */
-    public static Map<String,Map<String,Map<Sample,Set<Sample>>>> groupByRuleTimeSampleMaps = new HashMap<>();
+    public static Map<String,Map<String,Map<Sample,Set<Sample>>>> groupByRuleTimeSampleMaps = new ConcurrentHashMap<>();
 
     @Autowired
     private BizProps bizProps;
@@ -186,8 +186,7 @@ public class SampleStatisticCenter {
     //获取规则
     public Set<LimitTimesRule> getRulesByUri(String uri){
         return RuleHolder.rules.values().stream().filter(
-                rule -> rule.getApplicableUris().size() == 0
-                        || rule.getApplicableUris().stream().anyMatch(s -> uri.startsWith(s)))
+                rule -> rule.applicable(uri))
                 .collect(Collectors.toSet());
     }
 
