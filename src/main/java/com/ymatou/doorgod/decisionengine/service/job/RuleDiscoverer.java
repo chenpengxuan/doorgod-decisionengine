@@ -78,11 +78,14 @@ public class RuleDiscoverer {
 
                 if (CollectionUtils.isEmpty(rule.getGroupByKeys())) {
                     schedulerService.addJob(LimitTimesRuleSampleOffendersJob.class, ruleName,
+                            //FIXME:更好的命名
                             bizProps.getRuleExecutorCronExpression());
                 } else {
                     schedulerService.addJob(LimitTimesRuleGroupBySampleOffendersJob.class,ruleName,
+                            //FIXME: 更好的命名
                             bizProps.getMongoSampleOffendersCronExpression());
                 }
+                //FIXME: 异常处理，吃掉?
             } catch (SchedulerException e) {
                 logger.error("update rule schduler failed.", e);
             }
@@ -95,6 +98,7 @@ public class RuleDiscoverer {
                         RulePo rulePo = new RulePo();
                         rulePo.setName(ruleName);
                         RulePo rule = ruleRepository.findOne(Example.of(rulePo));
+                        //FIXME:为什么要判断rule是否存在呢?
                         if (rule != null) {
                             String jobName = ruleName;
                             schedulerService.removeScheduler(jobName);
@@ -108,8 +112,10 @@ public class RuleDiscoverer {
         RuleHolder.rules = rules;
         logger.info("load rule data: {}", JSON.toJSONString(ruleData));
 
+        //FIXME:如果rule的统计时长变更了，是不是需要清除原redis的union？
     }
 
+    //FIXME: rename fetchLimitTimesRules
     public HashMap<String, LimitTimesRule> fecthRuleData() {
         HashMap<String, LimitTimesRule> rules = new HashMap<>();
         List<RulePo> rulePos = ruleRepository.findByStatusAndRuleType(StatusEnum.ENABLE.name(),

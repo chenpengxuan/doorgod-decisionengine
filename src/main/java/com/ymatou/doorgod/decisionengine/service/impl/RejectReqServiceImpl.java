@@ -39,6 +39,7 @@ public class RejectReqServiceImpl implements RejectReqService {
     @Override
     public void saveRejectReq(RejectReqPo rejectReqPo) {
 
+        //FIXME:索引<rejectTime, ruleName, sample>
         //格式化到分钟
         String rejectTime = DateUtils.parseAndFormat(rejectReqPo.getRejectTime(),FORMATTER_YMDHMS,FORMATTER_YMDHM);
 

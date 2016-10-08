@@ -40,11 +40,13 @@ public class StatisticSampleConsumer implements Runnable {
         this.sampleStatisticCenter = SpringContextHolder.getBean(SampleStatisticCenter.class);
     }
 
+    //FIXME:其他Consumer有如下相同问题，一并改掉
     @Override
     public void run() {
         try {
             consumer.subscribe(topics);
 
+            //FIXME: 这一层的try/catch 应该是将<code>sampleStatisticCenter.putStatisticItem</code>包住
             try {
                 while (true) {
 
@@ -61,7 +63,7 @@ public class StatisticSampleConsumer implements Runnable {
 
         } catch (WakeupException e) {
             // ignore for shutdown
-        } finally {
+        } finally { //FIXME: 其他Exception，要日志输出，便于定位，不要吃掉
             consumer.close();
         }
     }
