@@ -46,15 +46,16 @@ public class CacheReloaderConsumer implements Runnable {
 
             while (true) {
                 try {
-                    ConsumerRecords<String, String> records = consumer.poll(Long.MAX_VALUE);
+                    ConsumerRecords<String, String> records = consumer.poll(5000);
                     for (ConsumerRecord<String, String> record : records) {
+                        logger.info("begin consume record:{}", record);
 
                         ruleDiscoverer.reload();
 
                         consumer.commitSync(Collections.singletonMap(new TopicPartition(record.topic(), record.partition()),
                                 new OffsetAndMetadata(record.offset() + 1)));
 
-                        logger.info("consume record:{}", record);
+                        logger.info("end consume record:{}", record);
                     }
                 } catch (Exception e) {
                     logger.error("cacheReloaderConsumer consume record error",e);

@@ -48,7 +48,7 @@ public class RejectReqConsumer implements Runnable {
             
             while (true) {
                 try {
-                    ConsumerRecords<String, String> records = consumer.poll(Long.MAX_VALUE);
+                    ConsumerRecords<String, String> records = consumer.poll(5000);
                     for (ConsumerRecord<String, String> record : records) {
 
                         logger.debug("RejectReqConsumer consume record:{}", record);
