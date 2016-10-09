@@ -44,9 +44,9 @@ public class RejectReqConsumer implements Runnable {
         try {
             consumer.subscribe(topics);
 
-            try {
-                while (true) {
-
+            
+            while (true) {
+                try {
                     ConsumerRecords<String, String> records = consumer.poll(Long.MAX_VALUE);
                     for (ConsumerRecord<String, String> record : records) {
 
@@ -54,11 +54,10 @@ public class RejectReqConsumer implements Runnable {
                         logger.debug("RejectReqConsumer consume record:{}", record);
 
                     }
+                } catch (Exception e) {
+                    logger.error("RejectReqConsumer consume record error", e);
                 }
-            } catch (Exception e) {
-                logger.error("RejectReqConsumer consume record error", e);
             }
-
         } catch (WakeupException e) {
             // ignore for shutdown
         } finally {

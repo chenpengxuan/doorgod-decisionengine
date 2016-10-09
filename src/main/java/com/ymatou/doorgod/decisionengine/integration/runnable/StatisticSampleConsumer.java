@@ -39,31 +39,28 @@ public class StatisticSampleConsumer implements Runnable {
         this.consumer = new KafkaConsumer<>(props);
         this.sampleStatisticCenter = SpringContextHolder.getBean(SampleStatisticCenter.class);
     }
-
-    //FIXME:其他Consumer有如下相同问题，一并改掉
+    
     @Override
     public void run() {
         try {
             consumer.subscribe(topics);
 
-            //FIXME: 这一层的try/catch 应该是将<code>sampleStatisticCenter.putStatisticItem</code>包住
-            try {
-                while (true) {
-
+            
+            while (true) {
+                try {
                     ConsumerRecords<String, String> records = consumer.poll(Long.MAX_VALUE);
                     for (ConsumerRecord<String, String> record : records) {
 
                         logger.debug("StatisticSampleConsumer cnsume record:{}", record);
                         sampleStatisticCenter.putStatisticItem(JSON.parseObject(record.value(), StatisticItem.class));
                     }
+                } catch (Exception e) {
+                    logger.error("StatisticSampleConsumer consume record error", e);
                 }
-            } catch (Exception e) {
-                logger.error("StatisticSampleConsumer consume record error", e);
             }
-
         } catch (WakeupException e) {
             // ignore for shutdown
-        } finally { //FIXME: 其他Exception，要日志输出，便于定位，不要吃掉
+        } finally {
             consumer.close();
         }
     }

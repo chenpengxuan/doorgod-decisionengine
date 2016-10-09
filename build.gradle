@@ -27,6 +27,7 @@ jar {
 	baseName = 'doorgod-decisionengine'
 	version = '1.0.0-SNAPSHOT'
 
+	exclude('logback.xml')
 	exclude('logback-test.xml')
 	exclude{ it.name.endsWith('.properties');}
 }
@@ -46,7 +47,7 @@ ext {
     druidVersion = "1.0.14"
     mysqlVersion = "5.1.31"
     jacksonVersion = "2.4.6"
-	errorreporterVersion = "1.0.2"
+	errorreporterVersion = "1.0.3"
 	performanceMonitorClientVersion = "1.0.5"
 }
 

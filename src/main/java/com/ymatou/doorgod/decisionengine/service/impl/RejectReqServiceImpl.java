@@ -11,8 +11,10 @@ import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YM
 import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHMS;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -39,7 +41,10 @@ public class RejectReqServiceImpl implements RejectReqService {
     @Override
     public void saveRejectReq(RejectReqPo rejectReqPo) {
 
-        //FIXME:索引<rejectTime, ruleName, sample>
+        Index index = new Index("rejectTime", Sort.Direction.ASC);
+        index.on("ruleName",Sort.Direction.ASC).on("sample",Sort.Direction.ASC);
+        mongoTemplate.indexOps("RejectReq").ensureIndex(index);
+
         //格式化到分钟
         String rejectTime = DateUtils.parseAndFormat(rejectReqPo.getRejectTime(),FORMATTER_YMDHMS,FORMATTER_YMDHM);
 

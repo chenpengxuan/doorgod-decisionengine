@@ -92,10 +92,14 @@ public class SampleStatisticCenter {
 
         set.forEach(rule -> {
 
-            if (CollectionUtils.isEmpty(rule.getGroupByKeys())) {
-                doStatisticNormalSet(rule, sample, reqTime);
-            } else {
-                doStatisticGroupBySet(rule,sample,reqTime);
+            try {
+                if (CollectionUtils.isEmpty(rule.getGroupByKeys())) {
+                    doStatisticNormalSet(rule, sample, reqTime);
+                } else {
+                    doStatisticGroupBySet(rule,sample,reqTime);
+                }
+            } catch (Exception e) {
+                logger.error("putStatisticItem error,ruleName:{},reqTime:{}", rule.getName(),reqTime);
             }
         });
 
