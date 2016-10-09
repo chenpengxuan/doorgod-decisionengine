@@ -52,7 +52,7 @@ public class LimitTimesRuleSampleMongoPersistenceExecutor implements Job {
         LocalDateTime now = LocalDateTime.now();
 
         logger.info("exec job persist");
-        for (LimitTimesRule rule : RuleHolder.rules.values()) {
+        for (LimitTimesRule rule : RuleHolder.limitTimesRules.values()) {
             persistUnionSample(rule, now);
         }
         logger.info("presist redis data to mongodb. {}", now.format(FORMATTER_YMDHMS));

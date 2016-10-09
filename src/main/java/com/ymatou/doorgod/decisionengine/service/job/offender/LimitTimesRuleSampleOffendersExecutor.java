@@ -64,7 +64,7 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
 
             // 被统计的规则
             String jobName = context.getJobDetail().getKey().getName();
-            LimitTimesRule rule = RuleHolder.rules.get(jobName);
+            LimitTimesRule rule = RuleHolder.limitTimesRules.get(jobName);
             if (null == rule) {
                 logger.info("exec offenders job :{} rule==null", jobName);
                 return;

@@ -9,10 +9,12 @@ package com.ymatou.doorgod.decisionengine.integration.runnable;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,7 @@ public class StatisticSampleConsumer implements Runnable {
     private final KafkaConsumer<String, String> consumer;
     private final List<String> topics;
     private final SampleStatisticCenter sampleStatisticCenter;
+    private boolean isFirstTime = true;
 
     public StatisticSampleConsumer(List<String> topics) {
         this.topics = topics;
@@ -43,12 +46,12 @@ public class StatisticSampleConsumer implements Runnable {
     @Override
     public void run() {
         try {
+
             consumer.subscribe(topics);
 
-            
             while (true) {
                 try {
-                    ConsumerRecords<String, String> records = consumer.poll(Long.MAX_VALUE);
+                    ConsumerRecords<String, String> records = consumer.poll(5000);
                     for (ConsumerRecord<String, String> record : records) {
 
                         logger.debug("StatisticSampleConsumer cnsume record:{}", record);

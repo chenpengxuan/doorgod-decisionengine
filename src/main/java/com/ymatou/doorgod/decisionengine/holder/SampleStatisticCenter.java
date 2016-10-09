@@ -66,6 +66,8 @@ public class SampleStatisticCenter {
     @Autowired
     private MongoSampleStore mongoSampleStore;
 
+    private static long nextLogErrorTime = 0;
+
     public void putSampleToRedis(){
         redisSampleStore.putSample();
     }
@@ -81,11 +83,16 @@ public class SampleStatisticCenter {
         Sample sample = statisticItem.getSample();
         String reqTime = statisticItem.getReqTime();
 
-        String nowStr = DateUtils.formatDefault(LocalDateTime.now().minusSeconds(5));
-        if(Long.valueOf(nowStr) > Long.valueOf(reqTime)){
-            logger.error("reqTime before now 5 seconds ,will not be statistic");
-            return;
-        }
+//        String nowStr = DateUtils.formatDefault(LocalDateTime.now().minusSeconds(5));
+//        if(Long.valueOf(nowStr) > Long.valueOf(reqTime)){
+//            if(nextLogErrorTime == 0 || nextLogErrorTime<=Long.valueOf(nowStr)){
+//                logger.error("nowStr:{},reqTime:{} reqTime before now 5 seconds ,will not be statistic",nowStr,reqTime);
+//                nextLogErrorTime = Long.valueOf(DateUtils.formatDefault(LocalDateTime.now().plusSeconds(60)));
+//            }else {
+//                logger.warn("nowStr:{},reqTime:{} reqTime before now 5 seconds ,will not be statistic",nowStr,reqTime);
+//            }
+//            return;
+//        }
 
         String uri = statisticItem.getUri();
         Set<LimitTimesRule> set = getRulesByUri(uri);
@@ -189,7 +196,7 @@ public class SampleStatisticCenter {
 
     //获取规则
     public Set<LimitTimesRule> getRulesByUri(String uri){
-        return RuleHolder.rules.values().stream().filter(
+        return RuleHolder.limitTimesRules.values().stream().filter(
                 rule -> rule.applicable(uri))
                 .collect(Collectors.toSet());
     }

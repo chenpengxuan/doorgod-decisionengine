@@ -69,7 +69,7 @@ public class RuleDiscoverer {
     @Transactional
     public void reload() {
         // 加载规则数据，更新规则统计的定时任务
-        HashMap<String, LimitTimesRule> ruleData = fecthRuleData();
+        HashMap<String, LimitTimesRule> ruleData = fetchLimitTimesRules();
         HashMap<String, LimitTimesRule> rules = new HashMap<>();
         for (LimitTimesRule rule : ruleData.values()) {
             try {
@@ -91,7 +91,7 @@ public class RuleDiscoverer {
             }
         }
         // 已删除的规则 定时任务
-        RuleHolder.rules.keySet().stream()
+        RuleHolder.limitTimesRules.keySet().stream()
                 .filter(ruleName -> ruleData.values().stream().noneMatch(rule -> rule.getName().equals(ruleName)))
                 .forEach(ruleName -> {
                     try {
@@ -109,14 +109,13 @@ public class RuleDiscoverer {
                 });
 
         // 替换
-        RuleHolder.rules = rules;
+        RuleHolder.limitTimesRules = rules;
         logger.info("load rule data: {}", JSON.toJSONString(ruleData));
 
         //FIXME:如果rule的统计时长变更了，是不是需要清除原redis的union？
     }
 
-    //FIXME: rename fetchLimitTimesRules
-    public HashMap<String, LimitTimesRule> fecthRuleData() {
+    public HashMap<String, LimitTimesRule> fetchLimitTimesRules() {
         HashMap<String, LimitTimesRule> rules = new HashMap<>();
         List<RulePo> rulePos = ruleRepository.findByStatusAndRuleType(StatusEnum.ENABLE.name(),
                 Constants.RULE_TYPE_NAME_LIMIT_TIMES_RULE);

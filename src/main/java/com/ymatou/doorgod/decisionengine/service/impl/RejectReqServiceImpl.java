@@ -10,6 +10,7 @@ package com.ymatou.doorgod.decisionengine.service.impl;
 import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHM;
 import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHMS;
 
+import com.ymatou.doorgod.decisionengine.model.RejectReqEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -39,19 +40,19 @@ public class RejectReqServiceImpl implements RejectReqService {
     private MongoTemplate mongoTemplate;
 
     @Override
-    public void saveRejectReq(RejectReqPo rejectReqPo) {
+    public void saveRejectReq(RejectReqEvent rejectReqEvent) {
 
         Index index = new Index("rejectTime", Sort.Direction.ASC);
         index.on("ruleName",Sort.Direction.ASC).on("sample",Sort.Direction.ASC);
         mongoTemplate.indexOps("RejectReq").ensureIndex(index);
 
         //格式化到分钟
-        String rejectTime = DateUtils.parseAndFormat(rejectReqPo.getRejectTime(),FORMATTER_YMDHMS,FORMATTER_YMDHM);
+        String rejectTime = DateUtils.parseAndFormat(rejectReqEvent.getTime(),FORMATTER_YMDHMS,FORMATTER_YMDHM);
 
         Query query = new Query(Criteria
                 .where("rejectTime").is(rejectTime)
-                .and("sample").is(rejectReqPo.getSample())
-                .and("ruleName").is(rejectReqPo.getRuleName())
+                .and("sample").is(rejectReqEvent.getSample())
+                .and("ruleName").is(rejectReqEvent.getRuleName())
         );
 
         Update update = new Update();

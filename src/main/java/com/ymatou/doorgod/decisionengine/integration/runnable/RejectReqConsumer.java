@@ -9,6 +9,7 @@ package com.ymatou.doorgod.decisionengine.integration.runnable;
 import java.util.List;
 import java.util.Properties;
 
+import com.ymatou.doorgod.decisionengine.model.RejectReqEvent;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -50,8 +51,8 @@ public class RejectReqConsumer implements Runnable {
                     ConsumerRecords<String, String> records = consumer.poll(Long.MAX_VALUE);
                     for (ConsumerRecord<String, String> record : records) {
 
-                        rejectReqService.saveRejectReq(JSON.parseObject(record.value(), RejectReqPo.class));
                         logger.debug("RejectReqConsumer consume record:{}", record);
+                        rejectReqService.saveRejectReq(JSON.parseObject(record.value(), RejectReqEvent.class));
 
                     }
                 } catch (Exception e) {

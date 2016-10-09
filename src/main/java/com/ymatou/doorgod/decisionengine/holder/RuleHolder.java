@@ -15,6 +15,5 @@ import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
  */
 public class RuleHolder {
 
-    //FIXME: rename limitTimesRules
-    public static HashMap<String, LimitTimesRule> rules = new HashMap<>();
+    public static HashMap<String, LimitTimesRule> limitTimesRules = new HashMap<>();
 }

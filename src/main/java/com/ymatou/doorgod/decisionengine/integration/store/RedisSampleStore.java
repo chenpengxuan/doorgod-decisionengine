@@ -38,7 +38,7 @@ public class RedisSampleStore extends AbstractSampleStore {
 
     @Override
     public Collection<LimitTimesRule> findRule() {
-        return RuleHolder.rules.values().stream()
+        return RuleHolder.limitTimesRules.values().stream()
                 .filter(rule -> CollectionUtils.isEmpty(rule.getGroupByKeys())).collect(Collectors.toSet());
     }
 

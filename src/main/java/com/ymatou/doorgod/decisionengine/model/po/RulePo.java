@@ -40,7 +40,7 @@ public class RulePo extends Audit {
     @Column(name = "rejection_span")
     private int rejectionSpan;
 
-    @Column(name = "keys")
+    @Column(name = "`keys`")
     private String keys;
 
     @Column(name = "groupby_keys")
@@ -49,7 +49,7 @@ public class RulePo extends Audit {
     @Column(name = "rule_type")
     private String ruleType;
 
-    @Column(name = "order")
+    @Column(name = "`order`")
     private int order;
 
     @Column(name = "uris")

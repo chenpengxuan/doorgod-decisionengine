@@ -105,7 +105,7 @@ public class ProducerSingleTest1 {
         rule.setStatisticSpan(120);
         rule.setApplicableUris(Sets.newHashSet("/api/xxx.do"));
 
-        RuleHolder.rules.put("testrule3", rule);
+        RuleHolder.limitTimesRules.put("testrule3", rule);
 
 
         while (true){
