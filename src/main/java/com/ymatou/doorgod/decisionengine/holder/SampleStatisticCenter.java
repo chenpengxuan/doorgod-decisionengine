@@ -183,7 +183,7 @@ public class SampleStatisticCenter {
             //具体sample值无需输出
             logger.debug("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},groupBySetCount:{}", rule.getName(),
                     reqTime, sampleMap.size(),
-                    originSample, groupBySample, leftKeySet.size());
+                    originSample, groupBySample, leftKeySet != null ? leftKeySet.size() : 0);
         } else {
             Sample leftKeySample = originSample.unNarrow(groupByKeys);
             sampleMap.putIfAbsent(groupBySample, Sets.newConcurrentHashSet(Lists.newArrayList( leftKeySample )));
