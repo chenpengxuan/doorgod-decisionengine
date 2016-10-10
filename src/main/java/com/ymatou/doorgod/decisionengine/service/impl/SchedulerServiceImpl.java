@@ -6,15 +6,7 @@ package com.ymatou.doorgod.decisionengine.service.impl;
 import java.util.Date;
 import java.util.List;
 
-import org.quartz.CronScheduleBuilder;
-import org.quartz.Job;
-import org.quartz.JobBuilder;
-import org.quartz.JobDetail;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.Trigger;
-import org.quartz.TriggerBuilder;
+import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,7 +39,8 @@ public class SchedulerServiceImpl implements SchedulerService {
                             .withMisfireHandlingInstructionFireAndProceed())
                     .build();
             scheduler.scheduleJob(jobDetail, trigger);
-        } else {
+        }
+        else {
             modifyScheduler(jobName, cronExpression);
         }
     }
@@ -59,12 +52,16 @@ public class SchedulerServiceImpl implements SchedulerService {
         List<? extends Trigger> triggerList = scheduler.getTriggersOfJob(new JobKey(jobName));
         Trigger oldTrigger = triggerList.get(0); // job与trigger一一对应， job有且只有一个trigger
 
-        // 借助于原trigger相关联的triggerBuilder修改trigger
-        TriggerBuilder tb = oldTrigger.getTriggerBuilder();
+        String oldExpr = ((CronTrigger)oldTrigger).getCronExpression();
+        if(!cronExpression.equals(oldExpr)){
 
-        Trigger newTrigger = tb.withSchedule(CronScheduleBuilder.cronSchedule(cronExpression)).build();
+            // 借助于原trigger相关联的triggerBuilder修改trigger
+            TriggerBuilder tb = oldTrigger.getTriggerBuilder();
 
-        scheduler.rescheduleJob(oldTrigger.getKey(), newTrigger);
+            Trigger newTrigger = tb.withSchedule(CronScheduleBuilder.cronSchedule(cronExpression)).build();
+
+            scheduler.rescheduleJob(oldTrigger.getKey(), newTrigger);
+        }
     }
 
     @Override

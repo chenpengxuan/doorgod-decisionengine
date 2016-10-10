@@ -5,9 +5,11 @@ package com.ymatou.doorgod.decisionengine.service.job;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.transaction.Transactional;
 
+import com.google.common.collect.Maps;
 import com.ymatou.doorgod.decisionengine.service.job.offender.LimitTimesRuleGroupBySampleOffendersJob;
 import com.ymatou.doorgod.decisionengine.service.job.offender.LimitTimesRuleSampleOffendersJob;
 import com.ymatou.doorgod.decisionengine.service.job.persistence.LimitTimesRuleSampleMongoPersistenceJob;
@@ -50,64 +52,65 @@ public class RuleDiscoverer {
 
     @Autowired
     private BizProps bizProps;
+    private static volatile boolean isError = false;
+    private static volatile Exception exception;
 
     @Transactional
     public void execute() {
         // 加载Redis定时同步数据到MongoDB任务(添加/修改)
         try {
             schedulerService.addJob(LimitTimesRuleSampleMongoPersistenceJob.class, "RedisToMongo",
-                    bizProps.getRulePersistenceCronExpression());
+                    bizProps.getLimitTimesRuleSamplePersistCronExpr());
         } catch (SchedulerException e) {
             logger.error("add redis to mongo job failed.", e);
         }
         logger.info("load redis to mongo task success.");
 
         // 加载规则数据，更新规则统计的定时任务
-        reload();
+        try {
+            reload();
+        } catch (Exception e) {
+            logger.error("system init load rule error",e);
+            throw new RuntimeException(e);
+        }
     }
 
     @Transactional
-    public void reload() {
+    public void reload()throws Exception {
         // 加载规则数据，更新规则统计的定时任务
         HashMap<String, LimitTimesRule> ruleData = fetchLimitTimesRules();
         HashMap<String, LimitTimesRule> rules = new HashMap<>();
         for (LimitTimesRule rule : ruleData.values()) {
-            try {
-                String ruleName = rule.getName();
-                rules.put(ruleName, rule);
 
-                if (CollectionUtils.isEmpty(rule.getGroupByKeys())) {
-                    schedulerService.addJob(LimitTimesRuleSampleOffendersJob.class, ruleName,
-                            //FIXME:更好的命名
-                            bizProps.getRuleExecutorCronExpression());
-                } else {
-                    schedulerService.addJob(LimitTimesRuleGroupBySampleOffendersJob.class,ruleName,
-                            //FIXME: 更好的命名
-                            bizProps.getMongoSampleOffendersCronExpression());
-                }
-                //FIXME: 异常处理，吃掉?
-            } catch (SchedulerException e) {
-                logger.error("update rule schduler failed.", e);
+            String ruleName = rule.getName();
+            rules.put(ruleName, rule);
+
+            if (CollectionUtils.isEmpty(rule.getGroupByKeys())) {
+                schedulerService.addJob(LimitTimesRuleSampleOffendersJob.class, ruleName,
+                        bizProps.getLimitTimesRuleSampleCronExpr());
+            } else {
+                schedulerService.addJob(LimitTimesRuleGroupBySampleOffendersJob.class,ruleName,
+                        bizProps.getLimitTimesRuleGroupBySampleCronExpr());
             }
         }
+
         // 已删除的规则 定时任务
         RuleHolder.limitTimesRules.keySet().stream()
                 .filter(ruleName -> ruleData.values().stream().noneMatch(rule -> rule.getName().equals(ruleName)))
                 .forEach(ruleName -> {
+
                     try {
-                        RulePo rulePo = new RulePo();
-                        rulePo.setName(ruleName);
-                        RulePo rule = ruleRepository.findOne(Example.of(rulePo));
-                        //FIXME:为什么要判断rule是否存在呢?
-                        if (rule != null) {
-                            String jobName = ruleName;
-                            schedulerService.removeScheduler(jobName);
-                        }
-                    } catch (Exception e) {
-                        logger.error("update rule schduler failed.", e);
+                        schedulerService.removeScheduler(ruleName);
+                    } catch (SchedulerException e) {
+                        isError = true;
+                        exception = e;
                     }
+
                 });
 
+        if(isError){
+            throw exception;
+        }
         // 替换
         RuleHolder.limitTimesRules = rules;
         logger.info("load rule data: {}", JSON.toJSONString(ruleData));

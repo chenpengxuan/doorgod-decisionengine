@@ -19,12 +19,12 @@ import com.baidu.disconf.client.common.annotations.DisconfFileItem;
 @DisconfFile(fileName = "biz.properties")
 public class BizProps {
 
-    // 定时同步Redis数据到Mongo
-    private String rulePersistenceCronExpression;
-    // 定时统计Redis数据生成黑名单
-    private String ruleExecutorCronExpression;
-    // 定时统计mongo groupby 数据生成黑名单
-    private String mongoSampleOffendersCronExpression;
+    // 定时同步 限次规则 Redis数据到Mongo
+    private String limitTimesRuleSamplePersistCronExpr;
+    // 定时统计 限次规则 生成黑名单
+    private String limitTimesRuleSampleCronExpr;
+    // 定时统计 限次规则 groupby 数据生成黑名单
+    private String limitTimesRuleGroupBySampleCronExpr;
     // 上报redis topN >0 才topN
     private int uploadRedisTopN;
     // 上报mongo topN >0 才topN
@@ -54,23 +54,6 @@ public class BizProps {
     private String performanceServerUrl;
 
 
-    @DisconfFileItem(name = "biz.rulePersistenceCronExpression")
-    public String getRulePersistenceCronExpression() {
-        return rulePersistenceCronExpression;
-    }
-
-    public void setRulePersistenceCronExpression(String rulePersistenceCronExpression) {
-        this.rulePersistenceCronExpression = rulePersistenceCronExpression;
-    }
-
-    @DisconfFileItem(name = "biz.ruleExecutorCronExpression")
-    public String getRuleExecutorCronExpression() {
-        return ruleExecutorCronExpression;
-    }
-
-    public void setRuleExecutorCronExpression(String ruleExecutorCronExpression) {
-        this.ruleExecutorCronExpression = ruleExecutorCronExpression;
-    }
 
     @DisconfFileItem(name = "biz.uploadRedisTopN")
     public int getUploadRedisTopN() {
@@ -117,14 +100,6 @@ public class BizProps {
         this.uploadMongoTimerInterval = uploadMongoTimerInterval;
     }
 
-    @DisconfFileItem(name = "biz.mongoSampleOffendersCronExpression")
-    public String getMongoSampleOffendersCronExpression() {
-        return mongoSampleOffendersCronExpression;
-    }
-
-    public void setMongoSampleOffendersCronExpression(String mongoSampleOffendersCronExpression) {
-        this.mongoSampleOffendersCronExpression = mongoSampleOffendersCronExpression;
-    }
 
     @DisconfFileItem(name = "biz.presistToMongoTopN")
     public int getPresistToMongoTopN() {
@@ -170,5 +145,32 @@ public class BizProps {
 
     public void setPerformanceServerUrl(String performanceServerUrl) {
         this.performanceServerUrl = performanceServerUrl;
+    }
+
+    @DisconfFileItem(name = "biz.limitTimesRuleSamplePersistCronExpr")
+    public String getLimitTimesRuleSamplePersistCronExpr() {
+        return limitTimesRuleSamplePersistCronExpr;
+    }
+
+    public void setLimitTimesRuleSamplePersistCronExpr(String limitTimesRuleSamplePersistCronExpr) {
+        this.limitTimesRuleSamplePersistCronExpr = limitTimesRuleSamplePersistCronExpr;
+    }
+
+    @DisconfFileItem(name = "biz.limitTimesRuleSampleCronExpr")
+    public String getLimitTimesRuleSampleCronExpr() {
+        return limitTimesRuleSampleCronExpr;
+    }
+
+    public void setLimitTimesRuleSampleCronExpr(String limitTimesRuleSampleCronExpr) {
+        this.limitTimesRuleSampleCronExpr = limitTimesRuleSampleCronExpr;
+    }
+
+    @DisconfFileItem(name = "biz.limitTimesRuleGroupBySampleCronExpr")
+    public String getLimitTimesRuleGroupBySampleCronExpr() {
+        return limitTimesRuleGroupBySampleCronExpr;
+    }
+
+    public void setLimitTimesRuleGroupBySampleCronExpr(String limitTimesRuleGroupBySampleCronExpr) {
+        this.limitTimesRuleGroupBySampleCronExpr = limitTimesRuleGroupBySampleCronExpr;
     }
 }

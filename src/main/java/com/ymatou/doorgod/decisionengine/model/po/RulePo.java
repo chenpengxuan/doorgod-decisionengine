@@ -32,13 +32,13 @@ public class RulePo extends Audit {
     private String desc;
 
     @Column(name = "statistic_span")
-    private int statisticSpan;
+    private Integer statisticSpan;
 
     @Column(name = "times_cap")
-    private long timesCap;
+    private Integer timesCap;
 
     @Column(name = "rejection_span")
-    private int rejectionSpan;
+    private Integer rejectionSpan;
 
     @Column(name = "`keys`")
     private String keys;
@@ -50,10 +50,11 @@ public class RulePo extends Audit {
     private String ruleType;
 
     @Column(name = "`order`")
-    private int order;
+    private Integer order;
 
     @Column(name = "uris")
     private String uris;
+
 
     public Long getId() {
         return id;
@@ -79,30 +80,29 @@ public class RulePo extends Audit {
         this.desc = desc;
     }
 
-    public int getStatisticSpan() {
+    public Integer getStatisticSpan() {
         return statisticSpan;
     }
 
-    public void setStatisticSpan(int statisticSpan) {
+    public void setStatisticSpan(Integer statisticSpan) {
         this.statisticSpan = statisticSpan;
     }
 
-    public long getTimesCap() {
+    public Integer getTimesCap() {
         return timesCap;
     }
 
-    public void setTimesCap(long timesCap) {
+    public void setTimesCap(Integer timesCap) {
         this.timesCap = timesCap;
     }
 
-    public int getRejectionSpan() {
+    public Integer getRejectionSpan() {
         return rejectionSpan;
     }
 
-    public void setRejectionSpan(int rejectionSpan) {
+    public void setRejectionSpan(Integer rejectionSpan) {
         this.rejectionSpan = rejectionSpan;
     }
-
 
     public String getKeys() {
         return keys;
@@ -128,11 +128,11 @@ public class RulePo extends Audit {
         this.ruleType = ruleType;
     }
 
-    public int getOrder() {
+    public Integer getOrder() {
         return order;
     }
 
-    public void setOrder(int order) {
+    public void setOrder(Integer order) {
         this.order = order;
     }
 
@@ -143,6 +143,4 @@ public class RulePo extends Audit {
     public void setUris(String uris) {
         this.uris = uris;
     }
-
-
 }
