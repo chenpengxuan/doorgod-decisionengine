@@ -35,8 +35,8 @@ public class KafkaConfig {
         }
 
         Properties props = consumerCommonProps();
-        props.put("group.id", localIp);
-        props.put("client.id", localIp + "_DE");
+        props.put("group.id", localIp + "_DE");
+        props.put("client.id", localIp);
 
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
 
