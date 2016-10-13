@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import com.ymatou.doorgod.decisionengine.integration.store.MongoSampleStore;
 import com.ymatou.doorgod.decisionengine.integration.store.RedisSampleStore;
 import com.ymatou.doorgod.decisionengine.util.DateUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -169,9 +170,13 @@ public class SampleStatisticCenter {
         groupByRuleTimeSampleMaps.putIfAbsent(rule.getName(),new ConcurrentHashMap<>());
         Map<String,Map<Sample,Set<Sample>>> secondsTreeMap = groupByRuleTimeSampleMaps.get(rule.getName());
 
-        //秒级别map key:20160809122504 value: ConcurrentHashMap
-        secondsTreeMap.putIfAbsent(reqTime,new ConcurrentHashMap<>());
-        Map<Sample,Set<Sample>> sampleMap = secondsTreeMap.get(reqTime);
+        //10秒级别map key:20160809122500/20160809122510 value: ConcurrentHashMap
+        /**
+         * 将秒 改成10秒形式
+         */
+        String sampleTime = reqTime.substring(0, reqTime.length() - 1) + "0";
+        secondsTreeMap.putIfAbsent(sampleTime,new ConcurrentHashMap<>());
+        Map<Sample,Set<Sample>> sampleMap = secondsTreeMap.get(sampleTime);
 
         //sample 计数   判断作限制
         if(sampleMap.size() >= bizProps.getMaxSizePerSecAndRule()){
@@ -182,7 +187,7 @@ public class SampleStatisticCenter {
             }
             //具体sample值无需输出
             logger.debug("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},groupBySetCount:{}", rule.getName(),
-                    reqTime, sampleMap.size(),
+                    sampleTime, sampleMap.size(),
                     originSample, groupBySample, leftKeySet != null ? leftKeySet.size() : 0);
         } else {
             Sample leftKeySample = originSample.unNarrow(groupByKeys);
@@ -190,7 +195,7 @@ public class SampleStatisticCenter {
             sampleMap.get(groupBySample).add(leftKeySample);
 
             logger.info("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},new groupBySetCount:1",
-                    rule.getName(), reqTime, sampleMap.size(), originSample, groupBySample);
+                    rule.getName(), sampleTime, sampleMap.size(), originSample, groupBySample);
         }
     }
 

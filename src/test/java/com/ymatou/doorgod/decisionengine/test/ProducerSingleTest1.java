@@ -36,7 +36,7 @@ public class ProducerSingleTest1 {
 
     public static void init() {
         Properties props = new Properties();
-        props.put("bootstrap.servers", "172.16.100.105:9092");
+        props.put("bootstrap.servers", "172.16.101.126:9093");
         props.put("group.id", "doorgod");
         props.put("enable.auto.commit", "true");
         props.put("auto.commit.interval.ms", "1000");

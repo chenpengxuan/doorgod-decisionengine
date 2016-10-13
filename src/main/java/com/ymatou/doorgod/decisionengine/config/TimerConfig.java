@@ -64,7 +64,7 @@ public class TimerConfig {
         }, 5L * 1000, bizProps.getUploadMongoTimerInterval(), TimeUnit.MILLISECONDS);
     }
 
-    // 每十秒 清空 10秒之前的所有数据
+    // 每60秒 清空 60秒之前的所有数据
     @PostConstruct
     public void clearUselessMemoryTimer() {
 
@@ -79,7 +79,7 @@ public class TimerConfig {
             } catch (Exception e) {
                 logger.error("上报mongo出错", e);
             }
-        }, 5L * 1000, 10000, TimeUnit.MILLISECONDS);
+        }, 5L * 1000, 60000, TimeUnit.MILLISECONDS);
     }
 
 
@@ -91,13 +91,13 @@ public class TimerConfig {
 
 
     /**
-     * 删除10秒之前 无用的内存 预防 内存数据一直增加 Map<String,Map<String,Map<Sample,Object>>> Map
+     * 删除60秒之前 无用的内存 预防 内存数据一直增加 Map<String,Map<String,Map<Sample,Object>>> Map
      * 
      * @param memoryMap
      */
     private void clearUselessMemory(Map<String, Map<String, Map>> memoryMap) {
 
-        String needRemoveBeforeDate = LocalDateTime.now().minusSeconds(10).format(Constants.FORMATTER_YMDHMS);
+        String needRemoveBeforeDate = LocalDateTime.now().minusSeconds(60).format(Constants.FORMATTER_YMDHMS);
 
         logger.info("begin to clear useless data,size:{}", memoryMap.size());
         // 清空
