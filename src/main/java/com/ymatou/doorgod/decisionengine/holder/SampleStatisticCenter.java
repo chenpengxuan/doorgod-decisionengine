@@ -194,7 +194,7 @@ public class SampleStatisticCenter {
             sampleMap.putIfAbsent(groupBySample, Sets.newConcurrentHashSet(Lists.newArrayList( leftKeySample )));
             sampleMap.get(groupBySample).add(leftKeySample);
 
-            logger.info("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},new groupBySetCount:1",
+            logger.debug("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},new groupBySetCount:1",
                     rule.getName(), sampleTime, sampleMap.size(), originSample, groupBySample);
         }
     }
