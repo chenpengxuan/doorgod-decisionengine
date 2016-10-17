@@ -47,7 +47,7 @@ public class PerformanceConfig {
 
         aspectJExpressionPointcut.setExpression(
                 "execution(* com.ymatou.doorgod.decisionengine.integration..*.*(..))"+
-                "execution(* com.ymatou.doorgod.decisionengine.integration.service..*.*(..))"+
+                "|| execution(* com.ymatou.doorgod.decisionengine.service..*.*(..))"+
                 "|| execution(* com.ymatou.doorgod.decisionengine.repository.*Repository.*(..))"
         );
 
