@@ -13,6 +13,7 @@ import java.util.List;
 import javax.annotation.PreDestroy;
 
 import com.mongodb.MongoClientURI;
+import com.ymatou.doorgod.decisionengine.util.MyWriteConcernResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -74,6 +75,7 @@ public class MongoConfig extends AbstractMongoConfiguration {
     @Bean
     public MongoTemplate mongoTemplate() throws Exception {
         MongoTemplate mongoTemplate = new MongoTemplate(mongo(),mongoProps.getMongoDatabaseName());
+        mongoTemplate.setWriteConcernResolver(new MyWriteConcernResolver());
         return mongoTemplate;
     }
 

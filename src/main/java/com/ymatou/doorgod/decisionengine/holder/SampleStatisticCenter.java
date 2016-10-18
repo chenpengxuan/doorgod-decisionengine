@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import com.ymatou.doorgod.decisionengine.integration.store.MongoSampleStore;
 import com.ymatou.doorgod.decisionengine.integration.store.RedisSampleStore;
+import com.ymatou.doorgod.decisionengine.service.DeviceIdService;
 import com.ymatou.doorgod.decisionengine.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -66,6 +67,7 @@ public class SampleStatisticCenter {
     private RedisSampleStore redisSampleStore;
     @Autowired
     private MongoSampleStore mongoSampleStore;
+
 
     private static long nextLogErrorTime = 0;
 
@@ -129,9 +131,13 @@ public class SampleStatisticCenter {
         ruleTimeSampleMaps.putIfAbsent(rule.getName(),new ConcurrentHashMap<>());
         Map<String,Map<Sample,AtomicInteger>> secondsTreeMap = ruleTimeSampleMaps.get(rule.getName());
 
-        //秒级别map key:20160809122504 value: ConcurrentHashMap
-        secondsTreeMap.putIfAbsent(reqTime,new ConcurrentHashMap<>());
-        Map<Sample,AtomicInteger> sampleMap = secondsTreeMap.get(reqTime);
+        //秒级别map key:20160809122500/20160809122510 value: ConcurrentHashMap
+        /**
+         * 将秒 改成10秒形式
+         */
+        String sampleTime = DateUtils.formatToTenSeconds(reqTime);
+        secondsTreeMap.putIfAbsent(sampleTime,new ConcurrentHashMap<>());
+        Map<Sample,AtomicInteger> sampleMap = secondsTreeMap.get(sampleTime);
 
         //sample 计数   判断作限制
         if(sampleMap.size() >= bizProps.getMaxSizePerSecAndRule()){
@@ -140,12 +146,12 @@ public class SampleStatisticCenter {
             if(null != sampleCount){
                 sampleCount.incrementAndGet();
             }
-            logger.debug("ruleName:{},key:{},mapSize:{},sampleCount:{}", rule.getName(), reqTime, sampleMap.size(),
+            logger.debug("ruleName:{},key:{},mapSize:{},sampleCount:{}", rule.getName(), sampleTime, sampleMap.size(),
                     sampleCount);
         } else {
             sampleMap.putIfAbsent(roleSample, new AtomicInteger(0));
             int sampleCount = sampleMap.get(roleSample).incrementAndGet();// ++
-            logger.debug("ruleName:{},key:{},mapSize:{},sampleCount:{}", rule.getName(),reqTime, sampleMap.size(),
+            logger.debug("ruleName:{},key:{},mapSize:{},sampleCount:{}", rule.getName(),sampleTime, sampleMap.size(),
                     sampleCount);
         }
 
@@ -174,7 +180,7 @@ public class SampleStatisticCenter {
         /**
          * 将秒 改成10秒形式
          */
-        String sampleTime = reqTime.substring(0, reqTime.length() - 1) + "0";
+        String sampleTime = DateUtils.formatToTenSeconds(reqTime);
         secondsTreeMap.putIfAbsent(sampleTime,new ConcurrentHashMap<>());
         Map<Sample,Set<Sample>> sampleMap = secondsTreeMap.get(sampleTime);
 

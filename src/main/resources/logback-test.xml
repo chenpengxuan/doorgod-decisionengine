@@ -4,6 +4,9 @@
 		value="%date [%thread] %-5level %logger{40} KEY[%X{logPrefix}] - %msg%n" />
 	<property name="level" value="info" />
 	<property name="charset" value="UTF-8" />
+	<property name="appId" value="decisionengine.doorgod.iapi.ymatou.com" />
+	<property name="basePackage" value="com.ymatou.doorgod.decisionengine" />
+	<property name="baseDir" value="/usr/local/log/${appId}" />
 
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
@@ -12,43 +15,49 @@
 		</encoder>
 	</appender>
 
-	<!-- 异常监控 -->
-	<appender name="HTTP-POST-ERROR-APPENDER"
-		class="com.ymatou.errorreporter.logbackappender.HttpPostErrorAppender">
-		<!-- http post target url -->
-		<param name="targetUrl" value="http://alarm.ymatou.com/Alarm/SaveSingle" />
-		<!-- your application id -->
-		<param name="appId" value="java-service-skeleton-demo" />
+	<appender name="DEFAULT-APPENDER"
+			  class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${baseDir}/default.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${baseDir}/default.%d{yyyy-MM-dd}
+			</fileNamePattern>
+			<maxHistory>30</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<charset>${charset}</charset>
+			<pattern>${pattern}</pattern>
+			<immediateFlush>${immediateFlush}</immediateFlush>
+		</encoder>
 	</appender>
 
 	<logger name="org.springframework">
 		<level value="${level}" />
-		<appender-ref ref="HTTP-POST-ERROR-APPENDER" />
+		<appender-ref ref="DEFAULT-APPENDER" />
 	</logger>
 
 	<logger name="org.mongodb">
 		<level value="${level}" />
-		<appender-ref ref="HTTP-POST-ERROR-APPENDER" />
+		<appender-ref ref="DEFAULT-APPENDER" />
 	</logger>
 
 	<logger name="com.ibatis">
 		<level value="${level}" />
-		<appender-ref ref="HTTP-POST-ERROR-APPENDER" />
+		<appender-ref ref="DEFAULT-APPENDER" />
 	</logger>
 
 	<logger name="java.util.sql">
 		<level value="${level}" />
-		<appender-ref ref="HTTP-POST-ERROR-APPENDER" />
+		<appender-ref ref="DEFAULT-APPENDER" />
 	</logger>
 	-
 
 	<logger name="com.ymatou.doorgod">
 		<level value="debug" />
-		<appender-ref ref="HTTP-POST-ERROR-APPENDER" />
+		<appender-ref ref="DEFAULT-APPENDER" />
 	</logger>
 
 	<root level="${level}">
 		<appender-ref ref="STDOUT" />
-		<appender-ref ref="HTTP-POST-ERROR-APPENDER" />
+		<appender-ref ref="DEFAULT-APPENDER" />
 	</root>
 </configuration>

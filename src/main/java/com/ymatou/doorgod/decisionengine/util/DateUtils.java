@@ -20,11 +20,11 @@ public class DateUtils {
         return LocalDateTime.now().format(FORMATTER_YMDHMS);
     }
 
-    public static String formatDefault(LocalDateTime date){
+    public static String formatDefault(LocalDateTime date) {
         return date.format(FORMATTER_YMDHMS);
     }
 
-    public static LocalDateTime parseDefault(String dateStr){
+    public static LocalDateTime parseDefault(String dateStr) {
         return LocalDateTime.parse(dateStr, FORMATTER_YMDHMS);
     }
 
@@ -33,5 +33,17 @@ public class DateUtils {
         return localDateTime.format(toFormatter);
     }
 
+    public static String formatToTenSeconds(String reqTime) {
+        return reqTime.substring(0, reqTime.length() - 1) + "0";
+    }
 
+    public static String formatToTenSeconds(LocalDateTime date) {
+
+        return formatToTenSeconds(formatDefault(date));
+    }
+
+
+    public static LocalDateTime parseToTenSecondsDate(LocalDateTime date) {
+        return parseDefault(formatToTenSeconds(formatDefault(date)));
+    }
 }

@@ -23,7 +23,7 @@ import com.ymatou.doorgod.decisionengine.service.job.RuleDiscoverer;
  * @author qianmin 2016年9月6日 下午5:36:15
  * 
  */
-@EnableAspectJAutoProxy
+@EnableAspectJAutoProxy(proxyTargetClass = true)
 @Configuration
 @EnableAutoConfiguration
 @ComponentScan(basePackages = "com.ymatou.doorgod.decisionengine")

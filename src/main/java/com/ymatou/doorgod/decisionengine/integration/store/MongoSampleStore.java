@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.mongodb.WriteConcern;
 import com.ymatou.doorgod.decisionengine.holder.SampleStatisticCenter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +72,9 @@ public class MongoSampleStore extends AbstractSampleStore {
         if (!mongoTemplate.collectionExists(collectionName)) {
             mongoTemplate.createCollection(collectionName);
             Index index = new Index("addTime", Sort.Direction.ASC);
+            Index sampleTimeIndex = new Index("sampleTime", Sort.Direction.ASC);
             mongoTemplate.indexOps(collectionName).ensureIndex(index);
+            mongoTemplate.indexOps(collectionName).ensureIndex(sampleTimeIndex);
         }
         samples.forEach(entry -> {
 

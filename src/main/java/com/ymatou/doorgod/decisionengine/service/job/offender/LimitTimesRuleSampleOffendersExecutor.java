@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.ymatou.doorgod.decisionengine.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -74,59 +75,16 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
             logger.info("exec offenders job :{}", ruleName);
 
             // 合并Redis涉及到的时间窗口
-            LocalDateTime now = LocalDateTime.now();
-            String nowFormated = now.format(FORMATTER_YMDHMS);
+            String nowFormated = DateUtils.formatToTenSeconds(LocalDateTime.now());
+            LocalDateTime now = DateUtils.parseDefault(nowFormated);
 
             List<String> timeBuckets = getAllTimeBucket(rule, now);
 
-            String currentUnionName = getUnionSetName(ruleName, now.format(FORMATTER_YMDHMS), UNION);
+            String currentUnionName = getUnionSetName(ruleName, nowFormated, UNION);
 
             logger.info("begin to execute rule:{},time:{},currentUnionName:{}",
                     ruleName, now.format(FORMATTER_YMDHMS), currentUnionName);
 
-//            int previousSeconds = bizProps.getPreviousSecondsRedisSkip();
-//            String previousNSecondsUnionName = getPreviousNSecondsUnionName(rule, now, zSetOps, previousSeconds);// 获取指定秒前的union
-//                                                                                                                 // 合集
-//            if (StringUtils.isNotBlank(previousNSecondsUnionName)) { // 存在N秒前的一个Union结果
-//
-//                List<String> delSecTimeBuckets = getAllDeleteSecTimeBucket(rule, previousSeconds, now);
-//                List<String> addSecTimeBuckets = getAllAddSecTimeBucket(rule, previousSeconds, now);
-//
-//                logger.info(
-//                        "union any.Now:{}, previousNSecondsUnionName:{}, delSecTimeBuckets:{}, addSecTimeBuckets: {}",
-//                        now.format(FORMATTER_YMDHMS), previousNSecondsUnionName, JSON.toJSONString(delSecTimeBuckets),
-//                        JSON.toJSONString(addSecTimeBuckets));
-//
-//                redisTemplate.execute(new RedisCallback<Long>() {
-//                    @Override
-//                    public Long doInRedis(RedisConnection connection) throws DataAccessException {
-//                        // 合并需要被删除的， 被添加的， 已经合并的
-//                        int[] weights = new int[delSecTimeBuckets.size() + addSecTimeBuckets.size() + 1];
-//                        byte[][] setNameBytes = new byte[weights.length][];
-//                        int i = 0;
-//                        for (String setName : delSecTimeBuckets) {
-//                            setNameBytes[i] = setName.getBytes();
-//                            weights[i] = -1;
-//                            i++;
-//                        }
-//                        for (String setName : addSecTimeBuckets) {
-//                            setNameBytes[i] = setName.getBytes();
-//                            weights[i] = 1;
-//                            i++;
-//                        }
-//                        setNameBytes[i] = previousNSecondsUnionName.getBytes();
-//                        weights[i] = 1;
-//
-//                        return connection.zUnionStore(currentUnionName.getBytes(), RedisZSetCommands.Aggregate.SUM,
-//                                weights, setNameBytes);
-//                    }
-//                });
-//
-//
-//            } else {// 不存在合并后的时间窗口
-//                // 合并所有的子时间窗口
-//                zSetOps.unionAndStore(getEmptySetName(EMPTY_SET), timeBuckets, currentUnionName);
-//            }
             zSetOps.unionAndStore(getEmptySetName(EMPTY_SET), timeBuckets, currentUnionName);
 
             zSetOps.getOperations().expire(currentUnionName, getExpireByRule(rule), TimeUnit.SECONDS);
@@ -156,24 +114,6 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
     }
 
     /**
-     * 往前N秒，获取已合并的时间窗口
-     *
-     * @param rule
-     * @param now
-     * @param zSetOps
-     * @return
-     */
-    private String getPreviousNSecondsUnionName(LimitTimesRule rule, LocalDateTime now,
-            ZSetOperations<String, String> zSetOps, int previousSeconds) {
-        String previousNUnionName =
-                getUnionSetName(rule.getName(), now.minusSeconds(previousSeconds).format(FORMATTER_YMDHMS), UNION);
-        if (zSetOps.size(previousNUnionName) > 0) {
-            return previousNUnionName;
-        }
-        return null;
-    }
-
-    /**
      * 找到所以需要合并的时间窗口
      * 
      * @param rule
@@ -182,32 +122,16 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
      */
     private List<String> getAllTimeBucket(LimitTimesRule rule, LocalDateTime now) {
         List<String> timeBuckets = new ArrayList<>();
-        for (int second = rule.getStatisticSpan(); second >= 3; second--) {
-            timeBuckets.add(getNormalSetName(rule.getName(), now.minusSeconds(second).format(FORMATTER_YMDHMS)));
-        }
-        return timeBuckets;
-    }
-
-    private List<String> getAllDeleteSecTimeBucket(LimitTimesRule rule, int seconds, LocalDateTime now) {
-        List<String> timeBuckets = new ArrayList<>();
-        for (int second = rule.getStatisticSpan() + seconds; second > rule.getStatisticSpan(); second--) {
-            timeBuckets.add(getNormalSetName(rule.getName(), now.minusSeconds(second+2).format(FORMATTER_YMDHMS)));
-        }
-        return timeBuckets;
-    }
-
-    private List<String> getAllAddSecTimeBucket(LimitTimesRule rule, int seconds, LocalDateTime now) {
-        List<String> timeBuckets = new ArrayList<>();
-        for (int second = seconds; second >= 1; second--) {
-            timeBuckets.add(getNormalSetName(rule.getName(), now.minusSeconds(second+2).format(FORMATTER_YMDHMS)));
+        for (int nums = rule.getStatisticSpan() / 10; nums > 0; nums--) {
+            timeBuckets.add(getNormalSetName(rule.getName(), now.minusSeconds(nums * 10).format(FORMATTER_YMDHMS)));
         }
         return timeBuckets;
     }
 
     private long getExpireByRule(LimitTimesRule rule) {
         if (rule.getTimesCap() < 60) {
-            return ((Double) (rule.getStatisticSpan() * 1.5)).longValue();
+            return ((Double) (rule.getStatisticSpan() * 2.0)).longValue();
         }
-        return ((Double) (rule.getStatisticSpan() * 1.2)).longValue();
+        return ((Double) (rule.getStatisticSpan() * 1.5)).longValue();
     }
 }
