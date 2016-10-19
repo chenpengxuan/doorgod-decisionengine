@@ -35,7 +35,7 @@ public class RulePo extends Audit {
     private Integer statisticSpan;
 
     @Column(name = "times_cap")
-    private Integer timesCap;
+    private Long timesCap;
 
     @Column(name = "rejection_span")
     private Integer rejectionSpan;
@@ -88,11 +88,11 @@ public class RulePo extends Audit {
         this.statisticSpan = statisticSpan;
     }
 
-    public Integer getTimesCap() {
+    public Long getTimesCap() {
         return timesCap;
     }
 
-    public void setTimesCap(Integer timesCap) {
+    public void setTimesCap(Long timesCap) {
         this.timesCap = timesCap;
     }
 
