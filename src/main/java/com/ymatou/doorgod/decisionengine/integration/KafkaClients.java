@@ -31,7 +31,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.ymatou.doorgod.decisionengine.config.props.KafkaProps;
 import com.ymatou.doorgod.decisionengine.integration.runnable.CacheReloaderConsumer;
-import com.ymatou.doorgod.decisionengine.integration.runnable.RejectReqConsumer;
 import com.ymatou.doorgod.decisionengine.integration.runnable.StatisticSampleConsumer;
 
 /**
@@ -69,7 +68,6 @@ public class KafkaClients implements ApplicationListener<ApplicationReadyEvent> 
         int numConsumers = kafkaProps.getStatisticSampleThreadNums();
 
         ExecutorService executor = Executors.newFixedThreadPool(kafkaProps.getStatisticSampleThreadNums());
-        ExecutorService rejectReqExecutor = Executors.newFixedThreadPool(kafkaProps.getRejectReqThreadNums());
 
         List<String> topics = Arrays.asList(kafkaProps.getStatisticSampleTopic());
 
@@ -79,14 +77,6 @@ public class KafkaClients implements ApplicationListener<ApplicationReadyEvent> 
             consumers.add(consumer);
             executor.submit(consumer);
         }
-
-        final List<RejectReqConsumer> rejectReqConsumers = new ArrayList<>();
-        for (int i = 0; i < numConsumers; i++) {
-            RejectReqConsumer consumer = new RejectReqConsumer(Arrays.asList(kafkaProps.getRejectReqTopic()));
-            rejectReqConsumers.add(consumer);
-            rejectReqExecutor.submit(consumer);
-        }
-
 
         // cache reload thread
         CacheReloaderConsumer cacheReloaderConsumer =
@@ -104,13 +94,9 @@ public class KafkaClients implements ApplicationListener<ApplicationReadyEvent> 
                     consumer.shutdown();
                 }
 
-                for (RejectReqConsumer consumer : rejectReqConsumers) {
-                    consumer.shutdown();
-                }
-
                 cacheReloaderConsumer.shutdown();
 
-                shutDownExectors(Lists.newArrayList(executor, rejectReqExecutor));
+                shutDownExectors(Lists.newArrayList(executor));
             }
         });
     }

@@ -86,6 +86,7 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
                     ruleName, now.format(FORMATTER_YMDHMS), currentUnionName);
 
             zSetOps.unionAndStore(getEmptySetName(EMPTY_SET), timeBuckets, currentUnionName);
+            zSetOps.getOperations().expire(currentUnionName, getExpireByRule(rule), TimeUnit.SECONDS);
 
             // 获取Offender
             Set<String> offenders = zSetOps.rangeByScore(currentUnionName, rule.getTimesCap(), Integer.MAX_VALUE);

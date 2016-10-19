@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import com.ymatou.doorgod.decisionengine.model.RejectReqEvent;
+import com.ymatou.doorgod.decisionengine.service.RejectReqService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -33,7 +35,7 @@ public class StatisticSampleConsumer implements Runnable {
     private final KafkaConsumer<String, String> consumer;
     private final List<String> topics;
     private final SampleStatisticCenter sampleStatisticCenter;
-    private boolean isFirstTime = true;
+    private final RejectReqService rejectReqService;
 
     public StatisticSampleConsumer(List<String> topics) {
         this.topics = topics;
@@ -41,6 +43,7 @@ public class StatisticSampleConsumer implements Runnable {
 
         this.consumer = new KafkaConsumer<>(props);
         this.sampleStatisticCenter = SpringContextHolder.getBean(SampleStatisticCenter.class);
+        this.rejectReqService = SpringContextHolder.getBean(RejectReqService.class);
     }
     
     @Override
@@ -55,7 +58,18 @@ public class StatisticSampleConsumer implements Runnable {
                     for (ConsumerRecord<String, String> record : records) {
 
                         logger.debug("StatisticSampleConsumer cnsume record:{}", record);
-                        sampleStatisticCenter.putStatisticItem(JSON.parseObject(record.value(), StatisticItem.class));
+                        StatisticItem statisticItem = JSON.parseObject(record.value(), StatisticItem.class);
+                        if(statisticItem.isRejectedByFilter() || statisticItem.isRejectedByHystrix()){
+                            RejectReqEvent rejectReqEvent = new RejectReqEvent();
+                            rejectReqEvent.setRuleName(statisticItem.getHitRule());
+                            rejectReqEvent.setSample(statisticItem.getSample());
+                            rejectReqEvent.setTime(statisticItem.getReqTime());
+                            rejectReqEvent.setUri(statisticItem.getUri());
+
+                            rejectReqService.saveRejectReq(rejectReqEvent);
+                        }else {
+                            sampleStatisticCenter.putStatisticItem(statisticItem);
+                        }
                     }
                 } catch (Exception e) {
                     logger.error("StatisticSampleConsumer consume record error", e);

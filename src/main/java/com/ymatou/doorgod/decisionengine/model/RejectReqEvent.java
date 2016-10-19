@@ -16,8 +16,6 @@ public class RejectReqEvent {
     //"yyyyMMddHHmmss"
     private String time;
 
-    private String filterName;
-
     private String ruleName;
 
     private Sample sample;
@@ -30,14 +28,6 @@ public class RejectReqEvent {
 
     public void setTime(String time) {
         this.time = time;
-    }
-
-    public String getFilterName() {
-        return filterName;
-    }
-
-    public void setFilterName(String filterName) {
-        this.filterName = filterName;
     }
 
     public String getRuleName() {
