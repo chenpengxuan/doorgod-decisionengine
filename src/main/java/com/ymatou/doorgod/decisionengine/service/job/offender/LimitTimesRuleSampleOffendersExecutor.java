@@ -87,12 +87,13 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
 
             zSetOps.unionAndStore(getEmptySetName(EMPTY_SET), timeBuckets, currentUnionName);
 
-            zSetOps.getOperations().expire(currentUnionName, getExpireByRule(rule), TimeUnit.SECONDS);
-
             // 获取Offender
             Set<String> offenders = zSetOps.rangeByScore(currentUnionName, rule.getTimesCap(), Integer.MAX_VALUE);
+
+            //删除union
+            zSetOps.removeRange(currentUnionName,0,-1);
+
             if (!offenders.isEmpty()) {
-                zSetOps.removeRangeByScore(currentUnionName, rule.getTimesCap(), Double.MAX_VALUE);
                 String releaseDate = now.plusSeconds(rule.getRejectionSpan()).format(FORMATTER_YMDHMS);
 
                 boolean isOffendersChanged = false;
