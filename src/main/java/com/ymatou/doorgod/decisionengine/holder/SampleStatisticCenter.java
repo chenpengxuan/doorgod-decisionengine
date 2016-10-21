@@ -91,15 +91,15 @@ public class SampleStatisticCenter {
         String reqTime = statisticItem.getReqTime();
 
         String nowStr = DateUtils.formatDefault(LocalDateTime.now().minusSeconds(5));
-//        if(Long.valueOf(nowStr) > Long.valueOf(reqTime)){
-//            if(nextLogErrorTime == 0 || nextLogErrorTime<=Long.valueOf(nowStr)){
-//                logger.error("nowStr:{},reqTime:{} reqTime before now 5 seconds ,will not be statistic",nowStr,reqTime);
-//                nextLogErrorTime = Long.valueOf(DateUtils.formatDefault(LocalDateTime.now().plusSeconds(60)));
-//            }else {
-//                logger.warn("nowStr:{},reqTime:{} reqTime before now 5 seconds ,will not be statistic",nowStr,reqTime);
-//            }
-//            return;
-//        }
+        if(Long.valueOf(nowStr) > Long.valueOf(reqTime)){
+            if(nextLogErrorTime == 0 || nextLogErrorTime<=Long.valueOf(nowStr)){
+                logger.error("nowStr:{},reqTime:{} reqTime before now 5 seconds ,will not be statistic",nowStr,reqTime);
+                nextLogErrorTime = Long.valueOf(DateUtils.formatDefault(LocalDateTime.now().plusSeconds(60)));
+            }else {
+                logger.warn("nowStr:{},reqTime:{} reqTime before now 5 seconds ,will not be statistic",nowStr,reqTime);
+            }
+            return;
+        }
 
         Set<LimitTimesRule> set = getRules(statisticItem);
 
