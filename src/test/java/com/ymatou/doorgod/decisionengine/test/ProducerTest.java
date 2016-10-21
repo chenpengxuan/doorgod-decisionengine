@@ -121,7 +121,7 @@ public class ProducerTest {
                     sample2.addDimensionValue("uri", "/api/1xxx.do");
                     sample2.addDimensionValue("ip", ips[new Random().nextInt(20)]);
                     sample2.addDimensionValue("deviceId", deviceIds[new Random().nextInt(20)]);
-                    a.setSample(sample2);
+                    a.setSample(JSON.toJSONString(sample2));
 
                     ProducerRecord<String, String> record =
                             new ProducerRecord<String, String>("kafka.topic.statisticSampleEvent",

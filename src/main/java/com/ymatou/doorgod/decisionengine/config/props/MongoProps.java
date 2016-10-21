@@ -17,9 +17,9 @@ public class MongoProps {
 
     private String mongoAddress;
     private String mongoDatabaseName;
-//
-//    private String deviceIdMongoAddress;
-//    private String deviceIdMongoDatabaseName;
+
+    private String deviceIdMongoAddress;
+    private String deviceIdMongoDatabaseName;
 
 
     public String getMongoAddress() {
@@ -37,20 +37,20 @@ public class MongoProps {
     public void setMongoDatabaseName(String mongoDatabaseName) {
         this.mongoDatabaseName = mongoDatabaseName;
     }
-//
-//    public String getDeviceIdMongoAddress() {
-//        return deviceIdMongoAddress;
-//    }
-//
-//    public void setDeviceIdMongoAddress(String deviceIdMongoAddress) {
-//        this.deviceIdMongoAddress = deviceIdMongoAddress;
-//    }
-//
-//    public String getDeviceIdMongoDatabaseName() {
-//        return deviceIdMongoDatabaseName;
-//    }
-//
-//    public void setDeviceIdMongoDatabaseName(String deviceIdMongoDatabaseName) {
-//        this.deviceIdMongoDatabaseName = deviceIdMongoDatabaseName;
-//    }
+
+    public String getDeviceIdMongoAddress() {
+        return deviceIdMongoAddress;
+    }
+
+    public void setDeviceIdMongoAddress(String deviceIdMongoAddress) {
+        this.deviceIdMongoAddress = deviceIdMongoAddress;
+    }
+
+    public String getDeviceIdMongoDatabaseName() {
+        return deviceIdMongoDatabaseName;
+    }
+
+    public void setDeviceIdMongoDatabaseName(String deviceIdMongoDatabaseName) {
+        this.deviceIdMongoDatabaseName = deviceIdMongoDatabaseName;
+    }
 }

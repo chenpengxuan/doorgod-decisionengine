@@ -46,6 +46,9 @@ public class RulePo extends Audit {
     @Column(name = "groupby_keys")
     private String groupByKeys;
 
+    @Column(name = "counting_keys")
+    private String countingKeys;
+
     @Column(name = "rule_type")
     private String ruleType;
 
@@ -54,6 +57,9 @@ public class RulePo extends Audit {
 
     @Column(name = "uris")
     private String uris;
+
+    @Column(name = "match_script")
+    private String matchScript;
 
 
     public Long getId() {
@@ -142,5 +148,21 @@ public class RulePo extends Audit {
 
     public void setUris(String uris) {
         this.uris = uris;
+    }
+
+    public String getCountingKeys() {
+        return countingKeys;
+    }
+
+    public void setCountingKeys(String countingKeys) {
+        this.countingKeys = countingKeys;
+    }
+
+    public String getMatchScript() {
+        return matchScript;
+    }
+
+    public void setMatchScript(String matchScript) {
+        this.matchScript = matchScript;
     }
 }

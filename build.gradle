@@ -34,6 +34,7 @@ jar {
 
 ext {
     springBootVersion = "1.4.0.RELEASE"
+	groovyVersion = "2.4.7"
     kafkaVersion = "0.10.0.1"
     vertxVersion = "3.3.2"
 	springDataMongoVersion = "1.9.2.RELEASE"
@@ -67,6 +68,7 @@ repositories {
 
 
 dependencies {
+	compile "org.codehaus.groovy:groovy-all:${groovyVersion}"
 	compile "org.springframework.boot:spring-boot-starter"
 	compile "org.springframework.boot:spring-boot-starter-aop:${springBootVersion}"
 	compile "org.springframework.data:spring-data-mongodb:${springDataMongoVersion}"
@@ -93,7 +95,7 @@ dependencies {
 	compile "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
     compile "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
     compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-    
+
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 

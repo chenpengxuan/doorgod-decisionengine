@@ -8,6 +8,7 @@
 package com.ymatou.doorgod.decisionengine.test;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
@@ -36,7 +37,7 @@ public class ProducerSingleTest1 {
 
     public static void init() {
         Properties props = new Properties();
-        props.put("bootstrap.servers", "172.16.101.126:9093");
+        props.put("bootstrap.servers", "172.16.100.105:9092");
         props.put("group.id", "doorgod");
         props.put("enable.auto.commit", "true");
         props.put("auto.commit.interval.ms", "1000");
@@ -76,7 +77,7 @@ public class ProducerSingleTest1 {
         String deviceIds[] = new String[] {
                 "aaaaa-bbbbb-cccccc-ddddd-1",
                 "aaaaa-bbbbb-cccccc-ddddd-2",
-                "aaaaa-bbbbb-cccccc-ddddd-3",
+                "F733D756-A05B-438E-87EF-5C85523FECE7",
                 "aaaaa-bbbbb-cccccc-ddddd-4",
                 "aaaaa-bbbbb-cccccc-ddddd-5",
                 "aaaaa-bbbbb-cccccc-ddddd-5",
@@ -109,16 +110,18 @@ public class ProducerSingleTest1 {
 
 
         while (true){
-            StatisticItem a = new StatisticItem();
+            StatisticItemTest a = new StatisticItemTest();
             LocalDateTime dateTime = LocalDateTime.now();
-            String str = dateTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-            a.setReqTime(str);
+//            String str = dateTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            a.setReqTime(System.currentTimeMillis()+"");
             Sample sample2 = new Sample();
             sample2.addDimensionValue("uri", "/api/1xxx.do");
             sample2.addDimensionValue("ip", ips[2]);
-            sample2.addDimensionValue("deviceId", deviceIds[2]);
-            a.setSample(sample2);
+            sample2.addDimensionValue("deviceId", deviceIds[0]);
+            a.setSample(JSON.toJSONString(sample2));
+            a.setMatchRules(Lists.newArrayList("testRule2"));
 
+            System.out.println(JSON.toJSONString(a));
             ProducerRecord<String, String> record =
                     new ProducerRecord<String, String>("doorgod.statisticSampleEvent",
                             JSON.toJSONString(a));

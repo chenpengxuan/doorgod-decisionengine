@@ -7,6 +7,7 @@
 
 package com.ymatou.doorgod.decisionengine.test;
 
+import com.alibaba.fastjson.JSON;
 import com.ymatou.doorgod.decisionengine.holder.SampleStatisticCenter;
 import com.ymatou.doorgod.decisionengine.model.Sample;
 import com.ymatou.doorgod.decisionengine.model.StatisticItem;
@@ -46,7 +47,7 @@ public class SampleStatisticCenterTest extends BaseTest{
                     a.setReqTime(str);
                     Sample sample2 = new Sample();
                     sample2.addDimensionValue(aa,aa);
-                    a.setSample(sample2);
+                    a.setSample(JSON.toJSONString(sample2));
                     sampleStatisticCenter.putStatisticItem(a);
                     try {
                         TimeUnit.MILLISECONDS.sleep(200+new Random().nextInt(300));

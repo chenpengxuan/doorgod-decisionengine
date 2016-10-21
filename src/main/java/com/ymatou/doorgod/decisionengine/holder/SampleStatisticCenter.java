@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 
 import com.ymatou.doorgod.decisionengine.integration.store.MongoSampleStore;
 import com.ymatou.doorgod.decisionengine.integration.store.RedisSampleStore;
+import com.ymatou.doorgod.decisionengine.script.ScriptContext;
+import com.ymatou.doorgod.decisionengine.script.ScriptEngines;
 import com.ymatou.doorgod.decisionengine.service.DeviceIdService;
 import com.ymatou.doorgod.decisionengine.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -67,6 +69,8 @@ public class SampleStatisticCenter {
     private RedisSampleStore redisSampleStore;
     @Autowired
     private MongoSampleStore mongoSampleStore;
+    @Autowired
+    private ScriptEngines scriptEngines;
 
 
     private static long nextLogErrorTime = 0;
@@ -87,20 +91,26 @@ public class SampleStatisticCenter {
         String reqTime = statisticItem.getReqTime();
 
         String nowStr = DateUtils.formatDefault(LocalDateTime.now().minusSeconds(5));
-        if(Long.valueOf(nowStr) > Long.valueOf(reqTime)){
-            if(nextLogErrorTime == 0 || nextLogErrorTime<=Long.valueOf(nowStr)){
-                logger.error("nowStr:{},reqTime:{} reqTime before now 5 seconds ,will not be statistic",nowStr,reqTime);
-                nextLogErrorTime = Long.valueOf(DateUtils.formatDefault(LocalDateTime.now().plusSeconds(60)));
-            }else {
-                logger.warn("nowStr:{},reqTime:{} reqTime before now 5 seconds ,will not be statistic",nowStr,reqTime);
-            }
-            return;
-        }
+//        if(Long.valueOf(nowStr) > Long.valueOf(reqTime)){
+//            if(nextLogErrorTime == 0 || nextLogErrorTime<=Long.valueOf(nowStr)){
+//                logger.error("nowStr:{},reqTime:{} reqTime before now 5 seconds ,will not be statistic",nowStr,reqTime);
+//                nextLogErrorTime = Long.valueOf(DateUtils.formatDefault(LocalDateTime.now().plusSeconds(60)));
+//            }else {
+//                logger.warn("nowStr:{},reqTime:{} reqTime before now 5 seconds ,will not be statistic",nowStr,reqTime);
+//            }
+//            return;
+//        }
 
-        String uri = statisticItem.getUri();
-        Set<LimitTimesRule> set = getRulesByUri(uri);
+        Set<LimitTimesRule> set = getRules(statisticItem);
 
+        ScriptContext scriptContext = new ScriptContext(statisticItem);
         set.forEach(rule -> {
+
+            boolean isMatching = scriptEngines.execIsMatching(rule.getName(),scriptContext);
+            logger.debug("execIsMatching result:{}",isMatching);
+            if(!isMatching){
+                return;
+            }
 
             try {
                 if (CollectionUtils.isEmpty(rule.getGroupByKeys())) {
@@ -109,7 +119,7 @@ public class SampleStatisticCenter {
                     doStatisticGroupBySet(rule,sample,reqTime);
                 }
             } catch (Exception e) {
-                logger.error("putStatisticItem error,ruleName:{},reqTime:{}", rule.getName(),reqTime);
+                logger.error("putStatisticItem error,ruleName:{},reqTime:{}", rule.getName(),reqTime,e);
             }
         });
 
@@ -123,9 +133,13 @@ public class SampleStatisticCenter {
      */
     private void doStatisticNormalSet(LimitTimesRule rule,Sample sample,String reqTime){
 
-        Set<String> keys = rule.getDimensionKeys();
+        Set<String> countingKeys = rule.getCountingKeys();
+        if(CollectionUtils.isEmpty(countingKeys)){
+            logger.error("rule name:{} countingKeys is null,please reset rule",rule.getName());
+            return;
+        }
 
-        Sample roleSample = sample.narrow(keys);
+        Sample roleSample = sample.narrow(countingKeys);
 
         //rule map 不存在则新建
         ruleTimeSampleMaps.putIfAbsent(rule.getName(),new ConcurrentHashMap<>());
@@ -206,9 +220,9 @@ public class SampleStatisticCenter {
     }
 
     //获取规则
-    public Set<LimitTimesRule> getRulesByUri(String uri){
-        return RuleHolder.limitTimesRules.values().stream().filter(
-                rule -> rule.applicable(uri))
+    public Set<LimitTimesRule> getRules(StatisticItem statisticItem) {
+        return RuleHolder.limitTimesRules.values().stream()
+                .filter(rule -> statisticItem.getMatchRules().contains(rule.getName()))
                 .collect(Collectors.toSet());
     }
 

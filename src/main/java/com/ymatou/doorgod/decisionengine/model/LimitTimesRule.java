@@ -19,6 +19,11 @@ public class LimitTimesRule extends AbstractRule {
 
     private String updateType;
 
+    // 需要计数的 keys
+    private Set<String> countingKeys;
+
+    private String matchScript;
+
     /**
      * 用来从http请求提取样本的样本维度KEY
      */
@@ -76,5 +81,21 @@ public class LimitTimesRule extends AbstractRule {
 
     public void setUpdateType(String updateType) {
         this.updateType = updateType;
+    }
+
+    public Set<String> getCountingKeys() {
+        return countingKeys;
+    }
+
+    public void setCountingKeys(Set<String> countingKeys) {
+        this.countingKeys = countingKeys;
+    }
+
+    public String getMatchScript() {
+        return matchScript;
+    }
+
+    public void setMatchScript(String matchScript) {
+        this.matchScript = matchScript;
     }
 }

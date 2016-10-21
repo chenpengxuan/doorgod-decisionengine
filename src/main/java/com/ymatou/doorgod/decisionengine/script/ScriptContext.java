@@ -4,26 +4,22 @@
  *
  */
 
-package com.ymatou.doorgod.decisionengine.model;
+package com.ymatou.doorgod.decisionengine.script;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.ymatou.doorgod.decisionengine.model.StatisticItem;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.alibaba.fastjson.JSON;
-import com.ymatou.doorgod.decisionengine.util.DateUtils;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
- * Created by tuwenjie on 2016/9/9.
+ * script 上下文
+ * @author luoshiqian 2016/10/20 15:33
  */
-public class StatisticItem {
+public class ScriptContext {
 
     private String uri;
 
-    private String sample;
-
-    // 请求时间:请求接收时刻的毫秒数
+    // 请求时间:yyyyMMddHHmmss
     private String reqTime;
 
     // 耗时:以毫秒为单位
@@ -42,32 +38,33 @@ public class StatisticItem {
 
     private int origStatusCode;
 
-    private List<String> matchRules = new ArrayList<String>();
+    private TreeMap<String, String> dimensionValues = new TreeMap<String, String>();
 
-    public Sample getSample() {
-        if (StringUtils.isNotBlank(sample)) {
-            return JSON.parseObject(sample, Sample.class);
-        } else {
-            return null;
-        }
+    public ScriptContext(StatisticItem statisticItem) {
+        this.uri = statisticItem.getUri();
+        this.reqTime = statisticItem.getReqTime();
+        this.consumedTime = statisticItem.getConsumedTime();
+        this.statusCode = statisticItem.getStatusCode();
+        this.rejectedByFilter = statisticItem.isRejectedByFilter();
+        this.rejectedByHystrix = statisticItem.isRejectedByHystrix();
+        this.hitRule = statisticItem.getHitRule();
+        this.filterConsumedTime = statisticItem.getFilterConsumedTime();
+        this.origStatusCode = statisticItem.getOrigStatusCode();
+        dimensionValues.putAll(statisticItem.getSample().getDimensionValues());
     }
 
-    public void setSample(String sample) {
-        this.sample = sample;
+    public String get(String key) {
+        return dimensionValues.get(key);
     }
 
-    /**
-     * 获取到的是 yyyyMMddHHmmss格式
-     * 
-     * @return
-     */
-    public String getReqTime() {
-        return DateUtils.formatFromTimeMillis(reqTime);
+    public void put(String key, String value) {
+        dimensionValues.put(key, value);
     }
 
-    public void setReqTime(String reqTime) {
-        this.reqTime = reqTime;
+    public void putAll(Map<String, String> map) {
+        dimensionValues.putAll(map);
     }
+
 
     public String getUri() {
         return uri;
@@ -75,6 +72,14 @@ public class StatisticItem {
 
     public void setUri(String uri) {
         this.uri = uri;
+    }
+
+    public String getReqTime() {
+        return reqTime;
+    }
+
+    public void setReqTime(String reqTime) {
+        this.reqTime = reqTime;
     }
 
     public long getConsumedTime() {
@@ -133,11 +138,11 @@ public class StatisticItem {
         this.origStatusCode = origStatusCode;
     }
 
-    public List<String> getMatchRules() {
-        return matchRules;
+    public TreeMap<String, String> getDimensionValues() {
+        return dimensionValues;
     }
 
-    public void setMatchRules(List<String> matchRules) {
-        this.matchRules = matchRules;
+    public void setDimensionValues(TreeMap<String, String> dimensionValues) {
+        this.dimensionValues = dimensionValues;
     }
 }

@@ -1,23 +1,24 @@
 /*
  *
- * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
+ *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
+ *  All rights reserved.
  *
  */
 
-package com.ymatou.doorgod.decisionengine.model;
+package com.ymatou.doorgod.decisionengine.test;
+
+import com.alibaba.fastjson.JSON;
+import com.ymatou.doorgod.decisionengine.model.Sample;
+import com.ymatou.doorgod.decisionengine.util.DateUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.alibaba.fastjson.JSON;
-import com.ymatou.doorgod.decisionengine.util.DateUtils;
-
 /**
  * Created by tuwenjie on 2016/9/9.
  */
-public class StatisticItem {
+public class StatisticItemTest {
 
     private String uri;
 
@@ -44,37 +45,28 @@ public class StatisticItem {
 
     private List<String> matchRules = new ArrayList<String>();
 
-    public Sample getSample() {
-        if (StringUtils.isNotBlank(sample)) {
-            return JSON.parseObject(sample, Sample.class);
-        } else {
-            return null;
-        }
-    }
-
-    public void setSample(String sample) {
-        this.sample = sample;
-    }
-
-    /**
-     * 获取到的是 yyyyMMddHHmmss格式
-     * 
-     * @return
-     */
-    public String getReqTime() {
-        return DateUtils.formatFromTimeMillis(reqTime);
-    }
-
-    public void setReqTime(String reqTime) {
-        this.reqTime = reqTime;
-    }
-
     public String getUri() {
         return uri;
     }
 
     public void setUri(String uri) {
         this.uri = uri;
+    }
+
+    public String getSample() {
+        return sample;
+    }
+
+    public void setSample(String sample) {
+        this.sample = sample;
+    }
+
+    public String getReqTime() {
+        return reqTime;
+    }
+
+    public void setReqTime(String reqTime) {
+        this.reqTime = reqTime;
     }
 
     public long getConsumedTime() {

@@ -54,11 +54,13 @@ public class StatisticSampleConsumer implements Runnable {
 
             while (true) {
                 try {
+
                     ConsumerRecords<String, String> records = consumer.poll(5000);
                     for (ConsumerRecord<String, String> record : records) {
 
                         logger.debug("StatisticSampleConsumer cnsume record:{}", record);
                         StatisticItem statisticItem = JSON.parseObject(record.value(), StatisticItem.class);
+
                         if(statisticItem.isRejectedByFilter() || statisticItem.isRejectedByHystrix()){
                             RejectReqEvent rejectReqEvent = new RejectReqEvent();
                             rejectReqEvent.setRuleName(statisticItem.getHitRule());

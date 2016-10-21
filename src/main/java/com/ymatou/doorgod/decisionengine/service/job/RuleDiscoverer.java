@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.transaction.Transactional;
 
 import com.google.common.collect.Maps;
+import com.ymatou.doorgod.decisionengine.script.ScriptEngines;
 import com.ymatou.doorgod.decisionengine.service.job.offender.LimitTimesRuleGroupBySampleOffendersJob;
 import com.ymatou.doorgod.decisionengine.service.job.offender.LimitTimesRuleSampleOffendersJob;
 import com.ymatou.doorgod.decisionengine.service.job.persistence.LimitTimesRuleSampleMongoPersistenceJob;
@@ -52,6 +53,9 @@ public class RuleDiscoverer {
 
     @Autowired
     private BizProps bizProps;
+
+    @Autowired
+    private ScriptEngines scriptEngines;
     private static volatile boolean isError = false;
     private static volatile Exception exception;
 
@@ -85,6 +89,8 @@ public class RuleDiscoverer {
             String ruleName = rule.getName();
             rules.put(ruleName, rule);
 
+            scriptEngines.fillScript(ruleName,rule.getMatchScript());
+
             if (CollectionUtils.isEmpty(rule.getGroupByKeys())) {
                 schedulerService.addJob(LimitTimesRuleSampleOffendersJob.class, ruleName,
                         bizProps.getLimitTimesRuleSampleCronExpr());
@@ -114,8 +120,6 @@ public class RuleDiscoverer {
         // 替换
         RuleHolder.limitTimesRules = rules;
         logger.info("load rule data: {}", JSON.toJSONString(ruleData));
-
-        //FIXME:如果rule的统计时长变更了，是不是需要清除原redis的union？
     }
 
     public HashMap<String, LimitTimesRule> fetchLimitTimesRules() {
@@ -136,9 +140,15 @@ public class RuleDiscoverer {
             if (StringUtils.isNotBlank(rulePo.getGroupByKeys())) {
                 rule.setGroupByKeys(Utils.splitByComma(rulePo.getGroupByKeys()));
             }
+            if(StringUtils.isNotBlank(rulePo.getCountingKeys())){
+                rule.setCountingKeys(Utils.splitByComma(rulePo.getCountingKeys()));
+            }
             if (StringUtils.isNotBlank(rulePo.getUris())) {
                 rule.setApplicableUris(Utils.splitByComma(rulePo.getUris()));
             }
+
+            rule.setMatchScript(rulePo.getMatchScript());
+
             rules.put(rulePo.getName(), rule);
         }
 

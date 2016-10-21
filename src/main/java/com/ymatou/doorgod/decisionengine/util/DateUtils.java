@@ -6,10 +6,12 @@
 
 package com.ymatou.doorgod.decisionengine.util;
 
+import static com.ymatou.doorgod.decisionengine.constants.Constants.DATE_FORMAT_YMDHMS;
 import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHMS;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 /**
  * @author luoshiqian 2016/9/19 18:26
@@ -45,5 +47,10 @@ public class DateUtils {
 
     public static LocalDateTime parseToTenSecondsDate(LocalDateTime date) {
         return parseDefault(formatToTenSeconds(formatDefault(date)));
+    }
+
+    public static String formatFromTimeMillis(String timeMillis) {
+        String formated = DATE_FORMAT_YMDHMS.format(new Date(Long.valueOf(timeMillis)));
+        return formated;
     }
 }

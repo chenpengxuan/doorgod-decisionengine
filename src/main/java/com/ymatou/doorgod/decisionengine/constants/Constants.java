@@ -6,6 +6,7 @@
 
 package com.ymatou.doorgod.decisionengine.constants;
 
+import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -14,6 +15,7 @@ import java.time.format.DateTimeFormatter;
 public class Constants {
     public static final DateTimeFormatter FORMATTER_YMDHMS = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     public static final DateTimeFormatter FORMATTER_YMDHM = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
+    public static final SimpleDateFormat DATE_FORMAT_YMDHMS = new SimpleDateFormat("yyyyMMddHHmmss");
 
     public static final String RULE_TYPE_NAME_LIMIT_TIMES_RULE = "LimitTimesRule";
     public static final String RULE_TYPE_NAME_BLACKLIST_RULE = "BlacklistRule";
@@ -32,5 +34,8 @@ public class Constants {
     public static final int PREVIOUS_COUNT = 10; // 当union后得时间窗口不存在时， 往前找多少格
 
     public static final int PRESIST_TO_MONGO_COUNT = -1000;
+
+    public static final String IP_DEVICEID_INVALID_RULE = "IP_DEVICEID_INVALID_RULE";
+
 
 }

@@ -112,13 +112,13 @@ public class ProducerSingleTest {
         while (true){
             StatisticItem a = new StatisticItem();
             LocalDateTime dateTime = LocalDateTime.now();
-            String str = dateTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-            a.setReqTime(str);
+//            String str = dateTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            a.setReqTime(System.currentTimeMillis()+"");
             Sample sample2 = new Sample();
             sample2.addDimensionValue("uri", "/api/1xxx.do");
             sample2.addDimensionValue("ip", ips[new Random().nextInt(1)]);
             sample2.addDimensionValue("deviceId", deviceIds[new Random().nextInt(1)]);
-            a.setSample(sample2);
+            a.setSample(JSON.toJSONString(sample2));
 
             ProducerRecord<String, String> record =
                     new ProducerRecord<String, String>("doorgod.statisticSampleEvent",
