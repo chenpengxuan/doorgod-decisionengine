@@ -42,9 +42,6 @@ public class BizProps {
     // 每次持久化前N个Sample
     private int presistToMongoTopN;
 
-    //redis 统计时 前多少秒 每次都使用最新的union集 默认10秒
-    private int previousSecondsRedisSkip = 10;
-
     //将sample放入redis 或 mongo 线程数
     private int putSampleThreadNums;
 
@@ -110,14 +107,6 @@ public class BizProps {
         this.presistToMongoTopN = presistToMongoTopN;
     }
 
-    @DisconfFileItem(name = "biz.previousSecondsRedisSkip")
-    public int getPreviousSecondsRedisSkip() {
-        return previousSecondsRedisSkip;
-    }
-
-    public void setPreviousSecondsRedisSkip(int previousSecondsRedisSkip) {
-        this.previousSecondsRedisSkip = previousSecondsRedisSkip;
-    }
 
     @DisconfFileItem(name = "biz.putSampleThreadNums")
     public int getPutSampleThreadNums() {
