@@ -7,12 +7,16 @@
 
 package com.ymatou.doorgod.decisionengine.service.impl;
 
+import com.ymatou.doorgod.decisionengine.constants.Constants;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import com.ymatou.doorgod.decisionengine.model.mongo.OffenderPo;
 import com.ymatou.doorgod.decisionengine.service.OffenderService;
+import com.ymatou.doorgod.decisionengine.util.MongoTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
-import org.springframework.data.mongodb.core.MongoTemplate;
+
+import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -35,6 +39,14 @@ public class OffenderServiceImpl implements OffenderService {
                 .and("sample").is(sample)
                 .and("releaseDate").gt(Long.valueOf(addTime))
         );
+
+        if (!mongoTemplate.collectionExists("LimitTimesRuleOffender")) {
+            mongoTemplate.createCollection("LimitTimesRuleOffender", Constants.COLLECTION_OPTIONS);
+
+            Index index = new Index("addTime", Sort.Direction.ASC);
+            index.on("ruleName",Sort.Direction.ASC);
+            mongoTemplate.indexOps("LimitTimesRuleOffender").ensureIndex(index);
+        }
 
         if(!mongoTemplate.exists(query,OffenderPo.class)){
             Update update = new Update();

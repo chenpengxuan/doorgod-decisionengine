@@ -7,26 +7,23 @@
 package com.ymatou.doorgod.decisionengine.config;
 
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.annotation.PreDestroy;
 
-import com.mongodb.MongoClientURI;
-import com.ymatou.doorgod.decisionengine.util.MyWriteConcernResolver;
+import com.ymatou.doorgod.decisionengine.util.MongoTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
-import com.mongodb.ServerAddress;
+import com.mongodb.MongoClientURI;
 import com.ymatou.doorgod.decisionengine.config.props.MongoProps;
+import com.ymatou.doorgod.decisionengine.util.MyWriteConcernResolver;
 
 /**
  * @author luoshiqian 2016/9/9 13:51

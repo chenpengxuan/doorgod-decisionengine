@@ -80,16 +80,16 @@ public class RedisSampleStore extends AbstractSampleStore {
     }
 
     /**
-     * 获取规则的过期时间 小于60秒 系数为 1.5 大于60秒 系数为 1.2
+     * 获取规则的过期时间 小于60秒 系数为 2.0 大于60秒 系数为 1.5
      * 
      * @param rule
      * @return
      */
     private long getExpireByRule(LimitTimesRule rule) {
         if (rule.getTimesCap() < 60) {
-            return ((Double) (rule.getStatisticSpan() * 1.5)).longValue();
+            return ((Double) (rule.getStatisticSpan() * 2.0)).longValue();
         }
-        return ((Double) (rule.getStatisticSpan() * 1.2)).longValue();
+        return ((Double) (rule.getStatisticSpan() * 1.5)).longValue();
     }
 
 }

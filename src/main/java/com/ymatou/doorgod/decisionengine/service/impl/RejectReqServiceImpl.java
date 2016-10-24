@@ -10,11 +10,13 @@ package com.ymatou.doorgod.decisionengine.service.impl;
 import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHM;
 import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHMS;
 
+import com.ymatou.doorgod.decisionengine.constants.Constants;
 import com.ymatou.doorgod.decisionengine.model.RejectReqEvent;
+import com.ymatou.doorgod.decisionengine.util.MongoTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.CollectionOptions;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -42,9 +44,13 @@ public class RejectReqServiceImpl implements RejectReqService {
     @Override
     public void saveRejectReq(RejectReqEvent rejectReqEvent) {
 
-        Index index = new Index("rejectTime", Sort.Direction.ASC);
-        index.on("ruleName",Sort.Direction.ASC).on("sample",Sort.Direction.ASC);
-        mongoTemplate.indexOps("RejectReq").ensureIndex(index);
+        if (!mongoTemplate.collectionExists("RejectReq")) {
+            mongoTemplate.createCollection("RejectReq",Constants.COLLECTION_OPTIONS);
+            Index index = new Index("rejectTime", Sort.Direction.ASC);
+            index.on("ruleName",Sort.Direction.ASC);
+            index.on("addTime",Sort.Direction.ASC);
+            mongoTemplate.indexOps("RejectReq").ensureIndex(index);
+        }
 
         //格式化到分钟
         String rejectTime = DateUtils.parseAndFormat(rejectReqEvent.getTime(),FORMATTER_YMDHMS,FORMATTER_YMDHM);

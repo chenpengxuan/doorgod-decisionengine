@@ -23,6 +23,8 @@ public class MongoGroupBySamplePo {
 
     private String leftKeys;
 
+    private Long count;
+
     private Date addTime;
 
 
@@ -65,5 +67,13 @@ public class MongoGroupBySamplePo {
 
     public void setAddTime(Date addTime) {
         this.addTime = addTime;
+    }
+
+    public Long getCount() {
+        return count;
+    }
+
+    public void setCount(Long count) {
+        this.count = count;
     }
 }

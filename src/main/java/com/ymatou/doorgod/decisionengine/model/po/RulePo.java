@@ -61,6 +61,8 @@ public class RulePo extends Audit {
     @Column(name = "match_script")
     private String matchScript;
 
+    @Column(name = "groupby_count")
+    private Integer groupByCount;
 
     public Long getId() {
         return id;
@@ -164,5 +166,16 @@ public class RulePo extends Audit {
 
     public void setMatchScript(String matchScript) {
         this.matchScript = matchScript;
+    }
+
+    public Integer getGroupByCount() {
+        if (groupByCount == null){
+            return 0;
+        }
+        return groupByCount;
+    }
+
+    public void setGroupByCount(Integer groupByCount) {
+        this.groupByCount = groupByCount;
     }
 }

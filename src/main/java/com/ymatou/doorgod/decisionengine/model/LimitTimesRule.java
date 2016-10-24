@@ -24,6 +24,8 @@ public class LimitTimesRule extends AbstractRule {
 
     private String matchScript;
 
+    private Integer groupByCount;
+
     /**
      * 用来从http请求提取样本的样本维度KEY
      */
@@ -97,5 +99,13 @@ public class LimitTimesRule extends AbstractRule {
 
     public void setMatchScript(String matchScript) {
         this.matchScript = matchScript;
+    }
+
+    public Integer getGroupByCount() {
+        return groupByCount;
+    }
+
+    public void setGroupByCount(Integer groupByCount) {
+        this.groupByCount = groupByCount;
     }
 }

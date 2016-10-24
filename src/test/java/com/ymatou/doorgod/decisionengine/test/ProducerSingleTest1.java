@@ -37,7 +37,7 @@ public class ProducerSingleTest1 {
 
     public static void init() {
         Properties props = new Properties();
-        props.put("bootstrap.servers", "172.16.100.105:9092");
+        props.put("bootstrap.servers", "172.16.103.18:9092");
         props.put("group.id", "doorgod");
         props.put("enable.auto.commit", "true");
         props.put("auto.commit.interval.ms", "1000");
@@ -119,7 +119,7 @@ public class ProducerSingleTest1 {
             sample2.addDimensionValue("ip", ips[2]);
             sample2.addDimensionValue("deviceId", deviceIds[0]);
             a.setSample(JSON.toJSONString(sample2));
-            a.setMatchRules(Lists.newArrayList("testRule2"));
+            a.setMatchRules(Lists.newArrayList("IP_DEVICEID_COUNT"));
 
             System.out.println(JSON.toJSONString(a));
             ProducerRecord<String, String> record =

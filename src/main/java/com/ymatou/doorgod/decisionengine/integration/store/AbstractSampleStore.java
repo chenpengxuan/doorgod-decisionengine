@@ -134,7 +134,7 @@ public abstract class AbstractSampleStore {
                 if (a1 instanceof AtomicInteger) {
                     return ((AtomicInteger) a2).intValue() - ((AtomicInteger) a1).intValue();
                 } else {
-                    return ((Set) a2).size() - ((Set) a1).size();
+                    return ((Map) a2).size() - ((Map) a1).size();
                 }
             }
         );

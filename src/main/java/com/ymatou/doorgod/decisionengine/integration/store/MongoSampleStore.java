@@ -1,7 +1,6 @@
 /*
  *
- *  (C) Copyright 2016 Ymatou (http://www.ymatou.com/).
- *  All rights reserved.
+ * (C) Copyright 2016 Ymatou (http://www.ymatou.com/). All rights reserved.
  *
  */
 
@@ -12,16 +11,16 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import com.mongodb.WriteConcern;
-import com.ymatou.doorgod.decisionengine.holder.SampleStatisticCenter;
+import com.ymatou.doorgod.decisionengine.util.MongoTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
-import org.springframework.data.mongodb.core.MongoTemplate;
+
 import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -31,6 +30,7 @@ import org.springframework.util.CollectionUtils;
 
 import com.ymatou.doorgod.decisionengine.constants.Constants;
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
+import com.ymatou.doorgod.decisionengine.holder.SampleStatisticCenter;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import com.ymatou.doorgod.decisionengine.model.Sample;
 import com.ymatou.doorgod.decisionengine.model.mongo.MongoGroupBySamplePo;
@@ -55,7 +55,7 @@ public class MongoSampleStore extends AbstractSampleStore {
     }
 
     @Override
-    protected Map<String, Map<String, Map<Sample, Set<Sample>>>> getMemoryMap() {
+    protected Map<String, Map<String, Map<Sample, Map<Sample,AtomicInteger>>>> getMemoryMap() {
         return SampleStatisticCenter.groupByRuleTimeSampleMaps;
     }
 
@@ -70,20 +70,20 @@ public class MongoSampleStore extends AbstractSampleStore {
 
         String collectionName = MongoHelper.getGroupByCollectionName(rule);
         if (!mongoTemplate.collectionExists(collectionName)) {
-            mongoTemplate.createCollection(collectionName);
+            mongoTemplate.createCollection(collectionName, Constants.COLLECTION_OPTIONS);
             Index index = new Index("addTime", Sort.Direction.ASC);
-            Index sampleTimeIndex = new Index("sampleTime", Sort.Direction.ASC);
+            index.on("sampleTime", Sort.Direction.ASC);
             mongoTemplate.indexOps(collectionName).ensureIndex(index);
-            mongoTemplate.indexOps(collectionName).ensureIndex(sampleTimeIndex);
         }
         samples.forEach(entry -> {
 
             Sample sample = entry.getKey();
-            Set<Sample> sampleSet = ((Set) entry.getValue());
+            Map<Sample,AtomicInteger> leftKeySampleMap = ((Map) entry.getValue());
 
             String groupByKeys = sample.toString();
-            sampleSet.forEach(s -> {
-                String leftKeys = s.toString();
+            leftKeySampleMap.entrySet().forEach(s -> {
+                String leftKeys = s.getKey().toString();
+                int count = s.getValue().intValue();
 
                 // uploadtime 找到 那一分钟
                 LocalDateTime localDateTime = DateUtils.parseDefault(uploadTime);
@@ -95,6 +95,8 @@ public class MongoSampleStore extends AbstractSampleStore {
                                 .and("leftKeys").is(leftKeys));
                 Update update = new Update();
                 update.set("addTime", new Date());
+                update.inc("count",count);
+
 
                 mongoTemplate.findAndModify(query, update, new FindAndModifyOptions()
                         .returnNew(true).upsert(true), MongoGroupBySamplePo.class, collectionName);

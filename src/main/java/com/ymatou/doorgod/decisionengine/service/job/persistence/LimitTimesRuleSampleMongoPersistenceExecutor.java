@@ -14,17 +14,22 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.ymatou.doorgod.decisionengine.util.MongoTemplate;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+
+import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Component;
 
 import com.ymatou.doorgod.decisionengine.config.props.BizProps;
+import com.ymatou.doorgod.decisionengine.constants.Constants;
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import com.ymatou.doorgod.decisionengine.model.mongo.MongoSamplePo;
@@ -46,7 +51,8 @@ public class LimitTimesRuleSampleMongoPersistenceExecutor implements Job {
     private StringRedisTemplate redisTemplate;
     @Autowired
     private MongoSampleRepository sampleUnionRepository;
-
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
         LocalDateTime now = LocalDateTime.now();
@@ -77,6 +83,14 @@ public class LimitTimesRuleSampleMongoPersistenceExecutor implements Job {
         Set<TypedTuple<String>> sampleUnion =
                 redisTemplate.opsForZSet().rangeWithScores(currentBucket, bizProps.getPresistToMongoTopN() * -1, -1);
         if (sampleUnion != null && sampleUnion.size() > 0) {
+
+            if (!mongoTemplate.collectionExists("sample")) {
+                mongoTemplate.createCollection("sample", Constants.COLLECTION_OPTIONS);
+
+                Index index = new Index("time", Sort.Direction.ASC);
+                index.on("ruleName", Sort.Direction.ASC);
+                mongoTemplate.indexOps("sample").ensureIndex(index);
+            }
             List<MongoSamplePo> mongoSamples = new ArrayList<>();
             for (TypedTuple<String> sample : sampleUnion) {
                 MongoSamplePo msp = new MongoSamplePo();

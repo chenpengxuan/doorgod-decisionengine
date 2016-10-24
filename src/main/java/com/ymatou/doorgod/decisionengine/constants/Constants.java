@@ -6,6 +6,9 @@
 
 package com.ymatou.doorgod.decisionengine.constants;
 
+
+import com.ymatou.doorgod.decisionengine.util.CollectionOptions;
+
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 
@@ -37,5 +40,14 @@ public class Constants {
 
     public static final String IP_DEVICEID_INVALID_RULE = "IP_DEVICEID_INVALID_RULE";
 
+
+    /**
+     * mongo max size 2G
+     */
+    public static final long MAX_SIZE = 2L * 1024 * 1024 * 1024;
+
+    public static final CollectionOptions COLLECTION_OPTIONS = new CollectionOptions(MAX_SIZE,null, true);
+
+    public static final String ENV_STG = "STG";
 
 }

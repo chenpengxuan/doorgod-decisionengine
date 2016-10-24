@@ -69,7 +69,8 @@ public class LimitTimesRuleGroupBySampleOffendersExecutor{
         String endTime = now.format(FORMATTER_YMDHM);
         try {
             Criteria criteria = Criteria.where("sampleTime").gte(startTime)
-                                        .andOperator(Criteria.where("sampleTime").lte(endTime));
+                                        .andOperator(Criteria.where("sampleTime").lte(endTime))
+                                        .and("count").gte(rule.getGroupByCount());
 
             TypedAggregation<MongoGroupBySamplePo> aggregation = Aggregation.newAggregation(MongoGroupBySamplePo.class,
                     match(criteria),

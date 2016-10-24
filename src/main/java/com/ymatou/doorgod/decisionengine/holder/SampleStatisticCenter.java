@@ -52,16 +52,18 @@ public class SampleStatisticCenter {
      *                               key: sample
      *                               value: AtomicInteger 计数
      */
-    public static Map<String,Map<String,Map<Sample,AtomicInteger>>> ruleTimeSampleMaps = new ConcurrentHashMap<>();
+    public static final Map<String,Map<String,Map<Sample,AtomicInteger>>> ruleTimeSampleMaps = new ConcurrentHashMap<>();
     /**
      * key: rulename
      * value: ConcurrentHashMap:
      *                 key: reqTime (seconds)
      *                 value: ConcurrentHashMap
      *                               key: sample (groupby key)
-     *                               value: Set<Sample> (去掉groupby key 剩下的)
+     *                               value: ConcurrentHashMap
+     *                                              key:Sample (去掉groupby key 剩下的)
+     *                                              value:AtomicInteger
      */
-    public static Map<String,Map<String,Map<Sample,Set<Sample>>>> groupByRuleTimeSampleMaps = new ConcurrentHashMap<>();
+    public static final Map<String,Map<String,Map<Sample,Map<Sample,AtomicInteger>>>> groupByRuleTimeSampleMaps = new ConcurrentHashMap<>();
 
     @Autowired
     private BizProps bizProps;
@@ -185,10 +187,11 @@ public class SampleStatisticCenter {
 
         Sample originSample = sample.narrow(keys);
         Sample groupBySample = sample.narrow(groupByKeys);
+        Sample leftKeySample = originSample.unNarrow(groupByKeys);
 
         //rule map 不存在则新建
         groupByRuleTimeSampleMaps.putIfAbsent(rule.getName(),new ConcurrentHashMap<>());
-        Map<String,Map<Sample,Set<Sample>>> secondsTreeMap = groupByRuleTimeSampleMaps.get(rule.getName());
+        Map<String,Map<Sample,Map<Sample,AtomicInteger>>> secondsTreeMap = groupByRuleTimeSampleMaps.get(rule.getName());
 
         //10秒级别map key:20160809122500/20160809122510 value: ConcurrentHashMap
         /**
@@ -196,24 +199,33 @@ public class SampleStatisticCenter {
          */
         String sampleTime = DateUtils.formatToTenSeconds(reqTime);
         secondsTreeMap.putIfAbsent(sampleTime,new ConcurrentHashMap<>());
-        Map<Sample,Set<Sample>> sampleMap = secondsTreeMap.get(sampleTime);
+        Map<Sample,Map<Sample,AtomicInteger>> sampleMap = secondsTreeMap.get(sampleTime);
 
-        //sample 计数   判断作限制
+        //key: groupBy sample  value: ConcurrentHashMap
         if(sampleMap.size() >= bizProps.getMaxSizePerSecAndRule()){
-            // 大于最大size 只能累计 不再增加
-            Set<Sample> leftKeySet = sampleMap.get(groupBySample);
-            if(null != leftKeySet){
-                leftKeySet.add(originSample.unNarrow(groupByKeys));
+            Map<Sample,AtomicInteger> groupBySampleMap = sampleMap.get(groupBySample);
+            if(null != groupBySampleMap){
+                if(groupBySampleMap.size() >= bizProps.getMaxSizePerSecAndRule()){
+                    AtomicInteger leftKeyCount = groupBySampleMap.get(leftKeySample);
+                    if(null != leftKeyCount){
+                        leftKeyCount.incrementAndGet();
+                    }
+                }else {
+                    groupBySampleMap.putIfAbsent(leftKeySample, new AtomicInteger(0));
+                    groupBySampleMap.get(leftKeySample).incrementAndGet();// ++
+                }
             }
-            //具体sample值无需输出
             logger.debug("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},groupBySetCount:{}", rule.getName(),
                     sampleTime, sampleMap.size(),
-                    originSample, groupBySample, leftKeySet != null ? leftKeySet.size() : 0);
-        } else {
-            Sample leftKeySample = originSample.unNarrow(groupByKeys);
-            sampleMap.putIfAbsent(groupBySample, Sets.newConcurrentHashSet(Lists.newArrayList( leftKeySample )));
-            sampleMap.get(groupBySample).add(leftKeySample);
+                    originSample, groupBySample, groupBySampleMap != null ? groupBySampleMap.size() : 0);
+        }else {
+            sampleMap.putIfAbsent(groupBySample, new ConcurrentHashMap<>());
+            Map<Sample,AtomicInteger> groupBySampleMap = sampleMap.get(groupBySample);
 
+            //key: leftkey sample value: AtomicInteger
+            groupBySampleMap.putIfAbsent(leftKeySample,new AtomicInteger(0));
+
+            groupBySampleMap.get(leftKeySample).incrementAndGet();
             logger.debug("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},new groupBySetCount:1",
                     rule.getName(), sampleTime, sampleMap.size(), originSample, groupBySample);
         }
