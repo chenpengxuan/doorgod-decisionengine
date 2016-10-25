@@ -53,9 +53,8 @@ public class StatisticSampleConsumer implements Runnable {
             consumer.subscribe(topics);
 
             while (true) {
+                ConsumerRecords<String, String> records = consumer.poll(5000);
                 try {
-
-                    ConsumerRecords<String, String> records = consumer.poll(5000);
                     for (ConsumerRecord<String, String> record : records) {
 
                         logger.debug("StatisticSampleConsumer cnsume record:{}", record);
