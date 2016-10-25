@@ -62,6 +62,10 @@ public class RuleDiscoverer {
 
     @Transactional
     public void execute() {
+        String env = DisClientConfig.getInstance().ENV;
+        if(env.equals(Constants.ENV_STG)){
+            return;
+        }
         // 加载Redis定时同步数据到MongoDB任务(添加/修改)
         try {
             schedulerService.addJob(LimitTimesRuleSampleMongoPersistenceJob.class, "RedisToMongo",
@@ -130,35 +134,32 @@ public class RuleDiscoverer {
         HashMap<String, LimitTimesRule> rules = new HashMap<>();
         List<RulePo> rulePos = ruleRepository.findByStatusAndRuleType(StatusEnum.ENABLE.name(),
                 Constants.RULE_TYPE_NAME_LIMIT_TIMES_RULE);
-        String env = DisClientConfig.getInstance().ENV;
         for (RulePo rulePo : rulePos) {
-            if( !env.equals(Constants.ENV_STG) ||
-                    (env.equals(Constants.ENV_STG) && rulePo.getName().toUpperCase().contains("STG"))){
-                LimitTimesRule rule = new LimitTimesRule();
-                rule.setName(rulePo.getName());
-                rule.setOrder(rulePo.getOrder());
-                rule.setStatisticSpan(rulePo.getStatisticSpan());
-                rule.setTimesCap(rulePo.getTimesCap());
-                rule.setRejectionSpan(rulePo.getRejectionSpan());
-                rule.setGroupByCount(rulePo.getGroupByCount());
 
-                if (StringUtils.isNotBlank(rulePo.getKeys())) {
-                    rule.setDimensionKeys(Utils.splitByComma(rulePo.getKeys()));
-                }
-                if (StringUtils.isNotBlank(rulePo.getGroupByKeys())) {
-                    rule.setGroupByKeys(Utils.splitByComma(rulePo.getGroupByKeys()));
-                }
-                if(StringUtils.isNotBlank(rulePo.getCountingKeys())){
-                    rule.setCountingKeys(Utils.splitByComma(rulePo.getCountingKeys()));
-                }
-                if (StringUtils.isNotBlank(rulePo.getUris())) {
-                    rule.setApplicableUris(Utils.splitByComma(rulePo.getUris()));
-                }
+            LimitTimesRule rule = new LimitTimesRule();
+            rule.setName(rulePo.getName());
+            rule.setOrder(rulePo.getOrder());
+            rule.setStatisticSpan(rulePo.getStatisticSpan());
+            rule.setTimesCap(rulePo.getTimesCap());
+            rule.setRejectionSpan(rulePo.getRejectionSpan());
+            rule.setGroupByCount(rulePo.getGroupByCount());
 
-                rule.setMatchScript(rulePo.getMatchScript());
-
-                rules.put(rulePo.getName(), rule);
+            if (StringUtils.isNotBlank(rulePo.getKeys())) {
+                rule.setDimensionKeys(Utils.splitByComma(rulePo.getKeys()));
             }
+            if (StringUtils.isNotBlank(rulePo.getGroupByKeys())) {
+                rule.setGroupByKeys(Utils.splitByComma(rulePo.getGroupByKeys()));
+            }
+            if(StringUtils.isNotBlank(rulePo.getCountingKeys())){
+                rule.setCountingKeys(Utils.splitByComma(rulePo.getCountingKeys()));
+            }
+            if (StringUtils.isNotBlank(rulePo.getUris())) {
+                rule.setApplicableUris(Utils.splitByComma(rulePo.getUris()));
+            }
+
+            rule.setMatchScript(rulePo.getMatchScript());
+
+            rules.put(rulePo.getName(), rule);
 
         }
 

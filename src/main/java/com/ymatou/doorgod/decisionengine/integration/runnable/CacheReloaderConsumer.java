@@ -9,6 +9,8 @@ package com.ymatou.doorgod.decisionengine.integration.runnable;
 import java.util.Collections;
 import java.util.List;
 
+import com.baidu.disconf.client.config.DisClientConfig;
+import com.ymatou.doorgod.decisionengine.constants.Constants;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -46,6 +48,10 @@ public class CacheReloaderConsumer implements Runnable {
 
             while (true) {
                 try {
+                    String env = DisClientConfig.getInstance().ENV;
+                    if(env.equals(Constants.ENV_STG)){
+                        return;
+                    }
                     ConsumerRecords<String, String> records = consumer.poll(5000);
                     for (ConsumerRecord<String, String> record : records) {
                         logger.info("begin consume record:{}", record);

@@ -26,12 +26,10 @@ public class QuartzConfig {
     public SchedulerFactoryBean scheduler(DataSource dataSource, DisconfMgrBeanSecond disconfMgrBean2) {
         SchedulerFactoryBean schedulerFactoryBean = new SchedulerFactoryBean();
         schedulerFactoryBean.setDataSource(dataSource);
-        // schedulerFactoryBean.setApplicationContextSchedulerContextKey("applicationContextKey");
         schedulerFactoryBean.setConfigLocation(new ClassPathResource("quartz.properties"));
-        schedulerFactoryBean.setAutoStartup(true);
 
         if(DisClientConfig.getInstance().ENV.equals(Constants.ENV_STG)){
-            schedulerFactoryBean.setSchedulerName("STG-scheduler");
+            schedulerFactoryBean.setAutoStartup(false);
         }
         return schedulerFactoryBean;
     }
