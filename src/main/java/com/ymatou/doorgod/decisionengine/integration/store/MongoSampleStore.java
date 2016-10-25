@@ -71,9 +71,8 @@ public class MongoSampleStore extends AbstractSampleStore {
         String collectionName = MongoHelper.getGroupByCollectionName(rule);
         if (!mongoTemplate.collectionExists(collectionName)) {
             mongoTemplate.createCollection(collectionName, Constants.COLLECTION_OPTIONS);
-            Index index = new Index("addTime", Sort.Direction.ASC);
-            index.on("sampleTime", Sort.Direction.ASC);
-            mongoTemplate.indexOps(collectionName).ensureIndex(index);
+            mongoTemplate.indexOps(collectionName).ensureIndex(new Index("addTime", Sort.Direction.ASC));
+            mongoTemplate.indexOps(collectionName).ensureIndex(new Index("sampleTime", Sort.Direction.ASC));
         }
         samples.forEach(entry -> {
 

@@ -86,10 +86,8 @@ public class LimitTimesRuleSampleMongoPersistenceExecutor implements Job {
 
             if (!mongoTemplate.collectionExists("sample")) {
                 mongoTemplate.createCollection("sample", Constants.COLLECTION_OPTIONS);
-
-                Index index = new Index("time", Sort.Direction.ASC);
-                index.on("ruleName", Sort.Direction.ASC);
-                mongoTemplate.indexOps("sample").ensureIndex(index);
+                mongoTemplate.indexOps("sample").ensureIndex(new Index("time", Sort.Direction.ASC));
+                mongoTemplate.indexOps("sample").ensureIndex(new Index("ruleName", Sort.Direction.ASC));
             }
             List<MongoSamplePo> mongoSamples = new ArrayList<>();
             for (TypedTuple<String> sample : sampleUnion) {

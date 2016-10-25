@@ -46,10 +46,9 @@ public class RejectReqServiceImpl implements RejectReqService {
 
         if (!mongoTemplate.collectionExists("RejectReq")) {
             mongoTemplate.createCollection("RejectReq",Constants.COLLECTION_OPTIONS);
-            Index index = new Index("rejectTime", Sort.Direction.ASC);
-            index.on("ruleName",Sort.Direction.ASC);
-            index.on("addTime",Sort.Direction.ASC);
-            mongoTemplate.indexOps("RejectReq").ensureIndex(index);
+            mongoTemplate.indexOps("RejectReq").ensureIndex(new Index("rejectTime", Sort.Direction.ASC));
+            mongoTemplate.indexOps("RejectReq").ensureIndex(new Index("ruleName", Sort.Direction.ASC));
+            mongoTemplate.indexOps("RejectReq").ensureIndex(new Index("addTime", Sort.Direction.ASC));
         }
 
         //格式化到分钟

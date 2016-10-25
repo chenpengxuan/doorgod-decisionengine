@@ -43,9 +43,8 @@ public class OffenderServiceImpl implements OffenderService {
         if (!mongoTemplate.collectionExists("LimitTimesRuleOffender")) {
             mongoTemplate.createCollection("LimitTimesRuleOffender", Constants.COLLECTION_OPTIONS);
 
-            Index index = new Index("addTime", Sort.Direction.ASC);
-            index.on("ruleName",Sort.Direction.ASC);
-            mongoTemplate.indexOps("LimitTimesRuleOffender").ensureIndex(index);
+            mongoTemplate.indexOps("LimitTimesRuleOffender").ensureIndex(new Index("addTime", Sort.Direction.ASC));
+            mongoTemplate.indexOps("LimitTimesRuleOffender").ensureIndex(new Index("ruleName", Sort.Direction.ASC));
         }
 
         if(!mongoTemplate.exists(query,OffenderPo.class)){
