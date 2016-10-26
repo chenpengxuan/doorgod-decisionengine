@@ -92,13 +92,13 @@ public class SampleStatisticCenter {
         Sample sample = statisticItem.getSample();
         String reqTime = statisticItem.getReqTime();
 
-        String nowStr = DateUtils.formatDefault(LocalDateTime.now().minusSeconds(5));
+        String nowStr = DateUtils.formatDefault(LocalDateTime.now().minusSeconds(30));
         if(Long.valueOf(nowStr) > Long.valueOf(reqTime)){
             if(nextLogErrorTime == 0 || nextLogErrorTime<=Long.valueOf(nowStr)){
-                logger.error("nowStr:{},reqTime:{} reqTime before now 5 seconds ,will not be statistic",nowStr,reqTime);
+                logger.error("nowStr:{},reqTime:{} reqTime before now 30 seconds ,will not be statistic",nowStr,reqTime);
                 nextLogErrorTime = Long.valueOf(DateUtils.formatDefault(LocalDateTime.now().plusSeconds(60)));
             }else {
-                logger.warn("nowStr:{},reqTime:{} reqTime before now 5 seconds ,will not be statistic",nowStr,reqTime);
+                logger.warn("nowStr:{},reqTime:{} reqTime before now 30 seconds ,will not be statistic",nowStr,reqTime);
             }
             return;
         }
