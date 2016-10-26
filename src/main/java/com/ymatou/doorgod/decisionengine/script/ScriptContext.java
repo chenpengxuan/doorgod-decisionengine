@@ -50,7 +50,9 @@ public class ScriptContext {
         this.hitRule = statisticItem.getHitRule();
         this.filterConsumedTime = statisticItem.getFilterConsumedTime();
         this.origStatusCode = statisticItem.getOrigStatusCode();
-        dimensionValues.putAll(statisticItem.getSample().getDimensionValues());
+        if(null != statisticItem.getSample()){
+            dimensionValues.putAll(statisticItem.getSample().getDimensionValues());
+        }
     }
 
     public String get(String key) {

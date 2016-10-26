@@ -59,6 +59,9 @@ public class StatisticSampleConsumer implements Runnable {
 
                         logger.debug("StatisticSampleConsumer cnsume record:{}", record);
                         StatisticItem statisticItem = JSON.parseObject(record.value(), StatisticItem.class);
+                        if(statisticItem.getSample() == null){
+                            continue;
+                        }
 
                         if(statisticItem.isRejectedByFilter() || statisticItem.isRejectedByHystrix()){
                             RejectReqEvent rejectReqEvent = new RejectReqEvent();

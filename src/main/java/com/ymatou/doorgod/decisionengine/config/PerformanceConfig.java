@@ -36,7 +36,7 @@ public class PerformanceConfig {
     @DependsOn("disconfMgrBean2")
     public PerformanceMonitorAdvice performanceMonitorAdvice(){
         PerformanceMonitorAdvice performanceMonitorAdvice = new PerformanceMonitorAdvice();
-        performanceMonitorAdvice.setAppId("com.ymatou.doorgod.decisionengine");
+        performanceMonitorAdvice.setAppId("com.ymatou.doorgod.decisionengine.Application");
         performanceMonitorAdvice.setServerUrl(bizProps.getPerformanceServerUrl());
         return performanceMonitorAdvice;
     }
