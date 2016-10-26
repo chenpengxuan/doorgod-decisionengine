@@ -7,11 +7,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.quartz.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ymatou.doorgod.decisionengine.service.SchedulerService;
-import org.springframework.util.CollectionUtils;
+
 
 
 /**
@@ -22,11 +24,13 @@ import org.springframework.util.CollectionUtils;
 @Service
 public class SchedulerServiceImpl implements SchedulerService {
 
+    private static final Logger logger = LoggerFactory.getLogger(SchedulerServiceImpl.class);
+
     @Autowired
     private Scheduler scheduler;
 
     @Override
-    public void addJob(Class<? extends Job> job, String jobName, String cronExpression) throws Exception {
+    public void addJob(Class<? extends Job> job, String jobName, String cronExpression){
         try {
             List<? extends Trigger> triggerList = scheduler.getTriggersOfJob(new JobKey(jobName));
             if (triggerList == null || triggerList.isEmpty()) {
@@ -46,12 +50,7 @@ public class SchedulerServiceImpl implements SchedulerService {
                 modifyScheduler(jobName, cronExpression);
             }
         } catch (SchedulerException e) {
-            List<? extends Trigger> triggerList = scheduler.getTriggersOfJob(new JobKey(jobName));
-
-            //再次确认增加了，未增加则异常
-            if(CollectionUtils.isEmpty(triggerList)){
-                throw new RuntimeException(e);
-            }
+            logger.warn("add job warm some other has done", e);
         }
     }
 
@@ -85,17 +84,14 @@ public class SchedulerServiceImpl implements SchedulerService {
     }
 
     @Override
-    public void removeScheduler(String jobName) throws Exception {
+    public void removeScheduler(String jobName){
         JobKey jobKey = new JobKey(jobName);
         try {
             if(scheduler.checkExists(jobKey)){
                 scheduler.deleteJob(jobKey);
             }
         } catch (SchedulerException e) {
-            //再次确认删除了，未删除则异常
-            if(scheduler.checkExists(jobKey)){
-                throw new RuntimeException(e);
-            }
+            logger.warn("removeScheduler warm some other has done", e);
         }
 
     }

@@ -123,11 +123,11 @@ public class ProducerSingleTest1 {
 
             System.out.println(JSON.toJSONString(a));
             ProducerRecord<String, String> record =
-                    new ProducerRecord<String, String>("doorgod.statisticSampleEvent",
+                    new ProducerRecord<String, String>("doorgod.updateRuleEvent",
                             JSON.toJSONString(a));
             producer.send(record);
             try {
-                TimeUnit.SECONDS.sleep(1);
+                TimeUnit.SECONDS.sleep(10000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
