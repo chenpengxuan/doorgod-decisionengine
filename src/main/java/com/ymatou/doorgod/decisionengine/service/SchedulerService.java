@@ -15,7 +15,7 @@ import org.quartz.SchedulerException;
  */
 public interface SchedulerService {
 
-    void addJob(Class<? extends Job> job, String jobName, String cronExpression) throws SchedulerException;
+    void addJob(Class<? extends Job> job, String jobName, String cronExpression)throws Exception;
 
     void modifyScheduler(String jobName, String cronExpression) throws SchedulerException;
 
@@ -23,7 +23,7 @@ public interface SchedulerService {
 
     void resumeScheduler(String jobName) throws SchedulerException;
 
-    void removeScheduler(String jobName) throws SchedulerException;
+    void removeScheduler(String jobName) throws Exception;
 
     Date getNextFireTime(String jobName) throws SchedulerException;
 }

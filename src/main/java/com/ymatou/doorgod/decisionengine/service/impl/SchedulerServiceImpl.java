@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ymatou.doorgod.decisionengine.service.SchedulerService;
+import org.springframework.util.CollectionUtils;
 
 
 /**
@@ -25,23 +26,32 @@ public class SchedulerServiceImpl implements SchedulerService {
     private Scheduler scheduler;
 
     @Override
-    public void addJob(Class<? extends Job> job, String jobName, String cronExpression) throws SchedulerException {
-        List<? extends Trigger> triggerList = scheduler.getTriggersOfJob(new JobKey(jobName));
-        if (triggerList == null || triggerList.isEmpty()) {
-            JobDetail jobDetail = JobBuilder.newJob(job)
-                    .withIdentity(jobName)
-                    // .storeDurably(false) //Job是非持久性的，若没有活动的Trigger与之相关联，该Job会从Scheduler中删除掉
-                    // .requestRecovery(true)
-                    // //Scheduler非正常停止(进程停止或机器关闭等)时，Scheduler再次启动时，该Job会重新执行一次
-                    .build();
-            Trigger trigger = TriggerBuilder.newTrigger()
-                    .withSchedule(CronScheduleBuilder.cronSchedule(cronExpression)
-                            .withMisfireHandlingInstructionFireAndProceed())
-                    .build();
-            scheduler.scheduleJob(jobDetail, trigger);
-        }
-        else {
-            modifyScheduler(jobName, cronExpression);
+    public void addJob(Class<? extends Job> job, String jobName, String cronExpression) throws Exception {
+        try {
+            List<? extends Trigger> triggerList = scheduler.getTriggersOfJob(new JobKey(jobName));
+            if (triggerList == null || triggerList.isEmpty()) {
+                JobDetail jobDetail = JobBuilder.newJob(job)
+                        .withIdentity(jobName)
+                        // .storeDurably(false) //Job是非持久性的，若没有活动的Trigger与之相关联，该Job会从Scheduler中删除掉
+                        // .requestRecovery(true)
+                        // //Scheduler非正常停止(进程停止或机器关闭等)时，Scheduler再次启动时，该Job会重新执行一次
+                        .build();
+                Trigger trigger = TriggerBuilder.newTrigger()
+                        .withSchedule(CronScheduleBuilder.cronSchedule(cronExpression)
+                                .withMisfireHandlingInstructionFireAndProceed())
+                        .build();
+                scheduler.scheduleJob(jobDetail, trigger);
+            }
+            else {
+                modifyScheduler(jobName, cronExpression);
+            }
+        } catch (SchedulerException e) {
+            List<? extends Trigger> triggerList = scheduler.getTriggersOfJob(new JobKey(jobName));
+
+            //再次确认增加了，未增加则异常
+            if(CollectionUtils.isEmpty(triggerList)){
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -75,8 +85,19 @@ public class SchedulerServiceImpl implements SchedulerService {
     }
 
     @Override
-    public void removeScheduler(String jobName) throws SchedulerException {
-        scheduler.deleteJob(new JobKey(jobName));
+    public void removeScheduler(String jobName) throws Exception {
+        JobKey jobKey = new JobKey(jobName);
+        try {
+            if(scheduler.checkExists(jobKey)){
+                scheduler.deleteJob(jobKey);
+            }
+        } catch (SchedulerException e) {
+            //再次确认删除了，未删除则异常
+            if(scheduler.checkExists(jobKey)){
+                throw new RuntimeException(e);
+            }
+        }
+
     }
 
     @Override

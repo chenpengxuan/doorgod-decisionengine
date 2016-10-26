@@ -59,7 +59,6 @@ public class KafkaConfig {
         return props;
     }
 
-    @Bean(name = "consumerCommonProps")
     public Properties consumerCommonProps() {
         Properties props = new Properties();
         props.put("bootstrap.servers", kafkaProps.getBootstrapServers());

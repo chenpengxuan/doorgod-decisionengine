@@ -70,7 +70,7 @@ public class RuleDiscoverer {
         try {
             schedulerService.addJob(LimitTimesRuleSampleMongoPersistenceJob.class, "RedisToMongo",
                     bizProps.getLimitTimesRuleSamplePersistCronExpr());
-        } catch (SchedulerException e) {
+        } catch (Exception e) {
             logger.error("add redis to mongo job failed.", e);
         }
         logger.info("load redis to mongo task success.");
@@ -105,7 +105,6 @@ public class RuleDiscoverer {
                 schedulerService.addJob(LimitTimesRuleGroupBySampleOffendersJob.class,ruleName,
                         bizProps.getLimitTimesRuleGroupBySampleCronExpr());
             }
-
         }
 
         // 已删除的规则 定时任务
@@ -115,7 +114,7 @@ public class RuleDiscoverer {
 
                     try {
                         schedulerService.removeScheduler(ruleName);
-                    } catch (SchedulerException e) {
+                    } catch (Exception e) {
                         isError = true;
                         exception = e;
                     }
