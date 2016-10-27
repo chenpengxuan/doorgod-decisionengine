@@ -6,7 +6,6 @@
 package com.ymatou.doorgod.decisionengine.service.job.persistence;
 
 import static com.ymatou.doorgod.decisionengine.constants.Constants.*;
-import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getNormalSetName;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import com.ymatou.doorgod.decisionengine.util.MongoTemplate;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -22,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-
 import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
@@ -34,7 +31,9 @@ import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import com.ymatou.doorgod.decisionengine.model.mongo.MongoSamplePo;
 import com.ymatou.doorgod.decisionengine.repository.MongoSampleRepository;
+import com.ymatou.doorgod.decisionengine.util.MongoTemplate;
 import com.ymatou.doorgod.decisionengine.util.RedisHelper;
+import com.ymatou.doorgod.decisionengine.util.Utils;
 
 /**
  * @author qianmin 2016年9月12日 上午11:05:19
@@ -74,7 +73,7 @@ public class LimitTimesRuleSampleMongoPersistenceExecutor implements Job {
 
         // 合并Redis以备持久化
         String currentBucket = RedisHelper.getUnionSetName(rule.getName(), now.format(FORMATTER_YMDHMS), MONGO_UNION);
-        List<String> timeBuckets = getAllTimeBucket(rule, now);
+        List<String> timeBuckets = Utils.getAllTimeBucket(rule.getName(), now, 60);
         redisTemplate.opsForZSet().unionAndStore(RedisHelper.getEmptySetName(EMPTY_SET), timeBuckets,
                 currentBucket);
         redisTemplate.opsForSet().getOperations().expire(currentBucket, UNION_FOR_MONGO_PERSISTENCE_EXPIRE_TIME,
@@ -103,12 +102,4 @@ public class LimitTimesRuleSampleMongoPersistenceExecutor implements Job {
         }
     }
 
-
-    private List<String> getAllTimeBucket(LimitTimesRule rule, LocalDateTime now) {
-        List<String> timeBuckets = new ArrayList<>();
-        for (int second = rule.getStatisticSpan(); second >= 1; second--) {
-            timeBuckets.add(getNormalSetName(rule.getName(), now.minusSeconds(second).format(FORMATTER_YMDHMS)));
-        }
-        return timeBuckets;
-    }
 }

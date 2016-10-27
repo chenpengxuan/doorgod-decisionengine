@@ -6,26 +6,20 @@
 package com.ymatou.doorgod.decisionengine.service.job.offender;
 
 import static com.ymatou.doorgod.decisionengine.constants.Constants.*;
-import static com.ymatou.doorgod.decisionengine.util.RedisHelper.*;
+import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getEmptySetName;
+import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getUnionSetName;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import com.ymatou.doorgod.decisionengine.util.DateUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.data.redis.connection.RedisConnection;
-import org.springframework.data.redis.connection.RedisZSetCommands;
-import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Component;
@@ -36,6 +30,8 @@ import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.integration.KafkaClients;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import com.ymatou.doorgod.decisionengine.service.OffenderService;
+import com.ymatou.doorgod.decisionengine.util.DateUtils;
+import com.ymatou.doorgod.decisionengine.util.Utils;
 
 /**
  * @author qianmin 2016年9月12日 上午11:04:36
@@ -78,7 +74,7 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
             String nowFormated = DateUtils.formatToTenSeconds(LocalDateTime.now());
             LocalDateTime now = DateUtils.parseDefault(nowFormated);
 
-            List<String> timeBuckets = getAllTimeBucket(rule, now);
+            List<String> timeBuckets = Utils.getAllTimeBucket(rule.getName(), now,rule.getStatisticSpan());
 
             String currentUnionName = getUnionSetName(ruleName, nowFormated, UNION);
 
@@ -115,20 +111,6 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
         }
     }
 
-    /**
-     * 找到所以需要合并的时间窗口
-     * 
-     * @param rule
-     * @param now
-     * @return
-     */
-    private List<String> getAllTimeBucket(LimitTimesRule rule, LocalDateTime now) {
-        List<String> timeBuckets = new ArrayList<>();
-        for (int nums = rule.getStatisticSpan() / 10; nums > 0; nums--) {
-            timeBuckets.add(getNormalSetName(rule.getName(), now.minusSeconds(nums * 10).format(FORMATTER_YMDHMS)));
-        }
-        return timeBuckets;
-    }
 
     private long getExpireByRule(LimitTimesRule rule) {
         if (rule.getTimesCap() < 60) {

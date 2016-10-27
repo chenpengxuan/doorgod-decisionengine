@@ -12,15 +12,16 @@ import java.net.NetworkInterface;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import com.ymatou.doorgod.decisionengine.constants.Constants;
+import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
+
+import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHMS;
+import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getNormalSetName;
 
 /**
  * Created by tuwenjie on 2016/9/7.
@@ -99,4 +100,22 @@ public class Utils {
             return localIp;
         }
     }
+
+
+    /**
+     * 找到所以需要合并的时间窗口
+     *
+     * @param ruleName
+     * @param now
+     * @param timeSpan
+     * @return
+     */
+    public static List<String> getAllTimeBucket(String ruleName, LocalDateTime now,int timeSpan) {
+        List<String> timeBuckets = new ArrayList<>();
+        for (int nums = timeSpan / 10; nums > 0; nums--) {
+            timeBuckets.add(getNormalSetName(ruleName, now.minusSeconds(nums * 10).format(FORMATTER_YMDHMS)));
+        }
+        return timeBuckets;
+    }
+
 }
