@@ -37,6 +37,7 @@ import com.ymatou.doorgod.decisionengine.repository.MongoSampleRepository;
 import com.ymatou.doorgod.decisionengine.util.RedisHelper;
 
 /**
+ * FIXME:check biz rule
  * @author qianmin 2016年9月12日 上午11:05:19
  * 
  */

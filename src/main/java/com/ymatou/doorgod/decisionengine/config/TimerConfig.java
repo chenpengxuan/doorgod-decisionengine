@@ -87,6 +87,7 @@ public class TimerConfig {
     public void destory() {
         redisExecutor.shutdown();
         mongoExecutor.shutdown();
+        clearUselessMemoryExecutor.shutdown();
     }
 
 
