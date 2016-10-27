@@ -79,7 +79,11 @@ public class MongoSampleStore extends AbstractSampleStore {
             Sample sample = entry.getKey();
             Map<Sample,AtomicInteger> leftKeySampleMap = ((Map) entry.getValue());
 
+            if(leftKeySampleMap.size() < bizProps.getUploadMongoGroupMinSize()){
+                return;
+            }
             String groupByKeys = sample.toString();
+
             leftKeySampleMap.entrySet().forEach(s -> {
                 String leftKeys = s.getKey().toString();
                 int count = s.getValue().intValue();

@@ -30,6 +30,9 @@ public class BizProps {
     // 上报mongo topN >0 才topN
     private int uploadMongoTopN;
 
+    // 上传mongo groupby map size 最小个数
+    private int uploadMongoGroupMinSize;
+
     // 上传redis定时器频率 单位：毫秒
     private int uploadRedisTimerInterval;
 
@@ -161,5 +164,14 @@ public class BizProps {
 
     public void setLimitTimesRuleGroupBySampleCronExpr(String limitTimesRuleGroupBySampleCronExpr) {
         this.limitTimesRuleGroupBySampleCronExpr = limitTimesRuleGroupBySampleCronExpr;
+    }
+
+    @DisconfFileItem(name = "biz.uploadMongoGroupMinSize")
+    public int getUploadMongoGroupMinSize() {
+        return uploadMongoGroupMinSize;
+    }
+
+    public void setUploadMongoGroupMinSize(int uploadMongoGroupMinSize) {
+        this.uploadMongoGroupMinSize = uploadMongoGroupMinSize;
     }
 }
