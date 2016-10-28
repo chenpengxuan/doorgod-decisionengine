@@ -26,6 +26,8 @@ import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import com.ymatou.doorgod.decisionengine.model.Sample;
 import com.ymatou.doorgod.decisionengine.util.RedisHelper;
 
+import static com.ymatou.doorgod.decisionengine.util.Utils.getExpireByRule;
+
 /**
  * @author luoshiqian 2016/9/14 16:01
  */
@@ -79,17 +81,6 @@ public class RedisSampleStore extends AbstractSampleStore {
 
     }
 
-    /**
-     * 获取规则的过期时间 小于60秒 系数为 2.0 大于60秒 系数为 1.5
-     * 
-     * @param rule
-     * @return
-     */
-    private long getExpireByRule(LimitTimesRule rule) {
-        if (rule.getStatisticSpan() < 60) {
-            return ((Double) (rule.getStatisticSpan() * 2.0)).longValue();
-        }
-        return ((Double) (rule.getStatisticSpan() * 1.5)).longValue();
-    }
+
 
 }

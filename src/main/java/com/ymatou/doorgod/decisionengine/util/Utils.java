@@ -17,6 +17,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -121,4 +122,17 @@ public class Utils {
         return timeBuckets;
     }
 
+
+    /**
+     * 获取规则的过期时间 小于60秒 系数为 2.0 大于60秒 系数为 1.5
+     *
+     * @param rule
+     * @return
+     */
+    public static long getExpireByRule(LimitTimesRule rule) {
+        if (rule.getStatisticSpan() < 60) {
+            return ((Double) (rule.getStatisticSpan() * 2.0)).longValue();
+        }
+        return ((Double) (rule.getStatisticSpan() * 1.5)).longValue();
+    }
 }

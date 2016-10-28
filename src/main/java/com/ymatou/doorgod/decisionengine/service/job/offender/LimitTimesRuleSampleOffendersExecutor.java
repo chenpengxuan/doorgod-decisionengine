@@ -8,6 +8,7 @@ package com.ymatou.doorgod.decisionengine.service.job.offender;
 import static com.ymatou.doorgod.decisionengine.constants.Constants.*;
 import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getEmptySetName;
 import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getUnionSetName;
+import static com.ymatou.doorgod.decisionengine.util.Utils.getExpireByRule;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -78,10 +79,13 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
 
             String currentUnionName = getUnionSetName(ruleName, nowFormated, UNION);
 
-            logger.info("begin to execute rule:{},time:{},currentUnionName:{}",
-                    ruleName, now.format(FORMATTER_YMDHMS), currentUnionName);
+            long start = System.currentTimeMillis();
 
             zSetOps.unionAndStore(getEmptySetName(EMPTY_SET), timeBuckets, currentUnionName);
+
+            logger.info("zset union consumed:{}ms,rulename:{},currentUnionName:{}",
+                    (System.currentTimeMillis() - start), ruleName, currentUnionName);
+
             zSetOps.getOperations().expire(currentUnionName, getExpireByRule(rule), TimeUnit.SECONDS);
 
             // 获取Offender
@@ -111,11 +115,4 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
         }
     }
 
-
-    private long getExpireByRule(LimitTimesRule rule) {
-        if (rule.getTimesCap() < 60) {
-            return ((Double) (rule.getStatisticSpan() * 2.0)).longValue();
-        }
-        return ((Double) (rule.getStatisticSpan() * 1.5)).longValue();
-    }
 }

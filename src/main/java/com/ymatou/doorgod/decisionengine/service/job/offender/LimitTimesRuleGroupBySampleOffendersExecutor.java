@@ -67,14 +67,17 @@ public class LimitTimesRuleGroupBySampleOffendersExecutor{
         logger.debug("exec LimitTimesRuleGroupBySampleOffendersJob :{}",ruleName);
         String startTime = now.minusSeconds(rule.getStatisticSpan()).format(FORMATTER_YMDHM);
         String endTime = now.format(FORMATTER_YMDHM);
+
         try {
             Criteria criteria = Criteria.where("sampleTime").gte(startTime)
-                                        .andOperator(Criteria.where("sampleTime").lte(endTime))
-                                        .and("count").gte(rule.getGroupByCount());
+                                        .andOperator(Criteria.where("sampleTime").lte(endTime));
+
+            long start = System.currentTimeMillis();
 
             TypedAggregation<MongoGroupBySamplePo> aggregation = Aggregation.newAggregation(MongoGroupBySamplePo.class,
                     match(criteria),
-                    group(fields("groupByKeys","leftKeys")),
+                    group(fields("groupByKeys","leftKeys")).sum("count").as("totalCount"),
+                    match(Criteria.where("totalCount").gte(rule.getGroupByCount())),
                     group("_id.groupByKeys").count().as("count"),
                     match(Criteria.where("count").gte(rule.getTimesCap())),
                     sort(Sort.Direction.DESC, "count"));
@@ -83,6 +86,7 @@ public class LimitTimesRuleGroupBySampleOffendersExecutor{
             AggregationResults<MongoGroupBySampleStats> result =
                     mongoTemplate.aggregate(aggregation, collectionName, MongoGroupBySampleStats.class);
 
+            logger.info("aggregation consumed:{}ms,rulename:{}", (System.currentTimeMillis() - start), ruleName);
             if (null != result) {
                 boolean isOffendersChanged = false;
                 logger.debug("after Aggregation result:{}",result.getMappedResults());
