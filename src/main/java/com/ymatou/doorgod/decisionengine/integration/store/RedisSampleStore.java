@@ -60,13 +60,13 @@ public class RedisSampleStore extends AbstractSampleStore {
 
         samples.forEach(entry -> {
             try {
-                double score = 1;
+                double score = ((AtomicInteger) entry.getValue()).doubleValue();
                 if (redisTemplate.opsForZSet().getOperations().hasKey(zSetName)) {
                     score = redisTemplate.opsForZSet().incrementScore(zSetName, entry.getKey().toString(),
-                            ((AtomicInteger) entry.getValue()).doubleValue());
+                            score);
                 } else {
                     redisTemplate.opsForZSet().add(zSetName, entry.getKey().toString(),
-                            ((AtomicInteger) entry.getValue()).doubleValue());
+                            score);
                     redisTemplate.opsForZSet().getOperations().expire(zSetName, getExpireByRule(rule), TimeUnit.SECONDS);// 单位秒
                 }
 
@@ -86,7 +86,7 @@ public class RedisSampleStore extends AbstractSampleStore {
      * @return
      */
     private long getExpireByRule(LimitTimesRule rule) {
-        if (rule.getTimesCap() < 60) {
+        if (rule.getStatisticSpan() < 60) {
             return ((Double) (rule.getStatisticSpan() * 2.0)).longValue();
         }
         return ((Double) (rule.getStatisticSpan() * 1.5)).longValue();

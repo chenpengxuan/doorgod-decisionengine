@@ -65,7 +65,7 @@ public class CacheReloaderConsumer implements Runnable {
                         logger.info("end consume record:{}", record);
                     }
                 } catch (Exception e) {
-                    logger.error("cacheReloaderConsumer consume record error",e);
+                    logger.error("cacheReloaderConsumer consume record error:{}", e);
                 }
             }
         } catch (WakeupException e) {

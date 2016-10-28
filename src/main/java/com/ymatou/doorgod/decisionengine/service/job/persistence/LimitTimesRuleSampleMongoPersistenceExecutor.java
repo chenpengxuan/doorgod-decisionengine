@@ -36,6 +36,7 @@ import com.ymatou.doorgod.decisionengine.util.RedisHelper;
 import com.ymatou.doorgod.decisionengine.util.Utils;
 
 /**
+ * FIXME:check biz rule
  * @author qianmin 2016年9月12日 上午11:05:19
  * 
  */

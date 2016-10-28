@@ -35,6 +35,8 @@ public class KafkaConfig {
         }
 
         Properties props = consumerCommonProps();
+
+        //明确与ApiGateway group区分开来
         props.put("group.id", localIp + "_DE");
         props.put("client.id", localIp);
 
@@ -82,6 +84,7 @@ public class KafkaConfig {
         props.put("retries",1);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+
 
         Producer<String, String> producer = new KafkaProducer<String, String>(props);
 

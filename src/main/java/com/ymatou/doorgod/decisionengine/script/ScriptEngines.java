@@ -36,6 +36,12 @@ public class ScriptEngines implements ApplicationListener<ApplicationReadyEvent>
 
     private static String isMatchingScript = "def isMatching(ctx) {%s};";
 
+    /**
+     * key: ruleName
+     * value:
+     *      key:scriptText
+     *      value:complied engine
+     */
     public static final Map<String, Pair<String, ScriptEngine>> ruleScriptEngines = new ConcurrentHashMap<>();
 
     private static final ScriptEngineManager factory = new ScriptEngineManager();
@@ -79,7 +85,7 @@ public class ScriptEngines implements ApplicationListener<ApplicationReadyEvent>
             Object result = invokeFunction(pair.getValue(), "isMatching", param);
             return (Boolean) result;
         } catch (Exception e) {// 出现异常 不累计
-            logger.error("execIsMatching error", e);
+            logger.error("execIsMatching error. rule:{}", ruleName, e);
             return false;
         }
     }
@@ -88,7 +94,7 @@ public class ScriptEngines implements ApplicationListener<ApplicationReadyEvent>
         try {
             engine.eval(script);
         } catch (ScriptException e) {
-            logger.error("eval script error", e);
+            logger.error("eval script error. script:{}", script, e);
         }
     }
 
