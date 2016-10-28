@@ -6,6 +6,7 @@
  */
 package com.ymatou.doorgod.decisionengine.model.mongo;
 
+import com.ymatou.doorgod.decisionengine.constants.Constants;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -15,7 +16,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
  * @author qianmin 2016年9月14日 下午6:54:45
  * 
  */
-@Document(collection = "LimitTimesRuleOffender")
+@Document(collection = Constants.COLLECTION_NAME_LIMIT_TIMES_RULE_OFFENDER)
 public class OffenderPo {
 
     @Id
