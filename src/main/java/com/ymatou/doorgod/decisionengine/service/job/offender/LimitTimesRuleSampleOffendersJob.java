@@ -5,6 +5,7 @@
  */
 package com.ymatou.doorgod.decisionengine.service.job.offender;
 
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -20,6 +21,7 @@ import com.ymatou.doorgod.decisionengine.util.SpringContextHolder;
  * @author tuwenjie
  * 
  */
+@DisallowConcurrentExecution
 @Component
 public class LimitTimesRuleSampleOffendersJob implements Job {
 

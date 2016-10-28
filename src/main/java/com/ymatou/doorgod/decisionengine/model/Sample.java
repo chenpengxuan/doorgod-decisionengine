@@ -21,9 +21,6 @@ public class Sample {
     public static final String NULL_VALUE_PLACEHOLDER = "NULL_FLAG";
 
 
-    public static final String KEY_URI = "uri";
-
-
     // 样本值
     private TreeMap<String, String> dimensionValues = new TreeMap<String, String>();
 
