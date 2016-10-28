@@ -7,6 +7,9 @@
 
 package com.ymatou.doorgod.decisionengine.util;
 
+import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHMS;
+import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getNormalSetName;
+
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.time.LocalDateTime;
@@ -14,14 +17,11 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import com.ymatou.doorgod.decisionengine.constants.Constants;
-import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
-import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHMS;
-import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getNormalSetName;
+import com.ymatou.doorgod.decisionengine.constants.Constants;
 
 /**
  * Created by tuwenjie on 2016/9/7.
@@ -111,9 +111,12 @@ public class Utils {
      * @return
      */
     public static List<String> getAllTimeBucket(String ruleName, LocalDateTime now,int timeSpan) {
+
+        LocalDateTime formatedTenSecDate = DateUtils.parseToTenSecondsDate(now);
+
         List<String> timeBuckets = new ArrayList<>();
         for (int nums = timeSpan / 10; nums > 0; nums--) {
-            timeBuckets.add(getNormalSetName(ruleName, now.minusSeconds(nums * 10).format(FORMATTER_YMDHMS)));
+            timeBuckets.add(getNormalSetName(ruleName, formatedTenSecDate.minusSeconds(nums * 10).format(FORMATTER_YMDHMS)));
         }
         return timeBuckets;
     }
