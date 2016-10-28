@@ -36,15 +36,17 @@ public class OffenderServiceImpl implements OffenderService {
 
         // 查询MongoDB中是否已经存在， 若不存在则保存
         Query query = new Query(Criteria.where("ruleName").is(rule.getName())
-                .and("sample").is(sample)
                 .and("releaseDate").gt(Long.valueOf(addTime))
+                .and("sample").is(sample)
         );
 
-        if (!mongoTemplate.collectionExists("LimitTimesRuleOffender")) {
-            mongoTemplate.createCollection("LimitTimesRuleOffender", Constants.COLLECTION_OPTIONS);
+        if (!mongoTemplate.collectionExists(Constants.COLLECTION_NAME_LIMIT_TIMES_RULE_OFFENDER)) {
+            mongoTemplate.createCollection(Constants.COLLECTION_NAME_LIMIT_TIMES_RULE_OFFENDER, Constants.COLLECTION_OPTIONS);
 
-            mongoTemplate.indexOps("LimitTimesRuleOffender").ensureIndex(new Index("addTime", Sort.Direction.ASC));
-            mongoTemplate.indexOps("LimitTimesRuleOffender").ensureIndex(new Index("ruleName", Sort.Direction.ASC));
+            mongoTemplate.indexOps(Constants.COLLECTION_NAME_LIMIT_TIMES_RULE_OFFENDER).ensureIndex(new Index("addTime", Sort.Direction.ASC));
+
+            //FIXME: 请DBA手动调整索引
+            mongoTemplate.indexOps(Constants.COLLECTION_NAME_LIMIT_TIMES_RULE_OFFENDER).ensureIndex(new Index("ruleName", Sort.Direction.ASC).on("releaseDate", Sort.Direction.ASC));
         }
 
         if(!mongoTemplate.exists(query,OffenderPo.class)){
