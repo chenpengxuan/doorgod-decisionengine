@@ -113,7 +113,7 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
 
 
     private long getExpireByRule(LimitTimesRule rule) {
-        if (rule.getTimesCap() < 60) {
+        if (rule.getStatisticSpan() < 60) {
             return ((Double) (rule.getStatisticSpan() * 2.0)).longValue();
         }
         return ((Double) (rule.getStatisticSpan() * 1.5)).longValue();
