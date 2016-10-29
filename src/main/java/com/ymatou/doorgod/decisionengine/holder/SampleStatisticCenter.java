@@ -165,10 +165,13 @@ public class SampleStatisticCenter {
             logger.debug("ruleName:{},key:{},mapSize:{},sampleCount:{}", rule.getName(), sampleTime, sampleMap.size(),
                     sampleCount);
         } else {
-            sampleMap.putIfAbsent(roleSample, new AtomicInteger(0));
-            int sampleCount = sampleMap.get(roleSample).incrementAndGet();// ++
-            logger.debug("ruleName:{},key:{},mapSize:{},sampleCount:{}", rule.getName(),sampleTime, sampleMap.size(),
-                    sampleCount);
+            AtomicInteger count = (AtomicInteger) absolutelyPutReturnValue(sampleMap, roleSample, new AtomicInteger(0));
+            if (count != null) {
+                int sampleCount = count.incrementAndGet();// ++
+                logger.debug("ruleName:{},key:{},mapSize:{},sampleCount:{}", rule.getName(), sampleTime,
+                        sampleMap.size(),
+                        sampleCount);
+            }
         }
 
     }
@@ -219,15 +222,18 @@ public class SampleStatisticCenter {
                     sampleTime, sampleMap.size(),
                     originSample, groupBySample, groupBySampleMap != null ? groupBySampleMap.size() : 0);
         }else {
-            sampleMap.putIfAbsent(groupBySample, new ConcurrentHashMap<>());
-            Map<Sample,AtomicInteger> groupBySampleMap = sampleMap.get(groupBySample);
+            
+            Map<Sample, AtomicInteger> groupBySampleMap =
+                    (Map<Sample, AtomicInteger>) absolutelyPutReturnValue(sampleMap, groupBySample,
+                            new ConcurrentHashMap<>());
+            if(null != groupBySampleMap){
+                //key: leftkey sample value: AtomicInteger
+                groupBySampleMap.putIfAbsent(leftKeySample,new AtomicInteger(0));
 
-            //key: leftkey sample value: AtomicInteger
-            groupBySampleMap.putIfAbsent(leftKeySample,new AtomicInteger(0));
-
-            groupBySampleMap.get(leftKeySample).incrementAndGet();
-            logger.debug("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},new groupBySetCount:1",
-                    rule.getName(), sampleTime, sampleMap.size(), originSample, groupBySample);
+                groupBySampleMap.get(leftKeySample).incrementAndGet();
+                logger.debug("ruleName:{},key:{},mapSize:{},originSample:{},groupbySample:{},new groupBySetCount:1",
+                        rule.getName(), sampleTime, sampleMap.size(), originSample, groupBySample);
+            }
         }
     }
 
@@ -238,5 +244,27 @@ public class SampleStatisticCenter {
                 .collect(Collectors.toSet());
     }
 
+
+    /**
+     * 保证 map put key,value
+     * 防止并发情况下 内存数据 topN时 clear掉，229行 和 168行 不判断null 出现 nullpointer
+     * @See com.ymatou.doorgod.decisionengine.integration.store.AbstractSampleStore  126 行 clear
+     * @param map
+     * @param key
+     * @param value
+     * @return
+     */
+    private Object absolutelyPutReturnValue(Map map, Object key, Object value) {
+        map.putIfAbsent(key, value);
+        Object obj = map.get(key);
+        
+        int i = 0;
+        while (obj == null && i < 3) {
+            map.putIfAbsent(key, value);
+            obj = map.get(key);
+            i++;
+        }
+        return obj;
+    }
 
 }

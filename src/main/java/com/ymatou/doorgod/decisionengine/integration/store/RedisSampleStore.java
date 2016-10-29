@@ -75,7 +75,7 @@ public class RedisSampleStore extends AbstractSampleStore {
                 logger.debug("ruleName:{},zsetName:{},zsetsample:{},score:{}", rule.getName(),
                         zSetName, entry.getKey().toString(), score);
             } catch (Exception e) {
-                logger.error("uploadSample to redis error",e);
+                logger.error("uploadSample to redis error,zSetName:{}",zSetName,e);
             }
         });
 
