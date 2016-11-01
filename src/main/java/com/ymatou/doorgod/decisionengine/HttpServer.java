@@ -57,7 +57,8 @@ public class HttpServer implements ApplicationListener<ApplicationReadyEvent> {
                     if (requestUrl.equals("warmup")) {
                         str += "ok";
                     } else {
-                        str += "version: 2016-09-28 first version";
+                        str += "version: 2016-09-28 first version <br>";
+                        str += "version: 2016-11-01 优化性能监控，升级异监控<br>";
                     }
                     out.write(str);
                     out.flush();
