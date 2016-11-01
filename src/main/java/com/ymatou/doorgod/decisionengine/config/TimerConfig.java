@@ -45,8 +45,7 @@ public class TimerConfig {
         // 初始化延迟5秒开始执行 固定每n毫秒执行一次
         redisExecutor.scheduleAtFixedRate(() -> {
             try {
-                PerformanceStatisticContainer.add(() -> sampleStatisticCenter.putSampleToRedis(),
-                        Constants.PerformanceServiceEnum.PUT_SAMPLE_REDIS_ALL.name());
+                sampleStatisticCenter.putSampleToRedis();
             } catch (Exception e) {
                 // 所有异常都catch到 防止异常导致定时任务停止
                 logger.error("上报redis出错", e);
@@ -59,8 +58,7 @@ public class TimerConfig {
     public void putGroupBySampleToMongoTimer() {
         mongoExecutor.scheduleAtFixedRate(() -> {
             try {
-                PerformanceStatisticContainer.add(() -> sampleStatisticCenter.putSampleToMongo(),
-                        Constants.PerformanceServiceEnum.PUT_SAMPLE_MONGO_ALL.name());
+                sampleStatisticCenter.putSampleToMongo();
             } catch (Exception e) {
                 logger.error("上报mongo出错", e);
             }
