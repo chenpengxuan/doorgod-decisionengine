@@ -8,6 +8,7 @@
 package com.ymatou.doorgod.decisionengine.test;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
@@ -106,7 +107,7 @@ public class ProducerSingleTest {
         rule.setStatisticSpan(120);
         rule.setApplicableUris(Sets.newHashSet("/api/xxx.do"));
 
-        RuleHolder.limitTimesRules.put("testrule3", rule);
+        RuleHolder.limitTimesRules.put("testRule2", rule);
 
 
         while (true){
@@ -119,16 +120,17 @@ public class ProducerSingleTest {
             sample2.addDimensionValue("ip", ips[new Random().nextInt(1)]);
             sample2.addDimensionValue("deviceId", deviceIds[new Random().nextInt(1)]);
             a.setSample(JSON.toJSONString(sample2));
+            a.setMatchRules(Lists.newArrayList("testRule2"));
 
             ProducerRecord<String, String> record =
                     new ProducerRecord<String, String>("doorgod.statisticSampleEvent",
                             JSON.toJSONString(a));
             producer.send(record);
-            try {
-                TimeUnit.SECONDS.sleep(2);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                TimeUnit.SECONDS.sleep(2);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
         }
 
 

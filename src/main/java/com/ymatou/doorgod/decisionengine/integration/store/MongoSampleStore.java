@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.ymatou.doorgod.decisionengine.util.MongoTemplate;
+import com.ymatou.performancemonitorclient.PerformanceStatisticContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +56,7 @@ public class MongoSampleStore extends AbstractSampleStore {
     }
 
     @Override
-    protected Map<String, Map<String, Map<Sample, Map<Sample,AtomicInteger>>>> getMemoryMap() {
+    protected Map<String, Map<String, Map<Sample, Map<Sample, AtomicInteger>>>> getMemoryMap() {
         return SampleStatisticCenter.groupByRuleTimeSampleMaps;
     }
 
@@ -68,44 +69,49 @@ public class MongoSampleStore extends AbstractSampleStore {
     public void uploadSampleToDb(LimitTimesRule rule, String uploadTime,
             Collection<Map.Entry<Sample, Object>> samples) {
 
-        String collectionName = MongoHelper.getGroupByCollectionName(rule);
-        if (!mongoTemplate.collectionExists(collectionName)) {
-            mongoTemplate.createCollection(collectionName, Constants.COLLECTION_OPTIONS);
-            mongoTemplate.indexOps(collectionName).ensureIndex(new Index("addTime", Sort.Direction.ASC));
-            mongoTemplate.indexOps(collectionName).ensureIndex(new Index("sampleTime", Sort.Direction.ASC));
-        }
-        samples.forEach(entry -> {
-
-            Sample sample = entry.getKey();
-            Map<Sample,AtomicInteger> leftKeySampleMap = ((Map) entry.getValue());
-
-            if(leftKeySampleMap.size() < bizProps.getUploadMongoGroupMinSize()){
-                return;
+        PerformanceStatisticContainer.add(() -> {
+            String collectionName = MongoHelper.getGroupByCollectionName(rule);
+            if (!mongoTemplate.collectionExists(collectionName)) {
+                mongoTemplate.createCollection(collectionName, Constants.COLLECTION_OPTIONS);
+                mongoTemplate.indexOps(collectionName).ensureIndex(new Index("addTime", Sort.Direction.ASC));
+                mongoTemplate.indexOps(collectionName).ensureIndex(new Index("sampleTime", Sort.Direction.ASC));
             }
-            String groupByKeys = sample.toString();
+            samples.forEach(entry -> {
 
-            leftKeySampleMap.entrySet().forEach(s -> {
-                String leftKeys = s.getKey().toString();
-                int count = s.getValue().intValue();
+                Sample sample = entry.getKey();
+                Map<Sample, AtomicInteger> leftKeySampleMap = ((Map) entry.getValue());
 
-                // uploadtime 找到 那一分钟
-                LocalDateTime localDateTime = DateUtils.parseDefault(uploadTime);
-                String sampleTime = localDateTime.format(Constants.FORMATTER_YMDHM);
+                if (leftKeySampleMap.size() < bizProps.getUploadMongoGroupMinSize()) {
+                    return;
+                }
+                String groupByKeys = sample.toString();
 
-                Query query = new Query(
-                        Criteria.where("sampleTime").is(sampleTime)
-                                .and("groupByKeys").is(groupByKeys)
-                                .and("leftKeys").is(leftKeys));
-                Update update = new Update();
-                update.set("addTime", new Date());
-                update.inc("count",count);
+                leftKeySampleMap.entrySet().forEach(s -> {
+                    String leftKeys = s.getKey().toString();
+                    int count = s.getValue().intValue();
 
+                    // uploadtime 找到 那一分钟
+                    LocalDateTime localDateTime = DateUtils.parseDefault(uploadTime);
+                    String sampleTime = localDateTime.format(Constants.FORMATTER_YMDHM);
 
-                mongoTemplate.findAndModify(query, update, new FindAndModifyOptions()
-                        .returnNew(true).upsert(true), MongoGroupBySamplePo.class, collectionName);
+                    Query query = new Query(
+                            Criteria.where("sampleTime").is(sampleTime)
+                                    .and("groupByKeys").is(groupByKeys)
+                                    .and("leftKeys").is(leftKeys));
+                    Update update = new Update();
+                    update.set("addTime", new Date());
+                    update.inc("count", count);
 
+                    PerformanceStatisticContainer.add(() -> {
+                        mongoTemplate.findAndModify(query, update, new FindAndModifyOptions()
+                                .returnNew(true).upsert(true), MongoGroupBySamplePo.class, collectionName);
+                    }, Constants.PerformanceServiceEnum.MONGO_SAMPLE_STORE_SINGLE.name());
+
+                });
             });
-        });
+
+        }, Constants.PerformanceServiceEnum.MONGO_SAMPLE_STORE_PER_TIME.name());
+
     }
 
 

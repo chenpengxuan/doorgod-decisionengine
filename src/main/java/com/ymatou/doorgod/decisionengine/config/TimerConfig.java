@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import com.ymatou.performancemonitorclient.PerformanceStatisticContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,8 @@ public class TimerConfig {
         // 初始化延迟5秒开始执行 固定每n毫秒执行一次
         redisExecutor.scheduleAtFixedRate(() -> {
             try {
-                sampleStatisticCenter.putSampleToRedis();
+                PerformanceStatisticContainer.add(() -> sampleStatisticCenter.putSampleToRedis(),
+                        Constants.PerformanceServiceEnum.PUT_SAMPLE_REDIS_ALL.name());
             } catch (Exception e) {
                 // 所有异常都catch到 防止异常导致定时任务停止
                 logger.error("上报redis出错", e);
@@ -57,7 +59,8 @@ public class TimerConfig {
     public void putGroupBySampleToMongoTimer() {
         mongoExecutor.scheduleAtFixedRate(() -> {
             try {
-                sampleStatisticCenter.putSampleToMongo();
+                PerformanceStatisticContainer.add(() -> sampleStatisticCenter.putSampleToMongo(),
+                        Constants.PerformanceServiceEnum.PUT_SAMPLE_MONGO_ALL.name());
             } catch (Exception e) {
                 logger.error("上报mongo出错", e);
             }

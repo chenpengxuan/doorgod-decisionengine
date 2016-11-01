@@ -6,6 +6,7 @@
 package com.ymatou.doorgod.decisionengine.service.job.offender;
 
 import static com.ymatou.doorgod.decisionengine.constants.Constants.*;
+import static com.ymatou.doorgod.decisionengine.constants.Constants.PerformanceServiceEnum.REDIS_ZSET_UNION;
 import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getEmptySetName;
 import static com.ymatou.doorgod.decisionengine.util.RedisHelper.getUnionSetName;
 import static com.ymatou.doorgod.decisionengine.util.Utils.getExpireByRule;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.ymatou.performancemonitorclient.PerformanceStatisticContainer;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -83,8 +85,10 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
 
             zSetOps.unionAndStore(getEmptySetName(EMPTY_SET), timeBuckets, currentUnionName);
 
+            long consumed = System.currentTimeMillis() - start;
             logger.info("zset union consumed:{}ms,rulename:{},currentUnionName:{}",
-                    (System.currentTimeMillis() - start), ruleName, currentUnionName);
+                    consumed, ruleName, currentUnionName);
+            PerformanceStatisticContainer.add(consumed, REDIS_ZSET_UNION.name());
 
             zSetOps.getOperations().expire(currentUnionName, getExpireByRule(rule), TimeUnit.SECONDS);
 

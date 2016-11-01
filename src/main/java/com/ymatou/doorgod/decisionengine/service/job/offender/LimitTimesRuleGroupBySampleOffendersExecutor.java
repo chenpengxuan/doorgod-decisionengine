@@ -14,6 +14,7 @@ import com.ymatou.doorgod.decisionengine.model.mongo.MongoGroupBySamplePo;
 import com.ymatou.doorgod.decisionengine.model.mongo.MongoGroupBySampleStats;
 import com.ymatou.doorgod.decisionengine.service.OffenderService;
 import com.ymatou.doorgod.decisionengine.util.MongoHelper;
+import com.ymatou.performancemonitorclient.PerformanceStatisticContainer;
 import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,7 @@ import java.util.List;
 
 import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHM;
 import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHMS;
+import static com.ymatou.doorgod.decisionengine.constants.Constants.PerformanceServiceEnum.MONGO_GROUP_AGGREGATION;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 
 /**
@@ -86,7 +88,10 @@ public class LimitTimesRuleGroupBySampleOffendersExecutor{
             AggregationResults<MongoGroupBySampleStats> result =
                     mongoTemplate.aggregate(aggregation, collectionName, MongoGroupBySampleStats.class);
 
-            logger.info("aggregation consumed:{}ms,rulename:{}", (System.currentTimeMillis() - start), ruleName);
+            long consumed = (System.currentTimeMillis() - start);
+            logger.info("aggregation consumed:{}ms,rulename:{}", consumed, ruleName);
+            PerformanceStatisticContainer.add(consumed,MONGO_GROUP_AGGREGATION.name());
+
             if (null != result) {
                 boolean isOffendersChanged = false;
                 logger.debug("after Aggregation result:{}",result.getMappedResults());

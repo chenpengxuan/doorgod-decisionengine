@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import com.ymatou.performancemonitorclient.PerformanceStatisticContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,11 @@ import com.ymatou.doorgod.decisionengine.config.props.BizProps;
 import com.ymatou.doorgod.decisionengine.constants.Constants;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import com.ymatou.doorgod.decisionengine.model.Sample;
+import org.springframework.util.CollectionUtils;
+
+import static com.ymatou.doorgod.decisionengine.constants.Constants.PerformanceServiceEnum.MONGO_SAMPLE_STORE_PER_RULE;
+import static com.ymatou.doorgod.decisionengine.constants.Constants.PerformanceServiceEnum.REDIS_SAMPLE_STORE_PER_RULE;
+import static com.ymatou.doorgod.decisionengine.constants.Constants.PerformanceServiceEnum.REDIS_SAMPLE_STORE_PER_TIME;
 
 /**
  * @author luoshiqian 2016/9/14 15:41
@@ -52,15 +58,19 @@ public abstract class AbstractSampleStore {
         LocalDateTime dateTime  = LocalDateTime.now();
         String currentTime =  dateTime.format(Constants.FORMATTER_YMDHMS);
 
-        findRule().forEach(rule ->
-            putSampleThreadPool.execute(() -> {
-                try {
-                    putSample(rule,currentTime);
-                } catch (Exception e) {
-                    logger.error("putSample rule:{},currentTime:{} error",rule,currentTime,e);
+        findRule().forEach(rule -> putSampleThreadPool.execute(() -> {
+            try {
+                String serviceId;
+                if (CollectionUtils.isEmpty(rule.getGroupByKeys())) {
+                    serviceId = REDIS_SAMPLE_STORE_PER_RULE.name();
+                } else {
+                    serviceId = MONGO_SAMPLE_STORE_PER_RULE.name();
                 }
-            })
-        );
+                PerformanceStatisticContainer.add(() -> putSample(rule, currentTime), serviceId);
+            } catch (Exception e) {
+                logger.error("putSample rule:{},currentTime:{} error", rule, currentTime, e);
+            }
+        }));
     }
 
 

@@ -45,4 +45,24 @@ public class Constants {
 
     public static final String ENV_STG = "STG";
 
+
+
+    public enum PerformanceServiceEnum{
+        MONGO_SAMPLE_STORE_SINGLE,
+        MONGO_SAMPLE_STORE_PER_TIME,
+        MONGO_SAMPLE_STORE_PER_RULE,
+        PUT_SAMPLE_MONGO_ALL,
+
+        REDIS_SAMPLE_STORE_SINGLE,
+        REDIS_SAMPLE_STORE_PER_TIME,
+        REDIS_SAMPLE_STORE_PER_RULE,
+        PUT_SAMPLE_REDIS_ALL,
+
+
+
+        MONGO_GROUP_AGGREGATION,
+        REDIS_ZSET_UNION,
+        MONGO_SAVE_1000SAMPLE_RULE,
+    }
+
 }

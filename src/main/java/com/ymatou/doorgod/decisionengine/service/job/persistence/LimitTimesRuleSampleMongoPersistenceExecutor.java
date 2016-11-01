@@ -6,6 +6,7 @@
 package com.ymatou.doorgod.decisionengine.service.job.persistence;
 
 import static com.ymatou.doorgod.decisionengine.constants.Constants.*;
+import static com.ymatou.doorgod.decisionengine.constants.Constants.PerformanceServiceEnum.MONGO_SAVE_1000SAMPLE_RULE;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.ymatou.performancemonitorclient.PerformanceStatisticContainer;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -98,7 +100,7 @@ public class LimitTimesRuleSampleMongoPersistenceExecutor implements Job {
                 msp.setTime(now.format(FORMATTER_YMDHMS));
                 mongoSamples.add(msp);
             }
-            sampleUnionRepository.save(mongoSamples);
+            PerformanceStatisticContainer.add(() -> sampleUnionRepository.save(mongoSamples),MONGO_SAVE_1000SAMPLE_RULE.name());
             logger.info("persist union sample size: {}, rule: {}", mongoSamples.size(), rule.getName());
         }
     }

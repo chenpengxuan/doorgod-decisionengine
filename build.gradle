@@ -49,7 +49,7 @@ ext {
     mysqlVersion = "5.1.31"
     jacksonVersion = "2.4.6"
 	errorreporterVersion = "1.0.3"
-	performanceMonitorClientVersion = "1.0.5"
+	performanceMonitorClientVersion = "1.1.0"
 }
 
 compileJava {
