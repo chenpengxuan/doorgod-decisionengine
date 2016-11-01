@@ -63,6 +63,10 @@ public class Constants {
         MONGO_GROUP_AGGREGATION,
         REDIS_ZSET_UNION,
         MONGO_SAVE_1000SAMPLE_RULE,
+
+        SAMPLE_OVER_TIME,
+
+        MEMORY_TOP_N
     }
 
 }

@@ -27,9 +27,7 @@ import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import com.ymatou.doorgod.decisionengine.model.Sample;
 import org.springframework.util.CollectionUtils;
 
-import static com.ymatou.doorgod.decisionengine.constants.Constants.PerformanceServiceEnum.MONGO_SAMPLE_STORE_PER_RULE;
-import static com.ymatou.doorgod.decisionengine.constants.Constants.PerformanceServiceEnum.REDIS_SAMPLE_STORE_PER_RULE;
-import static com.ymatou.doorgod.decisionengine.constants.Constants.PerformanceServiceEnum.REDIS_SAMPLE_STORE_PER_TIME;
+import static com.ymatou.doorgod.decisionengine.constants.Constants.PerformanceServiceEnum.*;
 
 /**
  * @author luoshiqian 2016/9/14 15:41
@@ -121,7 +119,8 @@ public abstract class AbstractSampleStore {
                 return;
             }
 
-            List<Map.Entry<Sample, Object>> sampleList = topNOfSamples(sampleMap, topN);
+            List<Map.Entry<Sample, Object>> sampleList = PerformanceStatisticContainer
+                    .addWithReturn(() -> topNOfSamples(sampleMap, topN), MEMORY_TOP_N.name());
             uploadSampleToDb(rule,uploadTime,sampleList);
             sampleList = null;
 

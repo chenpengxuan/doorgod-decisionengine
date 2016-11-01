@@ -6,33 +6,31 @@
  */
 package com.ymatou.doorgod.decisionengine.holder;
 
+import static com.ymatou.doorgod.decisionengine.constants.Constants.PerformanceServiceEnum.SAMPLE_OVER_TIME;
+
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import com.ymatou.doorgod.decisionengine.integration.store.MongoSampleStore;
-import com.ymatou.doorgod.decisionengine.integration.store.RedisSampleStore;
-import com.ymatou.doorgod.decisionengine.script.ScriptContext;
-import com.ymatou.doorgod.decisionengine.script.ScriptEngines;
-import com.ymatou.doorgod.decisionengine.service.DeviceIdService;
-import com.ymatou.doorgod.decisionengine.util.DateUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.ymatou.doorgod.decisionengine.config.props.BizProps;
+import com.ymatou.doorgod.decisionengine.integration.store.MongoSampleStore;
+import com.ymatou.doorgod.decisionengine.integration.store.RedisSampleStore;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import com.ymatou.doorgod.decisionengine.model.Sample;
 import com.ymatou.doorgod.decisionengine.model.StatisticItem;
+import com.ymatou.doorgod.decisionengine.script.ScriptContext;
+import com.ymatou.doorgod.decisionengine.script.ScriptEngines;
+import com.ymatou.doorgod.decisionengine.util.DateUtils;
+import com.ymatou.performancemonitorclient.PerformanceStatisticContainer;
 
 
 /**
@@ -100,6 +98,7 @@ public class SampleStatisticCenter {
             }else {
                 logger.warn("nowStr:{},reqTime:{} reqTime before now 30 seconds ,will not be statistic",nowStr,reqTime);
             }
+            PerformanceStatisticContainer.add(0,SAMPLE_OVER_TIME.name());
             return;
         }
 
