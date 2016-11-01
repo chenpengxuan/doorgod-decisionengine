@@ -59,6 +59,7 @@ public class HttpServer implements ApplicationListener<ApplicationReadyEvent> {
                     } else {
                         str += "version: 2016-09-28 first version <br>";
                         str += "version: 2016-11-01 优化性能监控，升级异监控<br>";
+                        str += "version: 2016-11-01-2 升级性能监控<br>";
                     }
                     out.write(str);
                     out.flush();
