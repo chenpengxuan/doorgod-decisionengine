@@ -8,12 +8,13 @@
 package com.ymatou.doorgod.decisionengine.service;
 
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
+import com.ymatou.doorgod.decisionengine.model.Sample;
 
 /**
  * @author luoshiqian 2016/9/22 15:37
  */
 public interface OffenderService {
 
-    Boolean saveOffender(LimitTimesRule rule, String sample, String releaseDate, String addTime);
+    Boolean saveOffender(LimitTimesRule rule, Sample sample, String releaseDate, String addTime);
 
 }

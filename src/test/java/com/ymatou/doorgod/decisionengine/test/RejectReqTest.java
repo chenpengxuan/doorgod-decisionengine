@@ -122,7 +122,7 @@ public class RejectReqTest {
             sample2.addDimensionValue("ip", ips[new Random().nextInt(1)]);
             sample2.addDimensionValue("deviceId", deviceIds[new Random().nextInt(1)]);
 
-            rejectReqPo.setSample(JSON.toJSONString(sample2));
+            rejectReqPo.setSample(sample2);
             rejectReqPo.setRuleName("testrule2");
 
             ProducerRecord<String, String> record =

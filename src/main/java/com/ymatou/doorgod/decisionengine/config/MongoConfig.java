@@ -24,6 +24,9 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.ymatou.doorgod.decisionengine.config.props.MongoProps;
 import com.ymatou.doorgod.decisionengine.util.MyWriteConcernResolver;
+import org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper;
+import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
+import org.springframework.data.mongodb.core.convert.MongoTypeMapper;
 
 /**
  * @author luoshiqian 2016/9/9 13:51
@@ -71,9 +74,23 @@ public class MongoConfig extends AbstractMongoConfiguration {
     @Override
     @Bean
     public MongoTemplate mongoTemplate() throws Exception {
-        MongoTemplate mongoTemplate = new MongoTemplate(mongo(),mongoProps.getMongoDatabaseName());
+        MongoTemplate mongoTemplate = new MongoTemplate(mongoDbFactory(mongo),mappingMongoConverter());
         mongoTemplate.setWriteConcernResolver(new MyWriteConcernResolver());
         return mongoTemplate;
+    }
+
+    @Bean
+    @Override
+    public MappingMongoConverter mappingMongoConverter() throws Exception {
+        MappingMongoConverter mmc = super.mappingMongoConverter();
+        mmc.setTypeMapper(customTypeMapper());
+        return mmc;
+    }
+
+    @Bean
+    public MongoTypeMapper customTypeMapper() {
+        //remove _class
+        return new DefaultMongoTypeMapper(null);
     }
 
 }

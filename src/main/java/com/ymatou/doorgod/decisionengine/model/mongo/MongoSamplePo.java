@@ -6,6 +6,7 @@
  */
 package com.ymatou.doorgod.decisionengine.model.mongo;
 
+import com.ymatou.doorgod.decisionengine.model.Sample;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -25,7 +26,7 @@ public class MongoSamplePo {
     private String ruleName;
 
     @Field("sample")
-    private String sample;
+    private Sample sample;
 
     @Field("count")
     private Double count;
@@ -49,11 +50,11 @@ public class MongoSamplePo {
         this.ruleName = ruleName;
     }
 
-    public String getSample() {
+    public Sample getSample() {
         return sample;
     }
 
-    public void setSample(String sample) {
+    public void setSample(Sample sample) {
         this.sample = sample;
     }
 

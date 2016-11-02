@@ -72,9 +72,6 @@ public class SampleStatisticCenter {
     @Autowired
     private ScriptEngines scriptEngines;
 
-
-    private static long nextLogErrorTime = 0;
-
     public void putSampleToRedis(){
         redisSampleStore.putSample();
     }
@@ -92,12 +89,7 @@ public class SampleStatisticCenter {
 
         String nowStr = DateUtils.formatDefault(LocalDateTime.now().minusSeconds(30));
         if(Long.valueOf(nowStr) > Long.valueOf(reqTime)){
-            if(nextLogErrorTime == 0 || nextLogErrorTime<=Long.valueOf(nowStr)){
-                logger.error("nowStr:{},reqTime:{} reqTime before now 30 seconds ,will not be statistic",nowStr,reqTime);
-                nextLogErrorTime = Long.valueOf(DateUtils.formatDefault(LocalDateTime.now().plusSeconds(60)));
-            }else {
-                logger.warn("nowStr:{},reqTime:{} reqTime before now 30 seconds ,will not be statistic",nowStr,reqTime);
-            }
+            logger.warn("nowStr:{},reqTime:{} reqTime before now 30 seconds ,will not be statistic",nowStr,reqTime);
             PerformanceStatisticContainer.add(0,SAMPLE_OVER_TIME.name());
             return;
         }

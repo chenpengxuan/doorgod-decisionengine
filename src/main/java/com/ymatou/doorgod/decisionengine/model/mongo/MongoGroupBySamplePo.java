@@ -7,6 +7,8 @@
 
 package com.ymatou.doorgod.decisionengine.model.mongo;
 
+import com.ymatou.doorgod.decisionengine.model.Sample;
+
 import java.util.Date;
 
 /**
@@ -19,9 +21,9 @@ public class MongoGroupBySamplePo {
 
     private String sampleTime;
 
-    private String groupByKeys;
+    private Sample groupByKeys;
 
-    private String leftKeys;
+    private Sample leftKeys;
 
     private Long count;
 
@@ -45,19 +47,19 @@ public class MongoGroupBySamplePo {
     }
 
 
-    public String getGroupByKeys() {
+    public Sample getGroupByKeys() {
         return groupByKeys;
     }
 
-    public void setGroupByKeys(String groupByKeys) {
+    public void setGroupByKeys(Sample groupByKeys) {
         this.groupByKeys = groupByKeys;
     }
 
-    public String getLeftKeys() {
+    public Sample getLeftKeys() {
         return leftKeys;
     }
 
-    public void setLeftKeys(String leftKeys) {
+    public void setLeftKeys(Sample leftKeys) {
         this.leftKeys = leftKeys;
     }
 

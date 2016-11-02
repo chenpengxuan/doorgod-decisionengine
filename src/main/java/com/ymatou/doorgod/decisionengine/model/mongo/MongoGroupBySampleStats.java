@@ -19,7 +19,6 @@ public class MongoGroupBySampleStats {
 
     private int count;
 
-
     public String getGroupByKeys() {
         return groupByKeys;
     }

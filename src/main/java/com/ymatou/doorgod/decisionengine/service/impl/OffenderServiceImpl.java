@@ -9,6 +9,7 @@ package com.ymatou.doorgod.decisionengine.service.impl;
 
 import com.ymatou.doorgod.decisionengine.constants.Constants;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
+import com.ymatou.doorgod.decisionengine.model.Sample;
 import com.ymatou.doorgod.decisionengine.model.mongo.OffenderPo;
 import com.ymatou.doorgod.decisionengine.service.OffenderService;
 import com.ymatou.doorgod.decisionengine.util.MongoTemplate;
@@ -32,7 +33,7 @@ public class OffenderServiceImpl implements OffenderService {
     private MongoTemplate mongoTemplate;
 
     @Override
-    public Boolean saveOffender(LimitTimesRule rule, String sample, String releaseDate, String addTime) {
+    public Boolean saveOffender(LimitTimesRule rule, Sample sample, String releaseDate, String addTime) {
 
         // 查询MongoDB中是否已经存在， 若不存在则保存
         Query query = new Query(Criteria.where("ruleName").is(rule.getName())

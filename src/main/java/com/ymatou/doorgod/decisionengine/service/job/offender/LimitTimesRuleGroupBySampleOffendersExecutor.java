@@ -6,10 +6,13 @@
  */
 package com.ymatou.doorgod.decisionengine.service.job.offender;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
+import com.mongodb.DBObject;
 import com.ymatou.doorgod.decisionengine.holder.RuleHolder;
 import com.ymatou.doorgod.decisionengine.integration.KafkaClients;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
+import com.ymatou.doorgod.decisionengine.model.Sample;
 import com.ymatou.doorgod.decisionengine.model.mongo.MongoGroupBySamplePo;
 import com.ymatou.doorgod.decisionengine.model.mongo.MongoGroupBySampleStats;
 import com.ymatou.doorgod.decisionengine.service.OffenderService;
@@ -29,6 +32,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHM;
 import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHMS;
@@ -72,7 +76,7 @@ public class LimitTimesRuleGroupBySampleOffendersExecutor{
 
         try {
             Criteria criteria = Criteria.where("sampleTime").gte(startTime)
-                                        .andOperator(Criteria.where("sampleTime").lte(endTime));
+                    .andOperator(Criteria.where("sampleTime").lte(endTime));
 
             long start = System.currentTimeMillis();
 
@@ -85,8 +89,8 @@ public class LimitTimesRuleGroupBySampleOffendersExecutor{
                     sort(Sort.Direction.DESC, "count"));
 
             String collectionName = MongoHelper.getGroupByCollectionName(rule);
-            AggregationResults<MongoGroupBySampleStats> result =
-                    mongoTemplate.aggregate(aggregation, collectionName, MongoGroupBySampleStats.class);
+            AggregationResults<DBObject> result =
+                    mongoTemplate.aggregate(aggregation, collectionName, DBObject.class);
 
             long consumed = (System.currentTimeMillis() - start);
             logger.info("aggregation consumed:{}ms,rulename:{}", consumed, ruleName);
@@ -96,19 +100,22 @@ public class LimitTimesRuleGroupBySampleOffendersExecutor{
                 boolean isOffendersChanged = false;
                 logger.debug("after Aggregation result:{}",result.getMappedResults());
 
-                List<MongoGroupBySampleStats> offenderStats = Lists.newArrayList();
-                for (MongoGroupBySampleStats state : result.getMappedResults()) {
+                List<Sample> offenderList = Lists.newArrayList();
+                for (DBObject dbObject: result.getMappedResults()) {
                     // 超过 加入黑名单
+                    Map<String,String> dimensionValues = (Map<String,String>)dbObject.get("dimensionValues");
+                    Sample offender = new Sample();
+                    offender.getDimensionValues().putAll(dimensionValues);
                     String releaseDate = now.plusSeconds(rule.getRejectionSpan()).format(FORMATTER_YMDHMS);
-                    if(offenderService.saveOffender(rule,state.getGroupByKeys(),releaseDate,nowFormated)){
+                    if(offenderService.saveOffender(rule, offender,releaseDate,nowFormated)){
                         isOffendersChanged = true;
-                        offenderStats.add(state);
+                        offenderList.add(offender);
                     }
                 }
                 if (isOffendersChanged) {
                     kafkaClients.sendUpdateOffendersEvent(ruleName);
 
-                    logger.info("got ruleName:{},groupby offenders:{}", ruleName, offenderStats);
+                    logger.info("got ruleName:{},groupby offenders:{}", ruleName, offenderList);
                 }
             }
         } catch (Exception e) {

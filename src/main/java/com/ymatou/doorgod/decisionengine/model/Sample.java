@@ -91,4 +91,8 @@ public class Sample {
     public String toString() {
         return JSON.toJSONString(this);
     }
+
+    public static Sample fromJsonStr(String str){
+        return JSON.parseObject(str,Sample.class);
+    }
 }

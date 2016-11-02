@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.alibaba.fastjson.JSON;
+import com.ymatou.doorgod.decisionengine.model.Sample;
 import com.ymatou.performancemonitorclient.PerformanceStatisticContainer;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -95,12 +97,12 @@ public class LimitTimesRuleSampleMongoPersistenceExecutor implements Job {
             for (TypedTuple<String> sample : sampleUnion) {
                 MongoSamplePo msp = new MongoSamplePo();
                 msp.setRuleName(rule.getName());
-                msp.setSample(sample.getValue());
+                msp.setSample(Sample.fromJsonStr(sample.getValue()));
                 msp.setCount(sample.getScore());
                 msp.setTime(now.format(FORMATTER_YMDHMS));
                 mongoSamples.add(msp);
             }
-            PerformanceStatisticContainer.add(() -> sampleUnionRepository.save(mongoSamples),MONGO_SAVE_1000SAMPLE_RULE.name());
+            PerformanceStatisticContainer.add(() -> mongoTemplate.insert(mongoSamples,MongoSamplePo.class),MONGO_SAVE_1000SAMPLE_RULE.name());
             logger.info("persist union sample size: {}, rule: {}", mongoSamples.size(), rule.getName());
         }
     }

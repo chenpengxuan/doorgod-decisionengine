@@ -7,6 +7,7 @@
 package com.ymatou.doorgod.decisionengine.model.mongo;
 
 import com.ymatou.doorgod.decisionengine.constants.Constants;
+import com.ymatou.doorgod.decisionengine.model.Sample;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -26,7 +27,7 @@ public class OffenderPo {
     private String ruleName;
 
     @Field("sample")
-    private String sample;
+    private Sample sample;
 
     @Field("addTime")
     private String addTime;
@@ -36,7 +37,7 @@ public class OffenderPo {
 
     public OffenderPo() {}
 
-    public OffenderPo(String sample, Long releaseDate) {
+    public OffenderPo(Sample sample, Long releaseDate) {
         this.sample = sample;
         this.releaseDate = releaseDate;
     }
@@ -49,11 +50,11 @@ public class OffenderPo {
         this.id = id;
     }
 
-    public String getSample() {
+    public Sample getSample() {
         return sample;
     }
 
-    public void setSample(String sample) {
+    public void setSample(Sample sample) {
         this.sample = sample;
     }
 

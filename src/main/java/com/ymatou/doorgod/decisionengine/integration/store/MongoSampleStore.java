@@ -56,7 +56,7 @@ public class MongoSampleStore extends AbstractSampleStore {
     }
 
     @Override
-    protected Map<String, Map<String, Map<Sample, Map<Sample, AtomicInteger>>>> getMemoryMap() {
+    protected Map<String, Map<String, Map<Sample, Map<Sample,AtomicInteger>>>> getMemoryMap() {
         return SampleStatisticCenter.groupByRuleTimeSampleMaps;
     }
 
@@ -78,16 +78,15 @@ public class MongoSampleStore extends AbstractSampleStore {
             }
             samples.forEach(entry -> {
 
-                Sample sample = entry.getKey();
+                Sample groupBySample = entry.getKey();
                 Map<Sample, AtomicInteger> leftKeySampleMap = ((Map) entry.getValue());
 
                 if (leftKeySampleMap.size() < bizProps.getUploadMongoGroupMinSize()) {
                     return;
                 }
-                String groupByKeys = sample.toString();
 
                 leftKeySampleMap.entrySet().forEach(s -> {
-                    String leftKeys = s.getKey().toString();
+                    Sample leftKeysSample = s.getKey();
                     int count = s.getValue().intValue();
 
                     // uploadtime 找到 那一分钟
@@ -96,8 +95,8 @@ public class MongoSampleStore extends AbstractSampleStore {
 
                     Query query = new Query(
                             Criteria.where("sampleTime").is(sampleTime)
-                                    .and("groupByKeys").is(groupByKeys)
-                                    .and("leftKeys").is(leftKeys));
+                                    .and("groupByKeys").is(groupBySample)
+                                    .and("leftKeys").is(leftKeysSample));
                     Update update = new Update();
                     update.set("addTime", new Date());
                     update.inc("count", count);

@@ -6,6 +6,7 @@
 
 package com.ymatou.doorgod.decisionengine.model.mongo;
 
+import com.ymatou.doorgod.decisionengine.model.Sample;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -23,7 +24,7 @@ public class RejectReqPo {
     private String id;
 
     @Field("sample")
-    private String sample;
+    private Sample sample;
 
     @Field("rejectTime")
     private String rejectTime;
@@ -46,11 +47,11 @@ public class RejectReqPo {
         this.id = id;
     }
 
-    public String getSample() {
+    public Sample getSample() {
         return sample;
     }
 
-    public void setSample(String sample) {
+    public void setSample(Sample sample) {
         this.sample = sample;
     }
 

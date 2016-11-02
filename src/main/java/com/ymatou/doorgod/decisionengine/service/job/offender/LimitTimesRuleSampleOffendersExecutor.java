@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.ymatou.doorgod.decisionengine.model.Sample;
 import com.ymatou.performancemonitorclient.PerformanceStatisticContainer;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -103,7 +104,8 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
 
                 boolean isOffendersChanged = false;
                 for (String offender : offenders) {
-                    if (offenderService.saveOffender(rule, offender, releaseDate, nowFormated)) {
+                    if (offenderService.saveOffender(rule, Sample.fromJsonStr(offender), releaseDate,
+                            nowFormated)) {
                         isOffendersChanged = true;
                     }
                 }
