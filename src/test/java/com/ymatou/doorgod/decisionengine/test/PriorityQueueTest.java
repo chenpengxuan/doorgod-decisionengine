@@ -8,6 +8,7 @@
 package com.ymatou.doorgod.decisionengine.test;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.Maps;
@@ -42,6 +43,24 @@ public class PriorityQueueTest {
                 return 0;
             }
             return o2.n - o1.n;
+        }
+    };
+
+    Comparator<Map.Entry<Sample, AtomicInteger>> comparator1 = new Comparator<Map.Entry<Sample, AtomicInteger>>() {
+        @Override
+        public int compare(Map.Entry<Sample, AtomicInteger> o1, Map.Entry<Sample, AtomicInteger> o2) {
+            Object a1 = o1.getValue();
+            Object a2 = o2.getValue();
+            return ((AtomicInteger) a2).intValue() - ((AtomicInteger) a1).intValue();
+        }
+    };
+
+    Comparator<Map.Entry<Sample, AtomicInteger>> comparator2 = new Comparator<Map.Entry<Sample, AtomicInteger>>() {
+        @Override
+        public int compare(Map.Entry<Sample, AtomicInteger> o1, Map.Entry<Sample, AtomicInteger> o2) {
+            Object a1 = o1.getValue();
+            Object a2 = o2.getValue();
+            return ((AtomicInteger) a1).intValue() - ((AtomicInteger) a2).intValue();
         }
     };
 
@@ -98,61 +117,61 @@ public class PriorityQueueTest {
 
 
     @Test
-    public void testTime(){
+    public void testTime()throws Exception{
+        int j = 0;
+        while (true) {
         Map<Sample,AtomicInteger> map = Maps.newHashMap();
-        for(int i =0;i<10000;i++){
+        for(int i =0;i<100000;i++){
             Sample sample = new Sample();
             sample.addDimensionValue("test",i+"");
-            map.put(sample,new AtomicInteger(i));
+            map.put(sample,new AtomicInteger(i+j*100000));
         }
         int topNums = 3;
-
         List<Map.Entry<Sample, AtomicInteger>> list = new ArrayList<>(map.entrySet());
         List<Map.Entry<Sample, AtomicInteger>> list2 = new ArrayList<>(map.entrySet());
         List<Map.Entry<Sample, AtomicInteger>> list3 = new ArrayList<>(map.entrySet());
 
-        Comparator<Map.Entry<Sample, AtomicInteger>> comparator1 = new Comparator<Map.Entry<Sample, AtomicInteger>>() {
-            @Override
-            public int compare(Map.Entry<Sample, AtomicInteger> o1, Map.Entry<Sample, AtomicInteger> o2) {
-                Object a1 = o1.getValue();
-                Object a2 = o2.getValue();
-                return ((AtomicInteger) a2).intValue() - ((AtomicInteger) a1).intValue();
-            }
-        };
 
-        Comparator<Map.Entry<Sample, AtomicInteger>> comparator2 = new Comparator<Map.Entry<Sample, AtomicInteger>>() {
-            @Override
-            public int compare(Map.Entry<Sample, AtomicInteger> o1, Map.Entry<Sample, AtomicInteger> o2) {
-                Object a1 = o1.getValue();
-                Object a2 = o2.getValue();
-                return ((AtomicInteger) a1).intValue() - ((AtomicInteger) a2).intValue();
-            }
-        };
+            testSort(list,topNums);
+
+            testTopN(list2,topNums);
+
+            testMinMaxPrioirtyQueue(list3,topNums);
+            TimeUnit.SECONDS.sleep(2);
+            j++;
+            System.out.println("--------------------------------------------");
+        }
+
+//
+    }
+
+    private void testSort(List list,int topNums){
         long start = System.currentTimeMillis();
         Collections.sort(list, comparator1);
 
         List<Map.Entry<Sample, AtomicInteger>> newList = new ArrayList<>(topNums);
         newList.addAll(list.subList(0, topNums));
-//        newList.forEach(sampleAtomicIntegerEntry -> {
-//            System.out.println(sampleAtomicIntegerEntry.getValue().get());
-//        });
+        newList.forEach(sampleAtomicIntegerEntry -> {
+            System.out.println(sampleAtomicIntegerEntry.getValue().get());
+        });
 
         System.out.println((System.currentTimeMillis()-start) +"ms");
+    }
 
-
+    private void testTopN(List<Map.Entry<Sample, AtomicInteger>> list2,int topNums){
         long start2 = System.currentTimeMillis();
-        TopNList<Map.Entry<Sample,AtomicInteger>> topNList = new TopNList(topNums,comparator2);
+        TopNList<Map.Entry<Sample,AtomicInteger>> topNList = new TopNList<>(topNums,comparator2);
         list2.forEach(sampleAtomicIntegerEntry -> {
             topNList.put(sampleAtomicIntegerEntry);
         });
         List<Map.Entry<Sample,AtomicInteger>> tops = topNList.getTop();
-//        tops.forEach(sampleAtomicIntegerEntry -> {
-//            System.out.println(sampleAtomicIntegerEntry.getValue().get());
-//        });
+        tops.forEach(sampleAtomicIntegerEntry -> {
+            System.out.println(sampleAtomicIntegerEntry.getValue().get());
+        });
         System.out.println((System.currentTimeMillis()-start2) +"ms");
+    }
 
-
-
+    private void testMinMaxPrioirtyQueue(List<Map.Entry<Sample, AtomicInteger>> list3,int topNums){
         long start3 = System.currentTimeMillis();
         MinMaxPriorityQueue<Map.Entry<Sample,AtomicInteger>> queue = MinMaxPriorityQueue.orderedBy(comparator1).maximumSize(topNums).create();
 
@@ -163,9 +182,9 @@ public class PriorityQueueTest {
         while (queue.size()>0){
             newList2.add(queue.poll());
         }
-//        newList2.forEach(sampleAtomicIntegerEntry -> {
-//            System.out.println(sampleAtomicIntegerEntry.getValue().get());
-//        });
+        newList2.forEach(sampleAtomicIntegerEntry -> {
+            System.out.println(sampleAtomicIntegerEntry.getValue().get());
+        });
         System.out.println((System.currentTimeMillis()-start3) +"ms");
     }
 }

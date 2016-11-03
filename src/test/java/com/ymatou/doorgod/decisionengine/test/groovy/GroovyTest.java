@@ -10,6 +10,7 @@ import static javax.script.ScriptContext.ENGINE_SCOPE;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -17,6 +18,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -167,6 +169,20 @@ public class GroovyTest {
                 return false;
             }
         }
+    }
+
+    @Test
+    public void testPatternRegex(){
+
+        String pattern = "172.*";
+        Assert.assertTrue(Pattern.matches(pattern, "172.16.1.1"));
+        Assert.assertTrue(Pattern.matches(pattern, "172.18"));
+        Assert.assertFalse(Pattern.matches(pattern, "177.18"));
+        Assert.assertTrue(Pattern.matches("172.16.1.1", "172.16.1.1"));
+
+        Assert.assertFalse(Pattern.matches(pattern, "99.ee.172.88"));
+        Assert.assertFalse(Pattern.matches("10\\..*", "101.11.11.11"));
+
     }
 
 

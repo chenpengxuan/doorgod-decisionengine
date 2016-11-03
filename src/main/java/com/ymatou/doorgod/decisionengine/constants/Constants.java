@@ -45,6 +45,10 @@ public class Constants {
 
     public static final String ENV_STG = "STG";
 
+    public static final String KEY_NAME_IP = "ip";
+
+    public static final String KEY_NAME_URI = "uri";
+
 
 
     public enum PerformanceServiceEnum{
@@ -64,7 +68,32 @@ public class Constants {
 
         SAMPLE_OVER_TIME,
 
-        MEMORY_TOP_N
+        MEMORY_TOP_N,
+
+
+        /**
+         * groovy 脚本 花费时间
+         */
+        GROOVY_SCRIPT_TIME,
+
+
+        /**
+         * 一个统计数据
+         */
+        ONE_STATISTIC_ITEM_TIME,
+
+        /**
+         * 一个统计数据 所有规则花费时间
+         */
+        ONE_STATISTIC_ITEM_ALL_RULE_TIME,
+
+        /**
+         * 一次kafka 拉取，所有放入内存 花费时间
+         */
+        ONE_KAFKA_PULL_STATISTIC_TIME,
+
+
+
     }
 
 }

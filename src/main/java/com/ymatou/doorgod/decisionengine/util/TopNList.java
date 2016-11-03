@@ -38,8 +38,7 @@ public class TopNList<T> {
 
     public List<T> getTop(){
         List<T> topNList = new ArrayList<>(topNums);
-        int i;
-        for (i = priorityQueue.size() - 1; i >=0 ; i--) {
+        while (priorityQueue.size()>0){
             topNList.add(priorityQueue.poll());
         }
         return topNList;

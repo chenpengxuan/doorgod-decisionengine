@@ -6,6 +6,8 @@
  */
 package com.ymatou.doorgod.decisionengine.holder;
 
+import static com.ymatou.doorgod.decisionengine.constants.Constants.PerformanceServiceEnum.GROOVY_SCRIPT_TIME;
+import static com.ymatou.doorgod.decisionengine.constants.Constants.PerformanceServiceEnum.ONE_STATISTIC_ITEM_ALL_RULE_TIME;
 import static com.ymatou.doorgod.decisionengine.constants.Constants.PerformanceServiceEnum.SAMPLE_OVER_TIME;
 
 import java.time.LocalDateTime;
@@ -97,24 +99,28 @@ public class SampleStatisticCenter {
         Set<LimitTimesRule> set = getRules(statisticItem);
 
         ScriptContext scriptContext = new ScriptContext(statisticItem);
-        set.forEach(rule -> {
 
-            boolean isMatching = scriptEngines.execIsMatching(rule.getName(),scriptContext);
-            logger.debug("execIsMatching result:{}",isMatching);
-            if(!isMatching){
-                return;
-            }
+        PerformanceStatisticContainer.add(() -> {
+            set.forEach(rule -> {
+                boolean isMatching = PerformanceStatisticContainer.addWithReturn(
+                        () -> scriptEngines.execIsMatching(rule.getName(), scriptContext), GROOVY_SCRIPT_TIME.name());
 
-            try {
-                if (CollectionUtils.isEmpty(rule.getGroupByKeys())) {
-                    doStatisticNormalSet(rule, sample, reqTime);
-                } else {
-                    doStatisticGroupBySet(rule,sample,reqTime);
+                logger.debug("execIsMatching result:{}",isMatching);
+                if(!isMatching){
+                    return;
                 }
-            } catch (Exception e) {
-                logger.error("putStatisticItem error,ruleName:{},reqTime:{}", rule.getName(),reqTime,e);
-            }
-        });
+
+                try {
+                    if (CollectionUtils.isEmpty(rule.getGroupByKeys())) {
+                        doStatisticNormalSet(rule, sample, reqTime);
+                    } else {
+                        doStatisticGroupBySet(rule,sample,reqTime);
+                    }
+                } catch (Exception e) {
+                    logger.error("putStatisticItem error,ruleName:{},reqTime:{}", rule.getName(),reqTime,e);
+                }
+            });
+        },ONE_STATISTIC_ITEM_ALL_RULE_TIME.name());
 
     }
 

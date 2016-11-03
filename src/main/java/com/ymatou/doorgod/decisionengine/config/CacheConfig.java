@@ -26,8 +26,7 @@ public class CacheConfig {
     public CacheManager cacheManager() {
         SimpleCacheManager cacheManager = new SimpleCacheManager();
         cacheManager.setCaches(Lists.newArrayList(
-                deviceIdGuavaCache()));
-
+                deviceIdGuavaCache(),ipGuavaCache()));
         return cacheManager;
     }
 
@@ -42,4 +41,13 @@ public class CacheConfig {
         return factoryBean.getObject();
     }
 
+    @Bean(name = "ipGuavaCache")
+    public Cache ipGuavaCache() {
+        GuavaCacheFactoryBean factoryBean = new GuavaCacheFactoryBean();
+        factoryBean.setName("ipGuavaCache");
+        factoryBean.setMaximumSize(10000L);
+        factoryBean.afterPropertiesSet();
+
+        return factoryBean.getObject();
+    }
 }

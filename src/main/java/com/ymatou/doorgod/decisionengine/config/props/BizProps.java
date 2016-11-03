@@ -53,6 +53,8 @@ public class BizProps {
 
     private String performanceServerUrl;
 
+    //需要忽略掉的ip正则表达式，注意： 使用 （.） 时 转义一个 使用 \\. 替代
+    private String ignoreRegexIps;
 
 
     @DisconfFileItem(name = "biz.uploadRedisTopN")
@@ -173,5 +175,14 @@ public class BizProps {
 
     public void setUploadMongoGroupMinSize(int uploadMongoGroupMinSize) {
         this.uploadMongoGroupMinSize = uploadMongoGroupMinSize;
+    }
+
+    @DisconfFileItem(name = "biz.ignoreRegexIps")
+    public String getIgnoreRegexIps() {
+        return ignoreRegexIps;
+    }
+
+    public void setIgnoreRegexIps(String ignoreRegexIps) {
+        this.ignoreRegexIps = ignoreRegexIps;
     }
 }
