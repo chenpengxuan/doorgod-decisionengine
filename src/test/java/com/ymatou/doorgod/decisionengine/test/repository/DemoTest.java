@@ -60,6 +60,7 @@ public class DemoTest extends BaseTest {
 
     @Test
     public void testList(){
+//        QRul
         List<Demo> demoList = demoRepository.findAll();
         System.out.println(demoList);
     }

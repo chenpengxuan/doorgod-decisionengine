@@ -34,7 +34,8 @@ public class DeviceIdServiceImpl implements DeviceIdService, ScriptBean {
     @Cacheable(cacheNames = "deviceIdGuavaCache")
     public boolean findByDeviceId(String deviceId) {
 
-        Query query = new Query(Criteria.where("deviceid").is(deviceId));
+        Query query = new Query(Criteria.where("").orOperator(Criteria.where("deviceid").is(deviceId),
+                Criteria.where("did").is(deviceId)));
 
         return deviceIdMongoTemplate.exists(query, "deviceId");
     }
