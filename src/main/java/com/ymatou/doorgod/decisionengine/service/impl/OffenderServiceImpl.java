@@ -46,7 +46,6 @@ public class OffenderServiceImpl implements OffenderService {
 
             mongoTemplate.indexOps(Constants.COLLECTION_NAME_LIMIT_TIMES_RULE_OFFENDER).ensureIndex(new Index("addTime", Sort.Direction.ASC));
 
-            //FIXME: 请DBA手动调整索引
             mongoTemplate.indexOps(Constants.COLLECTION_NAME_LIMIT_TIMES_RULE_OFFENDER).ensureIndex(new Index("ruleName", Sort.Direction.ASC).on("releaseDate", Sort.Direction.ASC));
         }
 
