@@ -28,5 +28,6 @@ public class DeviceIdServiceTest extends BaseTest{
         assertTrue(deviceIdService.findByDeviceId("40137"));
         assertTrue(deviceIdService.findByDeviceId("438900"));
         assertFalse(deviceIdService.findByDeviceId("401371"));
+        assertFalse(deviceIdService.findByDeviceId("192B7187-F2B6-4E15-BA27-4B7DBDC43259"));
     }
 }

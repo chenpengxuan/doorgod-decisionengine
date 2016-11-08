@@ -27,6 +27,6 @@ public class BaseTest {
     @Test
     public void testStartable() throws Exception {
 
-//        System.in.read();
+        System.in.read();
     }
 }

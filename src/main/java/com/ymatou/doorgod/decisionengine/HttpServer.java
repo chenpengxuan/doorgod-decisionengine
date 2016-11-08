@@ -61,13 +61,14 @@ public class HttpServer implements ApplicationListener<ApplicationReadyEvent> {
                         str += "version: 2016-11-01 优化性能监控，升级异监控<br>";
                         str += "version: 2016-11-01-2 升级性能监控<br>";
                         str += "version: 2016-11-03-1 mongo sample 从json string 转为 document 删除mongo中 _class<br>";
+                        str += "version: 2016-11-09-1 有效deviceId 增加状态验证<br>";
                     }
                     out.write(str);
                     out.flush();
                     out.close();
                     socket.close();
                 } catch (Exception e) {
-                    logger.error("execption", e);
+                    logger.warn("httpserver execption", e);
                 }
             }
         } catch (IOException e) {
