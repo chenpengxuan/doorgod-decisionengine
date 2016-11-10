@@ -18,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 public class Constants {
     public static final DateTimeFormatter FORMATTER_YMDHMS = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     public static final DateTimeFormatter FORMATTER_YMDHM = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
+    public static final DateTimeFormatter DATE_FORMAT_YMD = DateTimeFormatter.ofPattern("yyyyMMdd");
     public static final SimpleDateFormat DATE_FORMAT_YMDHMS = new SimpleDateFormat("yyyyMMddHHmmss");
 
     public static final String RULE_TYPE_NAME_LIMIT_TIMES_RULE = "LimitTimesRule";

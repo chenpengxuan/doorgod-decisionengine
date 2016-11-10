@@ -100,12 +100,10 @@ public class LimitTimesRuleSampleOffendersExecutor implements Job {
             zSetOps.removeRange(currentUnionName,0,-1);
 
             if (!offenders.isEmpty()) {
-                String releaseDate = now.plusSeconds(rule.getRejectionSpan()).format(FORMATTER_YMDHMS);
 
                 boolean isOffendersChanged = false;
                 for (String offender : offenders) {
-                    if (offenderService.saveOffender(rule, Sample.fromJsonStr(offender), releaseDate,
-                            nowFormated)) {
+                    if (offenderService.saveOffender(rule, Sample.fromJsonStr(offender), now, nowFormated)) {
                         isOffendersChanged = true;
                     }
                 }

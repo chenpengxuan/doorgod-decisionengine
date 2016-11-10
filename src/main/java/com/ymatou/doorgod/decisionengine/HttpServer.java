@@ -62,6 +62,7 @@ public class HttpServer implements ApplicationListener<ApplicationReadyEvent> {
                         str += "version: 2016-11-01-2 升级性能监控<br>";
                         str += "version: 2016-11-03-1 mongo sample 从json string 转为 document 删除mongo中 _class<br>";
                         str += "version: 2016-11-09-1 有效deviceId 增加状态验证<br>";
+                        str += "version: 2016-11-10-1 增加offender 被挡时间 使用乘方<br>";
                     }
                     out.write(str);
                     out.flush();

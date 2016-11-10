@@ -106,8 +106,7 @@ public class LimitTimesRuleGroupBySampleOffendersExecutor{
                     Map<String,String> dimensionValues = (Map<String,String>)dbObject.get("dimensionValues");
                     Sample offender = new Sample();
                     offender.getDimensionValues().putAll(dimensionValues);
-                    String releaseDate = now.plusSeconds(rule.getRejectionSpan()).format(FORMATTER_YMDHMS);
-                    if(offenderService.saveOffender(rule, offender,releaseDate,nowFormated)){
+                    if(offenderService.saveOffender(rule, offender,now,nowFormated)){
                         isOffendersChanged = true;
                         offenderList.add(offender);
                     }

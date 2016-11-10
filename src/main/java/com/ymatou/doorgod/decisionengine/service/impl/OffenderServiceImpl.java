@@ -7,6 +7,8 @@
 
 package com.ymatou.doorgod.decisionengine.service.impl;
 
+import com.google.common.math.IntMath;
+import com.google.common.math.LongMath;
 import com.ymatou.doorgod.decisionengine.constants.Constants;
 import com.ymatou.doorgod.decisionengine.model.LimitTimesRule;
 import com.ymatou.doorgod.decisionengine.model.Sample;
@@ -23,6 +25,11 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
+import static com.ymatou.doorgod.decisionengine.constants.Constants.DATE_FORMAT_YMD;
+import static com.ymatou.doorgod.decisionengine.constants.Constants.FORMATTER_YMDHMS;
+
 /**
  * @author luoshiqian 2016/9/22 15:39
  */
@@ -33,7 +40,7 @@ public class OffenderServiceImpl implements OffenderService {
     private MongoTemplate mongoTemplate;
 
     @Override
-    public Boolean saveOffender(LimitTimesRule rule, Sample sample, String releaseDate, String addTime) {
+    public Boolean saveOffender(LimitTimesRule rule, Sample sample, LocalDateTime now, String addTime) {
 
         // 查询MongoDB中是否已经存在， 若不存在则保存
         Query query = new Query(Criteria.where("ruleName").is(rule.getName())
@@ -52,7 +59,7 @@ public class OffenderServiceImpl implements OffenderService {
         if(!mongoTemplate.exists(query,OffenderPo.class)){
             Update update = new Update();
             update.set("ruleName",rule.getName());
-            update.set("releaseDate",Long.valueOf(releaseDate));
+            update.set("releaseDate", Long.valueOf(getReleaseDate(rule, now,addTime,sample)));
             update.set("addTime",Long.valueOf(addTime));
             update.set("sample",sample);
 
@@ -62,5 +69,22 @@ public class OffenderServiceImpl implements OffenderService {
             return true;
         }
         return false;
+    }
+
+    private String getReleaseDate(LimitTimesRule rule, LocalDateTime now, String addTime,Sample sample) {
+        long todayStartTime = Long.valueOf(now.format(DATE_FORMAT_YMD) + "000000");
+        long todayEndTime = Long.valueOf(addTime);
+
+
+        Query query = new Query(Criteria.where("addTime").gte(todayStartTime)
+                .andOperator(Criteria.where("addTime").lte(todayEndTime))
+                .and("ruleName").is(rule.getName())
+                .and("sample").is(sample)
+        );
+
+        long times = mongoTemplate.count(query, OffenderPo.class) + 1;
+
+        // math.pow 计算乘方,下面是计算3的2次方 Math.pow(3,2);  /60 转化为分钟
+        return now.plusSeconds(LongMath.pow(rule.getRejectionSpan()/60,(int)times) * 60).format(FORMATTER_YMDHMS);
     }
 }
