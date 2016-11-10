@@ -21,6 +21,7 @@ public class MathTest {
     public void mathTest(){
         System.out.println(LongMath.sqrt(100, RoundingMode.HALF_DOWN));
         System.out.println(LongMath.pow(3,4));
-        System.out.println(LongMath.pow(3,1));
+        System.out.println(LongMath.pow(2,3));
+        System.out.println(LongMath.pow(2,0));
     }
 }

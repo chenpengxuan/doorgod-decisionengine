@@ -82,9 +82,9 @@ public class OffenderServiceImpl implements OffenderService {
                 .and("sample").is(sample)
         );
 
-        long times = mongoTemplate.count(query, OffenderPo.class) + 1;
+        long times = mongoTemplate.count(query, OffenderPo.class);
 
         // math.pow 计算乘方,下面是计算3的2次方 Math.pow(3,2);  /60 转化为分钟
-        return now.plusSeconds(LongMath.pow(rule.getRejectionSpan()/60,(int)times) * 60).format(FORMATTER_YMDHMS);
+        return now.plusSeconds(rule.getRejectionSpan() * LongMath.pow(2, (int)times)).format(FORMATTER_YMDHMS);
     }
 }

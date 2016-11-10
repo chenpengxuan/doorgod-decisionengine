@@ -35,7 +35,7 @@ public class OffenderServiceTest extends BaseTest{
         ruleDiscoverer.execute();
 
         Sample sample = new Sample();
-        sample.getDimensionValues().put("ip","192.168.0.3");
+        sample.getDimensionValues().put("ip","192.168.0.6");
 
         //保存第一个
         offenderService.saveOffender(RuleHolder.limitTimesRules.get("IP_Prevent"),sample, LocalDateTime.now(),LocalDateTime.now().format(FORMATTER_YMDHMS));
