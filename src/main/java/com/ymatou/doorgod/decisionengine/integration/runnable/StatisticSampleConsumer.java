@@ -74,13 +74,8 @@ public class StatisticSampleConsumer implements Runnable {
                             }
 
                             if (statisticItem.isRejectedByFilter() || statisticItem.isRejectedByHystrix()) {
-                                RejectReqEvent rejectReqEvent = new RejectReqEvent();
-                                rejectReqEvent.setRuleName(statisticItem.getHitRule());
-                                rejectReqEvent.setSample(statisticItem.getSample());
-                                rejectReqEvent.setTime(statisticItem.getReqTime());
-                                rejectReqEvent.setUri(statisticItem.getUri());
-
-                                rejectReqService.saveRejectReq(rejectReqEvent);
+                                //不处理被档请求，一种保护，apigateway应该不会再发此类数据
+                                continue;
                             } else {
                                 String ip = statisticItem.getSample().getDimensionValues().get(KEY_NAME_IP);
                                 if (StringUtils.isNotBlank(ip) && ipUtils.isIgnore(ip)) {
