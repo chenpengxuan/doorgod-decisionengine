@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +24,8 @@ public class HttpServer implements ApplicationListener<ApplicationReadyEvent> {
     private static final Logger logger = LoggerFactory.getLogger(HttpServer.class);
     @Autowired
     private BizProps bizProps;
+    @Autowired
+    private CacheManager cacheManager;
 
     public void start(int port) {
         try {
@@ -40,6 +44,8 @@ public class HttpServer implements ApplicationListener<ApplicationReadyEvent> {
                     while ((requestHeader = bd.readLine()) != null && !requestHeader.isEmpty()) {
                         if (requestHeader.contains("warmup")) {
                             requestUrl = "warmup";
+                        }else if (requestHeader.contains("clearDeviceIdCache")) {
+                            requestUrl = "clearDeviceIdCache";
                         }
                     }
 
@@ -51,6 +57,12 @@ public class HttpServer implements ApplicationListener<ApplicationReadyEvent> {
                             "\n";
                     if (requestUrl.equals("warmup")) {
                         str += "ok";
+                    }else if(requestUrl.equals("clearDeviceIdCache")){
+                        Cache cache = cacheManager.getCache("ipGuavaCache");
+                        com.google.common.cache.Cache guavaCache = (com.google.common.cache.Cache)cache.getNativeCache();
+                        logger.info("clearDeviceIdCache,current size:{} start",guavaCache.size());
+                        cache.clear();
+                        logger.info("start clearDeviceIdCache,current size:{} end",guavaCache.size());
                     } else {
                         str += "version: 2016-09-28 first version <br>";
                         str += "version: 2016-11-01 优化性能监控，升级异监控<br>";
@@ -58,7 +70,7 @@ public class HttpServer implements ApplicationListener<ApplicationReadyEvent> {
                         str += "version: 2016-11-03-1 mongo sample 从json string 转为 document 删除mongo中 _class<br>";
                         str += "version: 2016-11-09-1 有效deviceId 增加状态验证<br>";
                         str += "version: 2016-11-10-1 增加offender 被挡时间 使用乘方<br>";
-                        str += "version: 2016-11-15-1 不处理拒绝的请求<br>";
+                        str += "version: 2016-11-15-1 不处理拒绝的请求,add rest: /clearDeviceIdCache <br>";
                     }
                     out.write(str);
                     out.flush();
