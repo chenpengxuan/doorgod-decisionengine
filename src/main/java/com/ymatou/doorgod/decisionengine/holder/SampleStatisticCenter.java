@@ -86,7 +86,7 @@ public class SampleStatisticCenter {
     //累计
     public void putStatisticItem(StatisticItem statisticItem){
 
-        Sample sample = statisticItem.getSample();
+        Sample sample = statisticItem.getNewSample();
         String reqTime = statisticItem.getReqTime();
 
         String nowStr = DateUtils.formatDefault(LocalDateTime.now().minusSeconds(30));

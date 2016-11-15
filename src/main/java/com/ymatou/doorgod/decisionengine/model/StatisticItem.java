@@ -9,9 +9,6 @@ package com.ymatou.doorgod.decisionengine.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.alibaba.fastjson.JSON;
 import com.ymatou.doorgod.decisionengine.util.DateUtils;
 
 /**
@@ -22,6 +19,8 @@ public class StatisticItem {
     private String uri;
 
     private String sample;
+
+    private Sample newSample;
 
     // 请求时间:请求接收时刻的毫秒数
     private String reqTime;
@@ -44,12 +43,16 @@ public class StatisticItem {
 
     private List<String> matchRules = new ArrayList<String>();
 
-    public Sample getSample() {
-        if (StringUtils.isNotBlank(sample)) {
-            return JSON.parseObject(sample, Sample.class);
-        } else {
-            return null;
-        }
+    public Sample getNewSample() {
+        return newSample;
+    }
+
+    public String getSample() {
+        return sample;
+    }
+
+    public void setNewSample(Sample newSample) {
+        this.newSample = newSample;
     }
 
     public void setSample(String sample) {

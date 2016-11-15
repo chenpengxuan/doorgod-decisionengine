@@ -50,8 +50,8 @@ public class ScriptContext {
         this.hitRule = statisticItem.getHitRule();
         this.filterConsumedTime = statisticItem.getFilterConsumedTime();
         this.origStatusCode = statisticItem.getOrigStatusCode();
-        if(null != statisticItem.getSample()){
-            dimensionValues.putAll(statisticItem.getSample().getDimensionValues());
+        if(null != statisticItem.getNewSample()){
+            dimensionValues.putAll(statisticItem.getNewSample().getDimensionValues());
         }
     }
 
