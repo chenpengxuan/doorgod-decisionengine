@@ -64,13 +64,28 @@ public class RuleDiscoverer {
         try {
             schedulerService.addJob(LimitTimesRuleSampleMongoPersistenceJob.class, "RedisToMongo",
                     bizProps.getLimitTimesRuleSamplePersistCronExpr());
+            logger.info("load redis to mongo task success.");
         } catch (Exception e) {
             logger.error("add redis to mongo job failed.", e);
         }
-        logger.info("load redis to mongo task success.");
+
+        // 定时清除由于超时 导致union zset没有设置过期
+        addRemoveRedisInvalidUnionKeysJob();
 
         // 加载规则数据，更新规则统计的定时任务
         reload();
+    }
+
+    /**
+     * 定时清除由于超时 导致union zset没有设置过期  每天早上5点执行 "0 0 5 * * ?"
+     */
+    public void addRemoveRedisInvalidUnionKeysJob(){
+        try {
+            schedulerService.addJob(RemoveRedisInvalidUnionKeysJob.class, "removeRedisInvalidUnionKeys", "0 0 5 * * ?");
+            logger.info("load redis to mongo task success.");
+        } catch (Exception e) {
+            logger.error("add remove redis union keys job failed.", e);
+        }
     }
 
     @Transactional

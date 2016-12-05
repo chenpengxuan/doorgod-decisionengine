@@ -6,9 +6,9 @@ MAIN_CLASS="com.ymatou.doorgod.decisionengine.Application"
 APP_NAME="decisionengine.doorgod.iapi.ymatou.com"
 CLASS_PATH="lib/*:conf"
 JAVA_OPTS=" -server \
-            -Xms4096m -Xmx4096m \
+            -Xms12288m -Xmx12288m \
             -XX:MaxMetaspaceSize=512m \
-            -Xmn1500M \
+            -Xmn10240M \
             -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled \
             -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=75 \
             -XX:+ScavengeBeforeFullGC -XX:+CMSScavengeBeforeRemark \
