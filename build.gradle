@@ -50,7 +50,7 @@ ext {
     jacksonVersion = "2.4.6"
 	errorreporterVersion = "1.0.5"
 	performanceMonitorClientVersion = "1.1.1"
-	disconfVersion = "2.6.36"
+	disconfVersion = "2.6.37"
 }
 
 compileJava {
