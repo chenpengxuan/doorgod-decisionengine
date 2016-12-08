@@ -13,6 +13,8 @@ import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
@@ -27,8 +29,10 @@ import com.ymatou.doorgod.decisionengine.constants.Constants;
 @Component
 public class IpUtils {
 
-    public static List<String> ipRegexList = new ArrayList<>();
-    public static String ipRegexCacheStr;
+    private static final Logger LOGGER = LoggerFactory.getLogger(IpUtils.class);
+
+    private List<String> ipRegexList = new ArrayList<>();
+    private String ipRegexCacheStr = "";
     @Autowired
     private BizProps bizProps;
     @Autowired
@@ -47,32 +51,34 @@ public class IpUtils {
 
     @PostConstruct
     public void init(){
-        if (StringUtils.isNotBlank(bizProps.getIgnoreRegexIps())) {
-            ipRegexCacheStr = bizProps.getIgnoreRegexIps();
-            reSetCache(bizProps.getIgnoreRegexIps());
-        }
+        resetCache(bizProps.getIgnoreRegexIps());
     }
 
     public void reload() {
-        // 去掉了ip ignore
-        if (StringUtils.isNotBlank(IpUtils.ipRegexCacheStr) && StringUtils.isBlank(bizProps.getIgnoreRegexIps())) {
-            reSetCache(new ArrayList<>()); //清空
-        } else if (StringUtils.isNotBlank(bizProps.getIgnoreRegexIps())
-                && !bizProps.getIgnoreRegexIps().equals(ipRegexCacheStr)) {
-            reSetCache(bizProps.getIgnoreRegexIps());//重新设置
+        if (!bizProps.getIgnoreRegexIps().equals(ipRegexCacheStr)) {
+            resetCache(bizProps.getIgnoreRegexIps());// 重新设置
         }
     }
 
-    public void reSetCache(String ignoreRegexIps) {
+    public void resetCache(String ignoreRegexIps) {
         List<String> newIpRegexList = new ArrayList<>();
-        for (String ipRegex : ignoreRegexIps.split(Constants.SEPARATOR)) {
-            newIpRegexList.add(ipRegex);
+
+        if(StringUtils.isNotBlank(ignoreRegexIps)){
+            for (String ipRegex : ignoreRegexIps.split(Constants.SEPARATOR)) {
+                String temp = ipRegex.trim();
+                if(StringUtils.isNotBlank(temp)){
+                    newIpRegexList.add(temp);
+                }
+            }
         }
-        reSetCache(newIpRegexList);
+        resetCache(newIpRegexList);
+        ipRegexCacheStr = ignoreRegexIps;
     }
 
-    public void reSetCache(List<String> newIpRegexList) {
-        IpUtils.ipRegexList = newIpRegexList;
+    public void resetCache(List<String> newIpRegexList) {
+        ipRegexList = newIpRegexList;
         cacheManager.getCache("ipGuavaCache").clear();
+
+        LOGGER.info("resetcache ipRegexCacheStr:{},newIgnoreRegexIps:{}",ipRegexCacheStr,bizProps.getIgnoreRegexIps());
     }
 }

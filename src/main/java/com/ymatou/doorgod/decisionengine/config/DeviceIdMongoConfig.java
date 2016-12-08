@@ -20,7 +20,7 @@ import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
-import com.ymatou.doorgod.decisionengine.config.props.MongoProps;
+import com.ymatou.doorgod.decisionengine.config.props.DbProps;
 
 /**
  * @author luoshiqian 2016/9/9 13:51
@@ -29,7 +29,7 @@ import com.ymatou.doorgod.decisionengine.config.props.MongoProps;
 public class DeviceIdMongoConfig extends AbstractMongoConfiguration {
 
     @Autowired
-    private MongoProps mongoProps;
+    private DbProps dbProps;
 
     private MongoClient deviceIdMongo;
 
@@ -43,28 +43,28 @@ public class DeviceIdMongoConfig extends AbstractMongoConfiguration {
 
     @Override
     protected String getDatabaseName() {
-        return mongoProps.getDeviceIdMongoDatabaseName();
+        return dbProps.getDeviceIdMongoDatabaseName();
     }
 
     @Override
     @Bean(name = "deviceIdMongo")
     public MongoClient mongo() throws UnknownHostException {
 
-        MongoClientURI uri = new MongoClientURI(mongoProps.getDeviceIdMongoAddress());
+        MongoClientURI uri = new MongoClientURI(dbProps.getDeviceIdMongoAddress());
         this.deviceIdMongo = new MongoClient(uri);
         return this.deviceIdMongo;
     }
 
     @Bean(name = "deviceIdMongoFactory")
     public MongoDbFactory mongoDbFactory(MongoClient mongo) throws Exception {
-        return new SimpleMongoDbFactory(mongo, mongoProps.getDeviceIdMongoDatabaseName());
+        return new SimpleMongoDbFactory(mongo, dbProps.getDeviceIdMongoDatabaseName());
     }
 
 
     @Override
     @Bean(name = "deviceIdMongoTemplate")
     public MongoTemplate mongoTemplate() throws Exception {
-        MongoTemplate mongoTemplate = new MongoTemplate(mongo(), mongoProps.getDeviceIdMongoDatabaseName());
+        MongoTemplate mongoTemplate = new MongoTemplate(mongo(), dbProps.getDeviceIdMongoDatabaseName());
         return mongoTemplate;
     }
 

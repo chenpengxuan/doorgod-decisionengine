@@ -2,10 +2,12 @@
 
 source "/etc/profile"
 GCLOGPATH="logs/gc.log"
+DISCONF_ENV=$1
 MAIN_CLASS="com.ymatou.doorgod.decisionengine.Application"
 APP_NAME="decisionengine.doorgod.iapi.ymatou.com"
 CLASS_PATH="lib/*:conf"
 JAVA_OPTS=" -server \
+            -Ddisconf.env=${DISCONF_ENV}
             -Xms1024m -Xmx1024m \
             -XX:MaxMetaspaceSize=512m \
             -Xmn500M \

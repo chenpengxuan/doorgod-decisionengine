@@ -10,7 +10,6 @@ import java.net.UnknownHostException;
 
 import javax.annotation.PreDestroy;
 
-import com.ymatou.doorgod.decisionengine.util.MongoTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,15 +17,16 @@ import org.springframework.core.env.Environment;
 import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
+import org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper;
+import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
+import org.springframework.data.mongodb.core.convert.MongoTypeMapper;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
-import com.ymatou.doorgod.decisionengine.config.props.MongoProps;
+import com.ymatou.doorgod.decisionengine.config.props.DbProps;
+import com.ymatou.doorgod.decisionengine.util.MongoTemplate;
 import com.ymatou.doorgod.decisionengine.util.MyWriteConcernResolver;
-import org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper;
-import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
-import org.springframework.data.mongodb.core.convert.MongoTypeMapper;
 
 /**
  * @author luoshiqian 2016/9/9 13:51
@@ -35,7 +35,7 @@ import org.springframework.data.mongodb.core.convert.MongoTypeMapper;
 public class MongoConfig extends AbstractMongoConfiguration {
 
     @Autowired
-    private MongoProps mongoProps;
+    private DbProps dbProps;
     @Autowired
     private Environment environment;
 
@@ -53,21 +53,21 @@ public class MongoConfig extends AbstractMongoConfiguration {
 
     @Override
     protected String getDatabaseName() {
-        return mongoProps.getMongoDatabaseName();
+        return dbProps.getMongoDatabaseName();
     }
 
     @Override
     @Bean
     public MongoClient mongo() throws UnknownHostException {
 
-        MongoClientURI uri = new MongoClientURI(mongoProps.getMongoAddress());
+        MongoClientURI uri = new MongoClientURI(dbProps.getMongoAddress());
         this.mongo = new MongoClient(uri);
         return this.mongo;
     }
 
     @Bean
     public MongoDbFactory mongoDbFactory(MongoClient mongo) throws Exception {
-        return new SimpleMongoDbFactory(mongo, mongoProps.getMongoDatabaseName());
+        return new SimpleMongoDbFactory(mongo, dbProps.getMongoDatabaseName());
     }
 
 

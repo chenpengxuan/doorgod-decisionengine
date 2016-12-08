@@ -12,7 +12,6 @@ import javax.sql.DataSource;
 
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -28,6 +27,7 @@ import org.springframework.transaction.annotation.TransactionManagementConfigure
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import com.ymatou.doorgod.decisionengine.config.props.DbProps;
 
 
 
@@ -38,19 +38,19 @@ import com.alibaba.druid.pool.DruidDataSource;
 public class DataSourceConfig
         implements TransactionManagementConfigurer {
     @Autowired
-    private ConnectionConfig connectionConfig;
+    private DbProps dbProps;
 
     @Bean
     public DataSource dataSource() {
 
         DruidDataSource dataSource = new DruidDataSource();
-        dataSource.setDriverClassName(connectionConfig.getDriver());
-        dataSource.setUrl(connectionConfig.getUrl());
-        dataSource.setUsername(connectionConfig.getUsername());
-        dataSource.setPassword(connectionConfig.getPassword());
-        dataSource.setInitialSize(connectionConfig.getInitialSize());
-        dataSource.setMinIdle(connectionConfig.getMinIdle());
-        dataSource.setMaxActive(connectionConfig.getMaxActive());
+        dataSource.setDriverClassName(dbProps.getDriver());
+        dataSource.setUrl(dbProps.getUrl());
+        dataSource.setUsername(dbProps.getUsername());
+        dataSource.setPassword(dbProps.getPassword());
+        dataSource.setInitialSize(dbProps.getInitialSize());
+        dataSource.setMinIdle(dbProps.getMinIdle());
+        dataSource.setMaxActive(dbProps.getMaxActive());
 
         dataSource.setTimeBetweenConnectErrorMillis(Integer.valueOf(DataSourceSettingEnum.timeBetweenEvictionRunsMillis.getValue()));
         dataSource.setMinEvictableIdleTimeMillis(Integer.valueOf(DataSourceSettingEnum.minEvictableIdleTimeMillis.getValue()));

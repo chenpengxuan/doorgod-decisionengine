@@ -3,20 +3,18 @@
  */
 package com.ymatou.doorgod.decisionengine;
 
-import com.ymatou.doorgod.decisionengine.config.ConnectionConfig;
-import com.ymatou.doorgod.decisionengine.config.props.MongoProps;
-import com.ymatou.doorgod.decisionengine.holder.ShutdownLatch;
-import com.ymatou.doorgod.decisionengine.service.job.RuleDiscoverer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+
+import com.ymatou.doorgod.decisionengine.holder.ShutdownLatch;
+import com.ymatou.doorgod.decisionengine.service.job.RuleDiscoverer;
 
 /**
  *
@@ -27,7 +25,6 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @Configuration
 @EnableAutoConfiguration
 @ComponentScan(basePackages = "com.ymatou.doorgod.decisionengine")
-@EnableConfigurationProperties({ConnectionConfig.class, MongoProps.class})
 @EnableCaching
 public class Application {
 

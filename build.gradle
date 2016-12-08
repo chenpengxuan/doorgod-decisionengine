@@ -50,6 +50,7 @@ ext {
     jacksonVersion = "2.4.6"
 	errorreporterVersion = "1.0.5"
 	performanceMonitorClientVersion = "1.1.1"
+	disconfVersion = "2.6.36"
 }
 
 compileJava {
@@ -78,7 +79,7 @@ dependencies {
 
 	compile 'org.slf4j:slf4j-api:1.7.21'
 	compile 'ch.qos.logback:logback-classic:1.1.7'
-	compile 'com.ymatou.disconf:disconf-client:2.6.35'
+	compile "com.ymatou.disconf:disconf-client:${disconfVersion}"
 	compile "com.ymatou:performancemonitorclient:${performanceMonitorClientVersion}"
 	compile "com.ymatou.errorreporter:errorreporter-logback:${errorreporterVersion}"
 
@@ -122,6 +123,7 @@ task copyJars(type: Copy,dependsOn:jar) {
 task copyConfig(type: Copy){
 	from "$projectDir/src/main/resources/logback.xml"
 	from "$projectDir/src/main/resources/quartz.properties"
+	from "$projectDir/src/main/resources/disconf.properties"
 	into "$buildDir/dist/conf"
 }
 
