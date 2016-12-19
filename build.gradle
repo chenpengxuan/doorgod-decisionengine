@@ -48,8 +48,8 @@ ext {
     druidVersion = "1.0.14"
     mysqlVersion = "5.1.31"
     jacksonVersion = "2.4.6"
-	errorreporterVersion = "1.0.5"
-	performanceMonitorClientVersion = "1.1.1"
+	errorreporterVersion = "1.0.7"
+	performanceMonitorClientVersion = "1.1.3"
 	disconfVersion = "2.6.37"
 }
 

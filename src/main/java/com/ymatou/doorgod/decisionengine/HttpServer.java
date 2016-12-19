@@ -79,6 +79,7 @@ public class HttpServer implements ApplicationListener<ApplicationReadyEvent> {
                         str += "version: 2016-11-10-1 增加offender 被挡时间 使用乘方<br>";
                         str += "version: 2016-11-15-1 不处理拒绝的请求,add rest: /clearDeviceIdCache <br>";
                         str += "version: 2016-12-05-1 增加定时任务每天早上5点 清空1小时之前所有union redis zset,add rest: /removeRedisUnionKeys <br>";
+                        str += "version: 2016-12-09-1 升级disconf 客户端2.6.37";
                     }
                     out.write(str);
                     out.flush();

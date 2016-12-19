@@ -59,8 +59,6 @@ public class DataSourceConfig
         dataSource.setTestOnBorrow(Boolean.valueOf(DataSourceSettingEnum.testOnBorrow.getValue()));
         dataSource.setDefaultAutoCommit(false);
 
-        dataSource.setDefaultAutoCommit(false);
-
         return dataSource;
     }
 
