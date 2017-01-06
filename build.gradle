@@ -49,7 +49,7 @@ ext {
     mysqlVersion = "5.1.31"
     jacksonVersion = "2.4.6"
 	errorreporterVersion = "1.0.7"
-	performanceMonitorClientVersion = "1.1.3"
+	performanceMonitorClientVersion = "1.1.4"
 	disconfVersion = "2.6.37"
 }
 
